@@ -1,0 +1,34 @@
+---
+/**
+ * Presentation only — no change handling here. The consuming page wires
+ * `data-file-input` up to `validateSelectedFile` / `FileSession` from
+ * `src/lib/files`. Keeping logic out of the component makes it safe to add
+ * drag-and-drop later: a future page can listen on `data-local-file-picker`
+ * without changing this markup.
+ */
+interface Props {
+  id?: string;
+  label: string;
+  /** e.g. ".stl,.3mf,.obj" */
+  accept: string;
+  helpText?: string;
+}
+
+const { id = "local-file-input", label, accept, helpText } = Astro.props;
+---
+
+<div class="local-file-picker" data-local-file-picker>
+  <label class="file-picker-label" for={id}>{label}</label>
+  {helpText && (
+    <p class="file-picker-help" id={`${id}-help`}>{helpText}</p>
+  )}
+  <input
+    class="file-picker-input"
+    type="file"
+    id={id}
+    accept={accept}
+    aria-describedby={helpText ? `${id}-help ${id}-message` : `${id}-message`}
+    data-file-input
+  />
+  <p class="file-picker-message" id={`${id}-message`} role="status" aria-live="polite" data-file-message></p>
+</div>

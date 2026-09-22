@@ -1,0 +1,62 @@
+---
+import SEOHead, { type BreadcrumbItem, type FaqItem, type WebApplicationInfo } from "../components/seo/SEOHead.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: string;
+  noindex?: boolean;
+  socialImage?: string;
+  themeColor?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  faqs?: FaqItem[];
+  webApplication?: WebApplicationInfo;
+}
+
+const {
+  title,
+  description,
+  path,
+  ogTitle,
+  ogDescription,
+  ogType,
+  noindex = false,
+  socialImage,
+  themeColor = "#6d42f5",
+  breadcrumbs,
+  faqs,
+  webApplication,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content={themeColor} />
+    <link rel="icon" href="/favicon.svg" />
+    <SEOHead
+      title={title}
+      description={description}
+      path={path}
+      ogTitle={ogTitle}
+      ogDescription={ogDescription}
+      ogType={ogType}
+      noindex={noindex}
+      socialImage={socialImage}
+      breadcrumbs={breadcrumbs}
+      faqs={faqs}
+      webApplication={webApplication}
+    />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,12 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "tool-error" } = Astro.props;
+---
+
+<div class="tool-error" id={id} role="alert" hidden data-tool-error>
+  <p class="tool-error-message" data-tool-error-message></p>
+  <p class="tool-error-guidance" data-tool-error-guidance></p>
+</div>

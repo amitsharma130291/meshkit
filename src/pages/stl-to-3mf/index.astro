@@ -1,0 +1,316 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-to-3mf")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL to 3MF Converter", path: "/stl-to-3mf/" },
+];
+
+const faqs = [
+  {
+    question: "Is my STL file uploaded?",
+    answer:
+      "No. The file is parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself.",
+  },
+  {
+    question: "Does the output contain colors or materials?",
+    answer:
+      "No. This converter only writes geometry — indexed vertex positions and triangles. It never generates 3MF color, material, texture or thumbnail data, since none of that information exists in an STL file to begin with.",
+  },
+  {
+    question: "Why does the 3MF declare millimetres if STL doesn't store units?",
+    answer:
+      "3MF requires every package to declare a measurement unit — unlike STL, which has no unit field at all. MeshKit preserves your file's numeric coordinates exactly and declares millimetres as a fixed output convention, not because it detected your STL's real-world scale. Your STL's original units remain unknown to MeshKit.",
+  },
+  {
+    question: "How are duplicate STL vertices handled?",
+    answer:
+      "STL repeats every triangle's vertices independently. This converter merges vertices only when their coordinates are bit-for-bit identical, so the 3MF mesh can reference one vertex record from multiple triangles. It never welds nearby-but-different vertices with a distance tolerance — that would be mesh repair, not format conversion.",
+  },
+  {
+    question: "Why did my conversion fail?",
+    answer:
+      "Usually because the file isn't a valid STL, or every triangle in it has zero area (a degenerate mesh with nothing to export) — see \"Why an STL may fail to convert\" below for the full list MeshKit checks for.",
+  },
+];
+---
+
+<ToolLayout
+  title="STL to 3MF Converter — Convert STL Files Online | MeshKit"
+  description="Convert STL files to 3MF directly in your browser. Your model is processed locally and never uploaded."
+  path="/stl-to-3mf/"
+  h1="STL to 3MF Converter"
+  intro="Convert STL files to 3MF directly in your browser. Your model is processed locally, and its coordinates are preserved without uploading the file."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit STL to 3MF Converter",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Convert binary or ASCII STL files to a valid 3MF package locally in the browser, deduplicating exactly identical vertices and declaring millimetre output units. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your STL stays on this device. MeshKit converts it to 3MF locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file"
+      accept=".stl,model/stl,application/sla,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 100 MB. STL files don't store units — MeshKit preserves the numeric coordinates and declares them as millimetres in the 3MF output. The 3MF won't include colors, materials or textures."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-to-3mf-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="stl-to-3mf-viewport"
+      description="Preview of the converted 3MF geometry, shown with flat shading. No colors, materials or textures exist in the source STL to preview."
+    />
+    <div class="viewer-controls" role="group" aria-label="Preview controls">
+      <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+      <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+      <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+        Wireframe
+      </button>
+    </div>
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <div class="conversion-warnings" data-conversion-warnings hidden></div>
+
+    <section class="model-info-panel" data-conversion-info hidden aria-label="Conversion information">
+      <dl class="model-info-grid">
+        <div><dt>File name</dt><dd data-info-filename></dd></div>
+        <div><dt>File size</dt><dd data-info-filesize></dd></div>
+        <div><dt>Source encoding</dt><dd data-info-encoding></dd></div>
+        <div><dt>Input triangles</dt><dd data-info-input-triangles></dd></div>
+        <div><dt>Output triangles</dt><dd data-info-output-triangles></dd></div>
+        <div><dt>Unique vertices</dt><dd data-info-unique-vertices></dd></div>
+        <div><dt>Duplicate references removed</dt><dd data-info-duplicates-removed></dd></div>
+        <div><dt>Skipped degenerate triangles</dt><dd data-info-skipped-degenerate></dd></div>
+        <div><dt>Input units</dt><dd>Unknown</dd></div>
+        <div><dt>Output declaration</dt><dd>Millimetres</dd></div>
+        <div><dt>Coordinate scaling</dt><dd>None</dd></div>
+        <div><dt>Output 3MF size</dt><dd data-info-output-size></dd></div>
+        <div><dt>Width</dt><dd data-info-width></dd></div>
+        <div><dt>Height</dt><dd data-info-height></dd></div>
+        <div><dt>Depth</dt><dd data-info-depth></dd></div>
+      </dl>
+      <p class="unitless-note">
+        STL files don't store units. MeshKit preserves the numeric coordinates and declares them as millimetres in
+        the 3MF output — this is a declared output convention, not a detected fact about your file.
+      </p>
+    </section>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="download" disabled>Download 3MF</button>
+      <button type="button" class="control-button" data-action="clear-file">Convert another file</button>
+    </div>
+
+    <ToolError id="stl-to-3mf-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to convert STL to 3MF</h2>
+    <ol>
+      <li>Select an STL file using the picker above — binary or ASCII both work.</li>
+      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>Review the preview, dimensions and any warnings, then download the converted 3MF file.</li>
+    </ol>
+
+    <h2>What geometry is preserved</h2>
+    <p>
+      The converter reuses MeshKit's existing STL parser (the same one <a href="/stl-viewer/">STL Viewer</a> uses) to
+      read your file's triangle geometry exactly as written — numeric coordinates are never changed, and triangle
+      winding is preserved. The output is a valid 3MF package containing one indexed mesh object with one build
+      item referencing it.
+    </p>
+
+    <h2>How repeated STL vertices are indexed</h2>
+    <p>
+      STL stores every triangle's three vertices independently, so the same position commonly repeats many times
+      across a mesh. 3MF supports indexed vertices, so MeshKit merges vertices whose coordinates are exactly,
+      bit-for-bit identical into a single vertex record. This is not mesh repair: vertices that are close but not
+      identical are always kept distinct, with no distance tolerance and no seam welding.
+    </p>
+
+    <h2>How units are handled</h2>
+    <p>
+      STL has no field for measurement units at all — MeshKit genuinely doesn't know whether your file's numbers
+      represent millimetres, inches or something else entirely. 3MF, unlike STL, requires every package to declare
+      a unit. MeshKit preserves your coordinates exactly and declares the output as millimetres as a fixed
+      convention, stated plainly in the results panel — never as a claim that it detected your STL's original scale.
+    </p>
+
+    <h2>Why the output declares millimetres</h2>
+    <p>
+      A 3MF package cannot omit its unit declaration, so a converter that reads unitless STL data has to pick
+      something. MeshKit declares millimetres because it's the broadly compatible convention most slicers and CAD
+      tools expect, while leaving your numeric coordinates completely untouched — the declaration changes how other
+      software interprets the numbers, not the numbers themselves.
+    </p>
+
+    <h2>STL versus 3MF</h2>
+    <p>
+      STL stores only raw triangle geometry, with no units, no metadata and no indexed vertices — every triangle
+      repeats its own vertices. 3MF is a modern, XML-based package format that can store units, metadata, colors,
+      materials and indexed geometry alongside the mesh, making it a more structured choice for workflows that need
+      more than raw triangles.
+    </p>
+
+    <h2>Does the output contain colors or materials?</h2>
+    <p>
+      No. STL has no field for color, material or texture data, so there is nothing for MeshKit to carry over. The
+      generated 3MF package contains only geometry — no base materials, color groups, textures or thumbnails.
+    </p>
+
+    <h2>Why an STL may fail to convert</h2>
+    <ul>
+      <li>The file isn't a valid binary or ASCII STL, or its data is truncated or corrupted.</li>
+      <li>Every triangle in the file has zero area, leaving nothing usable to export.</li>
+      <li>The model is more complex (triangles, unique vertices) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side conversion route in MeshKit. Your browser reads the STL file, parses it, and
+      builds the 3MF package, all on your device. You can verify this yourself: open your browser's developer
+      tools, watch the network tab, and convert a file. No request containing your file will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conversion-warnings {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6e5;
+    color: #7a5200;
+    font-size: 0.85rem;
+  }
+  .conversion-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+  .unitless-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>

@@ -1,0 +1,309 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("obj-to-stl")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "OBJ to STL Converter", path: "/obj-to-stl/" },
+];
+
+const faqs = [
+  {
+    question: "Is my OBJ file uploaded?",
+    answer:
+      "No. The file is read, parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself.",
+  },
+  {
+    question: "Are materials and textures preserved?",
+    answer:
+      "No. STL stores surface geometry only — no material, texture or color information exists in the format. If your OBJ references a .mtl file or texture coordinates, MeshKit shows a warning before you download, but the STL itself never contains them. MeshKit also never fetches the .mtl file itself.",
+  },
+  {
+    question: "What units does the downloaded STL use?",
+    answer:
+      "Neither OBJ nor STL define a measurement unit. MeshKit preserves your file's numeric coordinates exactly — it never multiplies them by 10, 25.4 or any other value. Your slicer or CAD application decides how to interpret the numbers.",
+  },
+  {
+    question: "How are non-triangular faces handled?",
+    answer:
+      "Quads and other polygon faces are triangulated automatically: convex faces are fanned, and concave faces are triangulated with an ear-clipping algorithm that respects the face's actual shape. Faces that can't be safely triangulated — self-intersecting or severely non-planar faces — are rejected with an explanation rather than converted into corrupted geometry.",
+  },
+  {
+    question: "Why did my conversion fail?",
+    answer:
+      "Usually because a face references a vertex that doesn't exist, a face has an invalid or self-intersecting shape, or the file doesn't contain any triangle/polygon geometry at all — see \"Why an OBJ may fail to convert\" below for the full list MeshKit checks for.",
+  },
+];
+---
+
+<ToolLayout
+  title="OBJ to STL Converter — Convert OBJ Files Online | MeshKit"
+  description="Convert OBJ files to STL directly in your browser. Your model is processed locally and never uploaded."
+  path="/obj-to-stl/"
+  h1="OBJ to STL Converter"
+  intro="Convert OBJ files to STL directly in your browser. Geometry is processed locally, and your model is never uploaded."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit OBJ to STL Converter",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Convert OBJ files to binary STL locally in the browser, triangulating polygon faces and recalculating geometric normals. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your OBJ stays on this device. MeshKit converts it to STL locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="obj-file-input"
+      label="Select an OBJ file"
+      accept=".obj,text/plain,model/obj,application/octet-stream"
+      helpText="Up to 150 MB. STL cannot store materials, textures or vertex colors — surface geometry only. Coordinates are kept exactly as written, since OBJ has no unit system."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="obj-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="obj-viewport"
+      description="Preview of the converted STL geometry, shown with flat shading. Materials, textures and vertex colors from the source OBJ are not shown, since STL cannot store them."
+    />
+    <div class="viewer-controls" role="group" aria-label="Preview controls">
+      <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+      <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+      <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+        Wireframe
+      </button>
+    </div>
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <div class="conversion-warnings" data-conversion-warnings hidden></div>
+
+    <section class="model-info-panel" data-conversion-info hidden aria-label="Conversion information">
+      <dl class="model-info-grid">
+        <div><dt>File name</dt><dd data-info-filename></dd></div>
+        <div><dt>File size</dt><dd data-info-filesize></dd></div>
+        <div><dt>Source vertices</dt><dd data-info-source-vertices></dd></div>
+        <div><dt>Source faces</dt><dd data-info-source-faces></dd></div>
+        <div><dt>Output triangles</dt><dd data-info-triangles></dd></div>
+        <div><dt>Objects</dt><dd data-info-object-count></dd></div>
+        <div><dt>Groups</dt><dd data-info-group-count></dd></div>
+        <div><dt>Width (model units)</dt><dd data-info-width></dd></div>
+        <div><dt>Height (model units)</dt><dd data-info-height></dd></div>
+        <div><dt>Depth (model units)</dt><dd data-info-depth></dd></div>
+      </dl>
+      <p class="unitless-note">
+        OBJ and STL don't store a measurement unit. These numbers are your file's coordinates, unchanged.
+      </p>
+    </section>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="download" disabled>Download STL</button>
+      <button type="button" class="control-button" data-action="clear-file">Convert another file</button>
+    </div>
+
+    <ToolError id="obj-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to convert OBJ to STL</h2>
+    <ol>
+      <li>Select an OBJ file using the picker above.</li>
+      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
+    </ol>
+
+    <h2>What geometry is preserved</h2>
+    <p>
+      The converter resolves your OBJ file's vertex and face data, including all four common face-reference forms
+      (<code>v</code>, <code>v/vt</code>, <code>v//vn</code>, <code>v/vt/vn</code>) and both positive and negative
+      vertex indices. Quad and polygon faces are triangulated, and the output is one flattened triangle mesh with
+      correct geometry and consistent, outward-facing normals.
+    </p>
+
+    <h2>What happens to materials and textures</h2>
+    <p>
+      STL stores surface geometry only. Materials referenced with <code>mtllib</code>/<code>usemtl</code>, texture
+      coordinates, and vertex colors are not included in the download — this is a limitation of the STL format
+      itself, not something MeshKit chooses to drop. MeshKit never fetches a referenced <code>.mtl</code> file or any
+      other external path. If your file includes any of these, a warning appears before you download.
+    </p>
+
+    <h2>How polygon faces are triangulated</h2>
+    <p>
+      A triangular face is used as-is. A convex polygon face (a quad or larger n-gon with no inward-pointing corners)
+      is fanned from its first vertex. A concave polygon face is triangulated with an ear-clipping algorithm that
+      projects the face onto its dominant plane and preserves its actual outline — naive fan triangulation would
+      corrupt a concave shape, so MeshKit doesn't use it for those faces. A face that's severely non-planar or
+      self-intersecting can't be triangulated safely and is rejected with a clear error instead of producing
+      corrupted geometry.
+    </p>
+
+    <h2>How units are handled</h2>
+    <p>
+      Neither OBJ nor STL define a universal measurement unit. MeshKit preserves your file's numeric coordinates
+      exactly — it never multiplies them by 10, 25.4 or any other conversion factor, and dimensions are shown as
+      model units rather than being labeled millimeters. Your slicer or CAD application decides how to interpret the
+      numbers.
+    </p>
+
+    <h2>OBJ versus STL</h2>
+    <p>
+      OBJ is a plain-text format that can describe polygon faces, texture coordinates, vertex normals and material
+      references. STL stores only raw triangle geometry, with no units and no metadata, but remains the most widely
+      supported format across slicers and CAD tools — which is why converting to it is useful even though it's the
+      simpler format.
+    </p>
+
+    <h2>Why an OBJ may fail to convert</h2>
+    <ul>
+      <li>A face references a vertex, texture-coordinate or normal index that doesn't exist.</li>
+      <li>A face has fewer than three (usable) vertices after removing a repeated closing reference.</li>
+      <li>A face's edges cross themselves, or the face is severely non-planar.</li>
+      <li>A vertex or face line uses a value MeshKit can't parse as a number, or an ambiguous field count.</li>
+      <li>The file only contains line or point primitives, which STL can't represent.</li>
+      <li>The file is more complex (vertices, triangles, or vertices on a single face) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side conversion route in MeshKit. Your browser reads the OBJ file, parses it, and builds
+      the STL file, all on your device. You can verify this yourself: open your browser's developer tools, watch the
+      network tab, and convert a file. No request containing your file will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conversion-warnings {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6e5;
+    color: #7a5200;
+    font-size: 0.85rem;
+  }
+  .conversion-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+  .unitless-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>

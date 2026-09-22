@@ -1,0 +1,14 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "tool-status" } = Astro.props;
+---
+
+<div class="tool-status" id={id} role="status" aria-live="polite" data-tool-status>
+  <span class="tool-status-label" data-tool-status-label>Waiting for a file</span>
+  <div class="tool-status-progress" data-tool-status-progress hidden>
+    <div class="tool-status-progress-bar" data-tool-status-bar></div>
+  </div>
+</div>

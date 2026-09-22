@@ -1,0 +1,249 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import ViewerControls from "../../components/tools/ViewerControls.astro";
+import ModelInfoPanel from "../../components/tools/ModelInfoPanel.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL Viewer", path: "/stl-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Are STL files uploaded when I use this viewer?",
+    answer:
+      "No. Your file is read and parsed entirely in your browser, inside a background Web Worker. It is never sent to a server — you can confirm this yourself by checking your browser's network tab while a file loads.",
+  },
+  {
+    question: "Does this viewer support binary and ASCII STL?",
+    answer:
+      "Yes. It automatically detects which of the two STL encodings a file uses and parses it locally — you don't need to know or specify which one you have.",
+  },
+  {
+    question: "What units are the dimensions shown in?",
+    answer:
+      "STL files don't store real-world units, so dimensions are shown in model units by default. You can relabel the display as millimeters, centimeters or inches, but that only changes the label — it doesn't convert or modify the geometry.",
+  },
+  {
+    question: "Does this tool repair or validate my STL file?",
+    answer:
+      "No. This is a viewer only — it doesn't check for holes, non-manifold edges or flipped normals. STL Checker and STL Repair are planned as separate tools.",
+  },
+  {
+    question: "Is there a file size limit?",
+    answer:
+      "Yes, a safety ceiling protects your browser from freezing on extremely large models. It's a browser-stability limit, not a paid-tier restriction — every file under the limit gets the complete viewer for free.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="STL Viewer — Open and Inspect STL Files Online | MeshKit"
+  description="Open and inspect STL files directly in your browser. Rotate, zoom, view dimensions and check triangle count without uploading your model."
+  path="/stl-viewer/"
+  h1="STL Viewer"
+  intro="Open and inspect STL files directly in your browser. Rotate, zoom, view dimensions and check triangle count without uploading your model."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit STL Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect STL files locally in the browser — rotate, zoom, and check dimensions, bounding box and triangle count. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your STL stays on this device. MeshKit reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 100 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="stl-viewport"
+      description="Interactive 3D preview of your STL model. Drag to rotate, scroll to zoom."
+    />
+    <ViewerControls id="stl-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <ModelInfoPanel id="stl-model-info" />
+    <ToolError id="stl-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view an STL file</h2>
+    <ol>
+      <li>Select an STL file using the picker above (or drag one in once you're on the page).</li>
+      <li>MeshKit reads the file locally and parses it in a background worker — nothing leaves your device.</li>
+      <li>Once parsing finishes, drag to rotate, scroll to zoom, and use the controls to fit the view or toggle wireframe.</li>
+    </ol>
+
+    <h2>What the viewer shows</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, detected encoding (binary or ASCII),
+      triangle count, width, height, depth and the bounding-box minimum and maximum. Every dimension is labelled in
+      model units, since STL geometry doesn't carry real-world scale.
+    </p>
+
+    <h2>Binary vs ASCII STL</h2>
+    <p>
+      STL comes in two encodings. <strong>Binary STL</strong> packs an 80-byte header, a triangle count, and then a
+      fixed 50-byte record per triangle — compact and fast to parse. <strong>ASCII STL</strong> spells out each
+      facet as plain text (<code>facet normal ... outer loop ... vertex ... endloop endfacet</code>), which is far
+      larger but human-readable. This viewer detects which one a file uses automatically — including binary files
+      whose 80-byte header happens to start with the text "solid", which a naive detector would misread as ASCII.
+    </p>
+
+    <h2>Why STL dimensions are unitless</h2>
+    <p>
+      The STL format only stores triangle coordinates as plain numbers — it has no field for millimeters, inches or
+      any other unit. A model might have been authored at any scale. That's why this viewer labels dimensions as
+      "model units" rather than guessing a real-world unit, and why relabeling the display as mm/cm/in only changes
+      the label shown, not the underlying numbers.
+    </p>
+
+    <h2>Is the STL file uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshKit at all. Your browser reads the file with the
+      standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
+      WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the
+      network tab, and load a file. No request containing your file will appear.
+    </p>
+
+    <h2>Common reasons an STL will not open</h2>
+    <ul>
+      <li>The file is a truncated or corrupted binary STL — its declared triangle count doesn't match the actual file length.</li>
+      <li>The file is ASCII STL with a malformed structure, such as a facet missing <code>endloop</code>/<code>endfacet</code>, or with a vertex count other than three.</li>
+      <li>The file isn't actually an STL file, despite its extension.</li>
+      <li>The file contains non-finite coordinate values.</li>
+      <li>The model has more triangles than the free viewer's safety ceiling currently supports.</li>
+    </ul>
+
+    <h2>STL versus 3MF</h2>
+    <p>
+      STL stores only raw triangle geometry — no color, no units, no metadata, and often duplicated vertices between
+      adjacent triangles. 3MF is a newer, XML-based format that can store color, materials, units and other
+      metadata alongside the mesh. STL remains the most widely supported format across slicers and CAD tools, which
+      is why it's MeshKit's first viewer.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related planned tools</h2>
+      <p>These tools aren't built yet — MeshKit is being developed in phases.</p>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) => (
+            <li>
+              <span class="related-tool-name">{related!.name}</span>
+              <span class="related-tool-status">Planned</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

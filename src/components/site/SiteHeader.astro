@@ -1,0 +1,54 @@
+---
+import { siteConfig } from "../../config/site";
+---
+
+<div class="announcement">
+  <span class="announcement-dot"></span>
+  {siteConfig.privacyPromise}
+</div>
+
+<header class="site-header" data-header>
+  <a class="brand" href="/#top" aria-label={`${siteConfig.productName} home`}>
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><path d="M7 9.5 16 4l9 5.5v13L16 28l-9-5.5v-13Z"></path><path d="m7 9.5 9 5.5 9-5.5M16 15v13"
+        ></path></svg>
+    </span>
+    <span>{siteConfig.productName}</span>
+  </a>
+
+  <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-button>
+    <span></span><span></span><span></span><span class="sr-only">Toggle navigation</span>
+  </button>
+
+  <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation" data-nav>
+    <a href="/#popular-tools">Popular tools</a>
+    <a href="/#privacy">Why private</a>
+    <a href="/#pro">Pro</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+
+  <a class="header-cta" href="/#popular-tools">Explore free tools <span>→</span></a>
+</header>
+
+<script>
+  const menuButton = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+  const nav = document.querySelector<HTMLElement>("[data-nav]");
+
+  menuButton?.addEventListener("click", () => {
+    const open = menuButton.getAttribute("aria-expanded") === "true";
+    menuButton.setAttribute("aria-expanded", String(!open));
+    nav?.classList.toggle("is-open", !open);
+  });
+
+  nav?.querySelectorAll("a").forEach((link) =>
+    link.addEventListener("click", () => {
+      menuButton?.setAttribute("aria-expanded", "false");
+      nav.classList.remove("is-open");
+    }),
+  );
+
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const updateHeader = () => header?.classList.toggle("is-scrolled", window.scrollY > 12);
+  updateHeader();
+  window.addEventListener("scroll", updateHeader, { passive: true });
+</script>

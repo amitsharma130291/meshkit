@@ -1,0 +1,295 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("3mf-to-stl")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "3MF to STL Converter", path: "/3mf-to-stl/" },
+];
+
+const faqs = [
+  {
+    question: "Is my 3MF file uploaded?",
+    answer:
+      "No. The package is unzipped, parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself.",
+  },
+  {
+    question: "Are colors, materials and textures preserved?",
+    answer:
+      "No. STL stores surface geometry only — no color, material or texture information exists in the format. If your 3MF file includes any of these, MeshKit shows a warning before you download, but the STL itself never contains them.",
+  },
+  {
+    question: "What units does the downloaded STL use?",
+    answer:
+      "3MF stores measurement units explicitly (millimeters, inches, and so on) — STL does not. MeshKit reads your file's declared unit and converts the geometry to millimeter-scaled coordinates, since that's the broadly compatible convention most slicers expect.",
+  },
+  {
+    question: "Does this converter repair or validate the geometry?",
+    answer:
+      "No. This tool only converts format — it doesn't check for or fix holes, non-manifold edges or flipped normals. STL Checker and STL Repair are planned as separate tools.",
+  },
+  {
+    question: "Why did my conversion fail?",
+    answer:
+      "Usually because the package is corrupted, encrypted, or doesn't contain a recognizable 3D model — see \"Common conversion errors\" below for the full list MeshKit checks for.",
+  },
+];
+---
+
+<ToolLayout
+  title="3MF to STL Converter — Convert 3MF Files Online | MeshKit"
+  description="Convert 3MF files to STL directly in your browser. Your model is processed locally and never uploaded."
+  path="/3mf-to-stl/"
+  h1="3MF to STL Converter"
+  intro="Convert 3MF files to STL directly in your browser. Your model is processed locally and never uploaded."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit 3MF to STL Converter",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Convert 3MF files to binary STL locally in the browser, resolving components and build-item transforms and normalizing measurement units to millimeters. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your 3MF stays on this device. MeshKit converts it to STL locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="threemf-file-input"
+      label="Select a 3MF file"
+      accept=".3mf,model/3mf,application/vnd.ms-package.3dmanufacturing-3dmodel+xml,application/octet-stream"
+      helpText="Up to 150 MB. STL cannot store color, materials or textures — surface geometry only."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="threemf-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="threemf-viewport"
+      description="Preview of the converted STL geometry. Colors, materials and textures from the source 3MF are not shown, since STL cannot store them."
+    />
+    <div class="viewer-controls" role="group" aria-label="Preview controls">
+      <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+      <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+      <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+        Wireframe
+      </button>
+    </div>
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <div class="conversion-warnings" data-conversion-warnings hidden></div>
+
+    <section class="model-info-panel" data-conversion-info hidden aria-label="Conversion information">
+      <dl class="model-info-grid">
+        <div><dt>File name</dt><dd data-info-filename></dd></div>
+        <div><dt>File size</dt><dd data-info-filesize></dd></div>
+        <div><dt>Source unit</dt><dd data-info-source-unit></dd></div>
+        <div><dt>Output scale</dt><dd>Millimeters</dd></div>
+        <div><dt>Triangles</dt><dd data-info-triangles></dd></div>
+        <div><dt>Mesh objects</dt><dd data-info-object-count></dd></div>
+        <div><dt>Build items</dt><dd data-info-build-items></dd></div>
+        <div><dt>Component instances</dt><dd data-info-component-instances></dd></div>
+        <div><dt>Width</dt><dd data-info-width></dd></div>
+        <div><dt>Height</dt><dd data-info-height></dd></div>
+        <div><dt>Depth</dt><dd data-info-depth></dd></div>
+      </dl>
+    </section>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="download" disabled>Download STL</button>
+      <button type="button" class="control-button" data-action="clear-file">Convert another file</button>
+    </div>
+
+    <ToolError id="threemf-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to convert 3MF to STL</h2>
+    <ol>
+      <li>Select a 3MF file using the picker above.</li>
+      <li>MeshKit unzips and parses the package locally, in a background worker — nothing leaves your device.</li>
+      <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
+    </ol>
+
+    <h2>What is preserved</h2>
+    <p>
+      The converter resolves your 3MF package's full build scene: mesh objects, component objects (including
+      nested components), and every build item's placement transform, including mirrored/reflected instances. The
+      output is one flattened triangle mesh with correct geometry and consistent, outward-facing normals.
+    </p>
+
+    <h2>What is not preserved</h2>
+    <p>
+      STL stores surface geometry only. Colors, base materials, textures, UV coordinates and 3MF metadata are not
+      included in the download — this is a limitation of the STL format itself, not something MeshKit chooses to
+      drop. If your file includes any of these, a warning appears before you download.
+    </p>
+
+    <h2>How units are handled</h2>
+    <p>
+      3MF stores measurement units explicitly. STL does not, so MeshKit converts the geometry to millimeter-scaled
+      coordinates for broad slicer compatibility. Micron, millimeter, centimeter, inch, foot and meter are all
+      supported source units — the detected unit is shown after conversion.
+    </p>
+
+    <h2>3MF versus STL</h2>
+    <p>
+      3MF is a modern, XML-based package format that can store color, materials, units and metadata alongside the
+      mesh. STL stores only raw triangle geometry, with no units and no metadata, but remains the most widely
+      supported format across slicers and CAD tools — which is why converting to it is useful even though it's the
+      simpler format.
+    </p>
+
+    <h2>Why colors and textures are lost</h2>
+    <p>
+      This isn't a bug or a missing feature to fix later — the STL format has no field for color, material or
+      texture data at all. Any 3MF-to-STL conversion, from any tool, loses this information by definition.
+    </p>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side conversion route in MeshKit. Your browser reads the 3MF package, unzips and
+      parses it, and builds the STL file, all on your device. You can verify this yourself: open your browser's
+      developer tools, watch the network tab, and convert a file. No request containing your file will appear.
+    </p>
+
+    <h2>Common conversion errors</h2>
+    <ul>
+      <li>The file isn't a valid ZIP/3MF package, or its package data is corrupted.</li>
+      <li>The package is password-protected (encrypted), which can't be read locally.</li>
+      <li>MeshKit can't find a 3D model part inside the package.</li>
+      <li>The model XML is malformed, or declares a measurement unit MeshKit doesn't recognize.</li>
+      <li>The model has no build items, so there's nothing to export.</li>
+      <li>The model is more complex (triangles, nested components) than this tool's safety limits currently allow.</li>
+    </ul>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conversion-warnings {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6e5;
+    color: #7a5200;
+    font-size: 0.85rem;
+  }
+  .conversion-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+</style>

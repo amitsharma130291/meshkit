@@ -1,0 +1,26 @@
+{
+  "name": "meshkit-astro-homepage",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "postbuild": "node scripts/generate-csp-headers.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "astro": "^5.14.1",
+    "fflate": "^0.8.3",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/sitemap": "^3.2.1",
+    "@types/three": "^0.169.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

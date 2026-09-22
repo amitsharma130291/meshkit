@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /foundation-preview/
+
+Sitemap: https://example.com/sitemap-index.xml

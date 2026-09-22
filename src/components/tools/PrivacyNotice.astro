@@ -1,0 +1,12 @@
+---
+interface Props {
+  message?: string;
+}
+
+const { message = "This tool processes your file entirely on this device. Nothing is uploaded." } = Astro.props;
+---
+
+<p class="privacy-inline-notice" role="note">
+  <span aria-hidden="true">◇</span>
+  {message}
+</p>

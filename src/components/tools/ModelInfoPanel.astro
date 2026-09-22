@@ -1,0 +1,40 @@
+---
+/**
+ * Presentation only — the client script fills in every `data-info-*` node
+ * and toggles `hidden`. Dimensions are deliberately labelled "model units"
+ * everywhere; STL geometry has no inherent real-world unit.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>Encoding</dt><dd data-info-encoding></dd></div>
+    <div><dt>Triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Width</dt><dd data-info-width></dd></div>
+    <div><dt>Height</dt><dd data-info-height></dd></div>
+    <div><dt>Depth</dt><dd data-info-depth></dd></div>
+    <div><dt>Bounding min</dt><dd data-info-bbox-min></dd></div>
+    <div><dt>Bounding max</dt><dd data-info-bbox-max></dd></div>
+  </dl>
+
+  <div class="model-info-units">
+    <label for={`${id}-unit-select`}>Display dimensions as</label>
+    <select id={`${id}-unit-select`} data-unit-select>
+      <option value="units">Model units</option>
+      <option value="mm">Millimeters (mm)</option>
+      <option value="cm">Centimeters (cm)</option>
+      <option value="in">Inches (in)</option>
+    </select>
+    <p class="model-info-unit-note">
+      STL files don't store real-world scale. Selecting mm, cm or inches assumes the file's numbers are
+      millimeters — the common convention for 3D-printing STLs — and converts the display only; it never changes
+      the model itself.
+    </p>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+---
+import { siteConfig } from "../../config/site";
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer section-shell">
+  <div>
+    <a class="brand footer-brand" href="/#top">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M7 9.5 16 4l9 5.5v13L16 28l-9-5.5v-13Z"></path><path d="m7 9.5 9 5.5 9-5.5M16 15v13"
+          ></path></svg>
+      </span>
+      <span>{siteConfig.productName}</span>
+    </a>
+    <p>Private browser-based tools for 3D files.</p>
+  </div>
+  <nav aria-label="Footer navigation">
+    <a href="/#popular-tools">Tools</a>
+    <a href="/#privacy">Privacy</a>
+    <a href="/#pro">Pro</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+  <div class="footer-meta">
+    <span>Files stay on your device.</span>
+    <span>© {year} {siteConfig.productName}</span>
+  </div>
+</footer>

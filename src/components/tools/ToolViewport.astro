@@ -1,0 +1,16 @@
+---
+interface Props {
+  id?: string;
+  description?: string;
+}
+
+const {
+  id = "tool-viewport",
+  description = "3D preview area. The rendered model is generated locally and never uploaded.",
+} = Astro.props;
+---
+
+<div class="tool-viewport" id={id} data-tool-viewport>
+  <p class="sr-only" id={`${id}-description`} data-tool-viewport-description>{description}</p>
+  <noscript>3D preview requires JavaScript to be enabled in your browser.</noscript>
+</div>

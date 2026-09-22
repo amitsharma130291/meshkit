@@ -1,0 +1,318 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("glb-to-stl")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "GLB to STL Converter", path: "/glb-to-stl/" },
+];
+
+const faqs = [
+  {
+    question: "Is my GLB file uploaded?",
+    answer:
+      "No. The file is parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself. MeshKit also never fetches an externally-referenced buffer, image or file from a GLB.",
+  },
+  {
+    question: "Are materials and textures preserved?",
+    answer:
+      "No. STL stores surface geometry only — no material, texture, UV or vertex-color information exists in the format. If your GLB includes any of these, MeshKit shows a warning before you download, but the STL itself never contains them.",
+  },
+  {
+    question: "What units does the downloaded STL use?",
+    answer:
+      "glTF/GLB defines model dimensions in metres. STL doesn't store units at all, so MeshKit writes millimetre-scaled coordinates (multiplying by exactly 1000, once) for common slicer compatibility.",
+  },
+  {
+    question: "Are animations, skins and morph targets applied?",
+    answer:
+      "No. This converter exports each mesh's undeformed base geometry only — animations, skeletal posing and morph-target shapes are not applied or baked in. A warning appears before download if your file includes any of these.",
+  },
+  {
+    question: "Why did my conversion fail?",
+    answer:
+      "Usually because the file is corrupted, references external data MeshKit can't load locally, uses Draco or meshopt compression MeshKit doesn't support, or doesn't contain any convertible triangle geometry — see \"Why a GLB may fail to convert\" below for the full list MeshKit checks for.",
+  },
+];
+---
+
+<ToolLayout
+  title="GLB to STL Converter — Convert GLB Files Online | MeshKit"
+  description="Convert GLB models to STL directly in your browser. Your file is processed locally and never uploaded."
+  path="/glb-to-stl/"
+  h1="GLB to STL Converter"
+  intro="Convert GLB models to STL directly in your browser. Geometry is processed locally, and your file is never uploaded."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit GLB to STL Converter",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Convert GLB (binary glTF 2.0) files to binary STL locally in the browser, resolving scenes, node transforms and mesh instancing, and scaling metre-based coordinates to millimetres. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your GLB stays on this device. MeshKit converts it to STL locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="glb-file-input"
+      label="Select a GLB file"
+      accept=".glb,model/gltf-binary,application/octet-stream"
+      helpText="Up to 150 MB. STL cannot store materials, textures, vertex colors, animations or skins — surface geometry only. Metre-based coordinates are scaled ×1000 to millimetres."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="glb-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="glb-viewport"
+      description="Preview of the converted STL geometry, shown with flat shading. Materials, textures, animations and skins from the source GLB are not shown, since STL cannot store or apply them."
+    />
+    <div class="viewer-controls" role="group" aria-label="Preview controls">
+      <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+      <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+      <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+        Wireframe
+      </button>
+    </div>
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <div class="conversion-warnings" data-conversion-warnings hidden></div>
+
+    <section class="model-info-panel" data-conversion-info hidden aria-label="Conversion information">
+      <dl class="model-info-grid">
+        <div><dt>File name</dt><dd data-info-filename></dd></div>
+        <div><dt>File size</dt><dd data-info-filesize></dd></div>
+        <div><dt>Scene</dt><dd data-info-scene></dd></div>
+        <div><dt>Meshes</dt><dd data-info-mesh-count></dd></div>
+        <div><dt>Primitives</dt><dd data-info-primitive-count></dd></div>
+        <div><dt>Node instances</dt><dd data-info-node-instances></dd></div>
+        <div><dt>Source vertices</dt><dd data-info-source-vertices></dd></div>
+        <div><dt>Output triangles</dt><dd data-info-triangles></dd></div>
+        <div><dt>Skipped degenerate triangles</dt><dd data-info-skipped-degenerate></dd></div>
+        <div><dt>Width (mm)</dt><dd data-info-width></dd></div>
+        <div><dt>Height (mm)</dt><dd data-info-height></dd></div>
+        <div><dt>Depth (mm)</dt><dd data-info-depth></dd></div>
+      </dl>
+      <p class="unitless-note">
+        glTF stores dimensions in metres. STL has no unit field, so MeshKit writes millimetre-scaled coordinates
+        (×1000) for common slicer compatibility.
+      </p>
+    </section>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="download" disabled>Download STL</button>
+      <button type="button" class="control-button" data-action="clear-file">Convert another file</button>
+    </div>
+
+    <ToolError id="glb-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to convert GLB to STL</h2>
+    <ol>
+      <li>Select a GLB file using the picker above.</li>
+      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
+    </ol>
+
+    <h2>What geometry is preserved</h2>
+    <p>
+      The converter resolves your GLB file's full scene graph: nodes, node transforms (translation, rotation, scale
+      or an explicit matrix), and mesh instancing (the same mesh placed by more than one node). Indexed and
+      unindexed primitives are supported, along with triangle, triangle-strip and triangle-fan topology. The output
+      is one flattened triangle mesh with correct geometry and consistent, outward-facing normals, including
+      through mirrored (reflected) node transforms.
+    </p>
+
+    <h2>What happens to materials and textures</h2>
+    <p>
+      STL stores surface geometry only. Materials, textures, UV coordinates and vertex colors are not included in
+      the download — this is a limitation of the STL format itself, not something MeshKit chooses to drop. MeshKit
+      never fetches an externally-referenced buffer or image; only a GLB's own embedded binary data is read. If your
+      file includes any of these, a warning appears before you download.
+    </p>
+
+    <h2>How scenes and node transforms are handled</h2>
+    <p>
+      MeshKit converts the GLB's default scene (or scene zero when none is specified). Every node's transform is
+      composed with its parent's, all the way down the scene graph, so nested and mirrored placements convert
+      correctly. Point and line primitives can't be represented in STL and are skipped with a warning; animations,
+      skins and morph targets are not applied — only each mesh's undeformed base geometry converts.
+    </p>
+
+    <h2>How metres are converted to millimetres</h2>
+    <p>
+      glTF defines model dimensions in metres. STL does not store units, so MeshKit writes millimetre-scaled
+      coordinates for common slicer compatibility — applying a factor of exactly ×1000, once, after all node
+      transforms are resolved. The source axis orientation is preserved; nothing is rotated.
+    </p>
+
+    <h2>What happens to animations and skins</h2>
+    <p>
+      Animations, skeletal skins and morph targets are not applied or baked into the output. MeshKit converts each
+      mesh's undeformed base geometry only — a warning appears before download whenever your file includes any of
+      these, so the exported shape is never mistaken for a posed or animated result.
+    </p>
+
+    <h2>GLB versus STL</h2>
+    <p>
+      GLB (binary glTF 2.0) is a compact format that can describe full scenes: node hierarchies, materials,
+      textures, animations and skins alongside the mesh data. STL stores only raw triangle geometry, with no units
+      and no metadata, but remains the most widely supported format across slicers and CAD tools — which is why
+      converting to it is useful even though it's the simpler format.
+    </p>
+
+    <h2>Why a GLB may fail to convert</h2>
+    <ul>
+      <li>The file isn't a valid GLB container, or its internal chunk data is corrupted or truncated.</li>
+      <li>The file references external buffer or image data instead of embedding it — MeshKit never fetches external files.</li>
+      <li>The file uses Draco or meshopt mesh compression, which MeshKit doesn't support yet.</li>
+      <li>The file requires a glTF extension MeshKit doesn't recognize.</li>
+      <li>No mesh in the file has a valid <code>POSITION</code> attribute, or the scene contains no triangle geometry at all.</li>
+      <li>The file is more complex (nodes, triangles, scene depth) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side conversion route in MeshKit. Your browser reads the GLB file, parses it, and
+      builds the STL file, all on your device. You can verify this yourself: open your browser's developer tools,
+      watch the network tab, and convert a file. No request containing your file — or any external resource it
+      references — will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conversion-warnings {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6e5;
+    color: #7a5200;
+    font-size: 0.85rem;
+  }
+  .conversion-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+  .unitless-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>

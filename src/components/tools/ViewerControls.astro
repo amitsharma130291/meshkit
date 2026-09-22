@@ -1,0 +1,43 @@
+---
+/**
+ * Presentation only. Every control is a real, labelled, keyboard-usable
+ * <button>/<select> — no icon-only or hover-only controls. The client
+ * script wires `data-action` handlers and keeps `aria-pressed` in sync for
+ * the wireframe toggle.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-viewer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls" id={id} role="group" aria-label="Viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+    Wireframe
+  </button>
+
+  <label class="control-field">
+    <span>Model color</span>
+    <select data-action="model-color">
+      <option value="#c7c2de">Neutral</option>
+      <option value="#6d42f5">Violet</option>
+      <option value="#24b8d8">Cyan</option>
+      <option value="#ed4b93">Pink</option>
+    </select>
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

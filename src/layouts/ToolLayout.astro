@@ -1,0 +1,82 @@
+---
+/**
+ * Shared shell for future viewer/converter/diagnostic/repair/optimizer
+ * pages. Every workspace area is a named slot rather than a fixed prop so
+ * a tool that has no "results" panel, or that needs two file inputs, can
+ * simply omit or repeat a slot instead of fighting the layout.
+ */
+import BaseLayout from "./BaseLayout.astro";
+import SiteHeader from "../components/site/SiteHeader.astro";
+import SiteFooter from "../components/site/SiteFooter.astro";
+import type { BreadcrumbItem, FaqItem, WebApplicationInfo } from "../components/seo/SEOHead.astro";
+import "../styles/tool.css";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  h1: string;
+  intro?: string;
+  noindex?: boolean;
+  breadcrumbs?: BreadcrumbItem[];
+  faqs?: FaqItem[];
+  webApplication?: WebApplicationInfo;
+}
+
+const { title, description, path, h1, intro, noindex, breadcrumbs, faqs, webApplication } = Astro.props;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path={path}
+  noindex={noindex}
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={webApplication}
+>
+  <SiteHeader />
+
+  <main id="main" class="tool-page">
+    {breadcrumbs && breadcrumbs.length > 0 && (
+      <nav class="tool-breadcrumbs" aria-label="Breadcrumb">
+        {breadcrumbs.map((crumb, index) => (
+          <>
+            {index > 0 && <span aria-hidden="true"> / </span>}
+            {index === breadcrumbs.length - 1 ? (
+              <span aria-current="page">{crumb.name}</span>
+            ) : (
+              <a href={crumb.path}>{crumb.name}</a>
+            )}
+          </>
+        ))}
+      </nav>
+    )}
+
+    <header class="tool-intro">
+      <h1>{h1}</h1>
+      {intro && <p class="tool-intro-copy">{intro}</p>}
+      <slot name="privacy-notice" />
+    </header>
+
+    <section class="tool-workspace" aria-label="Tool workspace">
+      <slot name="file-input" />
+      <slot name="status" />
+      <slot name="workspace" />
+      <slot name="results" />
+    </section>
+
+    <slot name="pro-message" />
+
+    <section class="tool-seo-content">
+      <slot name="seo-content" />
+      <slot name="limitations" />
+    </section>
+
+    <slot name="faqs" />
+    <slot name="related-tools" />
+    <slot />
+  </main>
+
+  <SiteFooter />
+</BaseLayout>

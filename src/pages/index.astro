@@ -1,0 +1,209 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/site/SiteHeader.astro";
+import SiteFooter from "../components/site/SiteFooter.astro";
+import { siteConfig } from "../config/site";
+
+const tools = [
+  { icon: "view", title: "STL Viewer", copy: "Inspect geometry, dimensions and triangle count.", tag: "Most popular", tone: "cyan" },
+  { icon: "swap", title: "3MF to STL", copy: "Convert clean geometry without uploading your model.", tag: "Fast convert", tone: "peach" },
+  { icon: "repair", title: "STL Repair", copy: "Find holes, bad normals and non-manifold edges.", tag: "Print-ready", tone: "violet" },
+  { icon: "layers", title: "G-code Viewer", copy: "Preview layers, toolpaths and estimated moves.", tag: "Visual check", tone: "pink" }
+];
+
+const faqs = [
+  ["Are my 3D files uploaded?", "No. Processing happens locally in your browser. Your files never need to leave your computer."],
+  ["Do I need an account?", "No account, email address or sign-in is required to use the free single-file tools."],
+  ["What is included in Pro?", "Pro is designed for repeat work: batch folders, reusable presets, larger queues, offline use and an ad-free experience."],
+  ["Is Pro a subscription?", "No. The planned price is $39 once for lifetime access to the Pro workflow."],
+  ["Which formats are supported?", "The focused launch set is STL, 3MF, OBJ, GLB and G-code, with more formats added only when they can be handled reliably in-browser."]
+];
+---
+
+<BaseLayout
+  title={siteConfig.defaultTitle}
+  description={siteConfig.defaultDescription}
+  path="/"
+  ogTitle="MeshKit — Private browser-based 3D file tools"
+  ogDescription="View, convert and repair STL, 3MF, OBJ, GLB and G-code files. Your files never leave your device."
+  webApplication={{
+    name: siteConfig.productName,
+    applicationCategory: "UtilitiesApplication",
+    description: "Private browser-based tools to view, convert, repair and optimize 3D files.",
+    offers: [
+      { price: "0", priceCurrency: "USD", category: "Free browser tools" },
+      { price: String(siteConfig.proPriceUsd), priceCurrency: "USD", category: "Lifetime Pro license" },
+    ],
+  }}
+>
+  <SiteHeader />
+
+  <main id="main">
+    <section id="top" class="hero section-shell">
+      <div class="hero-copy" data-reveal>
+        <div class="eyebrow"><span>Private browser tools</span><span class="eyebrow-line"></span></div>
+        <h1>Your 3D files,<br /><span>fixed in your browser.</span></h1>
+        <p class="hero-lede">Open, inspect, convert and repair STL, 3MF, OBJ, GLB and G-code files—without uploading a single byte.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#popular-tools">Choose a free tool <span>→</span></a>
+          <a class="button button-secondary" href="#privacy"><span class="lock-icon" aria-hidden="true">⌁</span> See how privacy works</a>
+        </div>
+        <div class="hero-trust" aria-label="Product benefits">
+          <span><b>✓</b> No signup</span>
+          <span><b>✓</b> No upload</span>
+          <span><b>✓</b> Full-quality output</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" data-reveal>
+        <div class="visual-aura visual-aura-one"></div>
+        <div class="visual-aura visual-aura-two"></div>
+        <div class="hero-art-card">
+          <div class="art-toolbar">
+            <div class="traffic-lights"><i></i><i></i><i></i></div>
+            <span>bracket-final.stl</span>
+            <span class="local-badge">● Local</span>
+          </div>
+          <img src="/mesh-hero.png" width="1280" height="1280" alt="Colorful polygonal 3D mesh model with visible facets and repair nodes" />
+          <div class="model-floor"></div>
+          <div class="model-status">
+            <div><span>Mesh health</span><strong>98%</strong></div>
+            <div class="status-meter"><i></i></div>
+            <small>18 issues repaired locally</small>
+          </div>
+        </div>
+        <div class="floating-card privacy-card"><span class="shield">◇</span><div><strong>Never uploaded</strong><small>Processed on this device</small></div></div>
+      </div>
+    </section>
+
+    <section class="proof-bar" aria-label="Product guarantees">
+      <div><strong>100%</strong><span>browser-based</span></div>
+      <i></i>
+      <div><strong>0</strong><span>files uploaded</span></div>
+      <i></i>
+      <div><strong>7+</strong><span>focused file tools</span></div>
+      <i></i>
+      <div><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once for Pro</span></div>
+    </section>
+
+    <section id="popular-tools" class="tools-section section-shell section-space">
+      <div class="section-heading" data-reveal>
+        <div><span class="kicker">Start with the exact problem</span><h2>The right tool, without the detour.</h2></div>
+        <p>Every free tool opens immediately, solves one clear job and keeps your model on your device.</p>
+      </div>
+      <div class="tool-grid">
+        {tools.map((tool, index) => (
+          <article class={`tool-card tone-${tool.tone}`} data-reveal style={`--delay:${index * 70}ms`}>
+            <div class="tool-card-top"><span class={`tool-icon icon-${tool.icon}`} aria-hidden="true"><i></i><i></i><i></i></span><span class="tool-tag">{tool.tag}</span></div>
+            <div><h3>{tool.title}</h3><p>{tool.copy}</p></div>
+            <a href="#conversion-path" aria-label={`Learn how ${tool.title} fits the workflow`}>See the workflow <span>↗</span></a>
+          </article>
+        ))}
+      </div>
+      <p class="tools-note">Also planned: OBJ to STL · GLB to STL · STL to OBJ · FBX Viewer · PLY Viewer</p>
+    </section>
+
+    <section id="privacy" class="privacy-section section-space">
+      <div class="privacy-inner section-shell">
+        <div class="privacy-copy" data-reveal>
+          <span class="kicker kicker-light">Private by architecture</span>
+          <h2>Your design stays<br />your design.</h2>
+          <p>Most converters send your model to a remote server. MeshKit processes it with JavaScript, WebAssembly and your own device instead.</p>
+          <ul class="privacy-list">
+            <li><span>01</span><div><strong>Select a file</strong><small>Your browser reads it directly from your device.</small></div></li>
+            <li><span>02</span><div><strong>Process locally</strong><small>Viewing, conversion and repair happen on-device.</small></div></li>
+            <li><span>03</span><div><strong>Save the result</strong><small>Your browser creates the download. We never receive the model.</small></div></li>
+          </ul>
+        </div>
+        <div class="privacy-diagram" data-reveal aria-label="Local processing architecture diagram">
+          <div class="diagram-card source-card"><span class="diagram-icon">3D</span><strong>Your file</strong><small>On your device</small></div>
+          <div class="diagram-path"><span></span><b>Never leaves</b><span></span></div>
+          <div class="browser-ring"><div><span class="diagram-icon browser-icon">⌘</span><strong>Your browser</strong><small>Processes locally</small></div></div>
+          <div class="diagram-path reverse"><span></span><b>Download</b><span></span></div>
+          <div class="diagram-card result-card"><span class="diagram-icon">✓</span><strong>Finished file</strong><small>Saved by you</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="conversion-path" class="path-section section-shell section-space">
+      <div class="path-header" data-reveal>
+        <span class="kicker">The conversion path</span>
+        <h2>Useful for one file.<br />Powerful when it becomes forty.</h2>
+      </div>
+      <div class="path-grid">
+        <article class="path-card free-path" data-reveal>
+          <div class="path-label">Free browser tools</div>
+          <h3>Finish the file in front of you.</h3>
+          <p>Use the complete single-file workflow without creating an account or sacrificing output quality.</p>
+          <ul><li>Unlimited single-file use</li><li>Private local processing</li><li>Full-quality downloads</li></ul>
+          <a class="text-link" href="#popular-tools">Explore free tools <span>→</span></a>
+        </article>
+        <div class="path-arrow" aria-hidden="true"><span>When one file becomes a folder</span><b>→</b></div>
+        <article id="pro" class="path-card pro-path" data-reveal>
+          <div class="path-label">{siteConfig.productName} Pro</div>
+          <h3>Give the repetitive work back.</h3>
+          <p>Batch the folder, reuse your settings and move on to the part of the job that needs you.</p>
+          <ul><li>Batch entire folders</li><li>Reusable repair presets</li><li>Large-file and offline modes</li><li>No ads</li></ul>
+          <div class="price-line"><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once<br />yours forever</span></div>
+          <a class="button button-pro" href="#final-cta">See the Pro promise <span>→</span></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="context-section section-space">
+      <div class="context-shell section-shell" data-reveal>
+        <div class="success-panel">
+          <span class="success-check">✓</span>
+          <div><small>Conversion complete</small><strong>product-shell.stl</strong><span>18.4 MB · ready to download</span></div>
+          <span class="download-icon">↓</span>
+        </div>
+        <div class="context-copy">
+          <span class="kicker kicker-warm">The sales moment that makes sense</span>
+          <h2>&ldquo;Need to convert 37 more?&rdquo;</h2>
+          <p>Pro appears after the free tool has already solved the first problem—exactly when batch processing becomes valuable.</p>
+          <div class="context-points"><span><b>✓</b> No crippled free tier</span><span><b>✓</b> No subscription anxiety</span><span><b>✓</b> Clear time-saving value</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq-section section-shell section-space">
+      <div class="faq-heading" data-reveal><span class="kicker">Before you open a file</span><h2>Clear answers.<br />No fine print.</h2><p>Privacy and pricing should be obvious before you trust a tool with important work.</p></div>
+      <div class="faq-list" data-reveal>
+        {faqs.map(([question, answer], index) => (
+          <details open={index === 0}>
+            <summary>{question}<span>+</span></summary>
+            <p>{answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <section id="final-cta" class="final-cta section-shell section-space" data-reveal>
+      <div class="final-aura"></div>
+      <div class="final-copy"><span class="kicker kicker-light">Your file. Your browser. Your call.</span><h2>Start with the problem<br />you need solved today.</h2><p>No signup. No upload. No waiting.</p><a class="button button-light" href="#popular-tools">Choose a free tool <span>→</span></a></div>
+      <img src="/mesh-hero.png" width="1280" height="1280" alt="" aria-hidden="true" loading="lazy" />
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  const revealItems = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 },
+    );
+    revealItems.forEach((item) => observer.observe(item));
+  } else {
+    revealItems.forEach((item) => item.classList.add("is-visible"));
+  }
+</script>

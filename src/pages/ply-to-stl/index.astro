@@ -1,0 +1,331 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("ply-to-stl")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "PLY to STL Converter", path: "/ply-to-stl/" },
+];
+
+const faqs = [
+  {
+    question: "Is my PLY file uploaded?",
+    answer:
+      "No. The file is read, parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself.",
+  },
+  {
+    question: "Does this work with PLY files from a 3D scanner?",
+    answer:
+      "Yes, for scans that already include face (triangle) data. MeshKit reads ASCII and both binary (little- and big-endian) PLY encodings, and follows the file's own declared property order rather than assuming a fixed layout — so scanner output with extra fields (confidence, intensity, per-vertex color) converts correctly. A PLY file with points only, and no faces, can't be converted to STL — see below.",
+  },
+  {
+    question: "Are vertex colors and normals preserved?",
+    answer:
+      "No. STL stores surface geometry only — no color or per-vertex normal information exists in the format. If your PLY includes either, MeshKit shows a warning before you download, but the STL itself never contains them.",
+  },
+  {
+    question: "What happens to a PLY file with points but no faces?",
+    answer:
+      "MeshKit rejects it with a clear error rather than guessing at a surface. STL can only represent triangles, and inventing a surface from an unordered point cloud isn't something a format converter should do silently — that's a job for dedicated surface-reconstruction software, not this tool.",
+  },
+  {
+    question: "Why did my conversion fail?",
+    answer:
+      "Usually because the file's header is malformed, a face references a vertex that doesn't exist, a face has an invalid or self-intersecting shape, or the file only contains points and no usable face data — see \"Why a PLY may fail to convert\" below for the full list MeshKit checks for.",
+  },
+];
+---
+
+<ToolLayout
+  title="PLY to STL Converter — Convert PLY Files Online | MeshKit"
+  description="Convert PLY (Polygon File Format) models to STL directly in your browser. Your file is processed locally and never uploaded."
+  path="/ply-to-stl/"
+  h1="PLY to STL Converter"
+  intro="Convert PLY (Polygon File Format) models to STL directly in your browser. Geometry is processed locally, and your file is never uploaded."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshKit PLY to STL Converter",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Convert PLY (Polygon File Format) files — ASCII or binary, little- or big-endian — to binary STL locally in the browser, triangulating polygon faces and recalculating geometric normals. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your PLY file stays on this device. MeshKit converts it to STL locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="ply-file-input"
+      label="Select a PLY file"
+      accept=".ply,application/octet-stream"
+      helpText="Up to 150 MB. Supports ASCII and binary (little- or big-endian) PLY. STL cannot store vertex colors or normals — surface geometry only. Coordinates are kept exactly as written, since PLY has no unit system."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="ply-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="ply-viewport"
+      description="Preview of the converted STL geometry, shown with flat shading. Vertex colors and normals from the source PLY are not shown, since STL cannot store them."
+    />
+    <div class="viewer-controls" role="group" aria-label="Preview controls">
+      <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+      <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+      <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">
+        Wireframe
+      </button>
+    </div>
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <div class="conversion-warnings" data-conversion-warnings hidden></div>
+
+    <section class="model-info-panel" data-conversion-info hidden aria-label="Conversion information">
+      <dl class="model-info-grid">
+        <div><dt>File name</dt><dd data-info-filename></dd></div>
+        <div><dt>File size</dt><dd data-info-filesize></dd></div>
+        <div><dt>Encoding</dt><dd data-info-format></dd></div>
+        <div><dt>Source vertices</dt><dd data-info-source-vertices></dd></div>
+        <div><dt>Source faces</dt><dd data-info-source-faces></dd></div>
+        <div><dt>Output triangles</dt><dd data-info-triangles></dd></div>
+        <div><dt>Skipped unknown fields</dt><dd data-info-skipped-unknown></dd></div>
+        <div><dt>Width (model units)</dt><dd data-info-width></dd></div>
+        <div><dt>Height (model units)</dt><dd data-info-height></dd></div>
+        <div><dt>Depth (model units)</dt><dd data-info-depth></dd></div>
+      </dl>
+      <p class="unitless-note">
+        PLY and STL don't store a measurement unit. These numbers are your file's coordinates, unchanged.
+      </p>
+    </section>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="download" disabled>Download STL</button>
+      <button type="button" class="control-button" data-action="clear-file">Convert another file</button>
+    </div>
+
+    <ToolError id="ply-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to convert PLY to STL</h2>
+    <ol>
+      <li>Select a PLY file using the picker above.</li>
+      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
+    </ol>
+
+    <h2>What geometry is preserved</h2>
+    <p>
+      The converter reads your PLY file's declared header schema — its own list of elements and properties, in
+      whatever order they appear — and extracts vertex <code>x</code>/<code>y</code>/<code>z</code> coordinates and
+      face <code>vertex_indices</code> (or the <code>vertex_index</code> alias) regardless of where those properties
+      fall among any others in the file. Triangle faces are used as-is; larger polygon faces are triangulated the
+      same way MeshKit's OBJ converter triangulates polygon faces. The output is one flattened triangle mesh with
+      correct geometry and consistent, outward-facing normals.
+    </p>
+
+    <h2>Which PLY encodings are supported</h2>
+    <p>
+      All three standard PLY 1.0 encodings: <code>ascii</code>, <code>binary_little_endian</code> and
+      <code>binary_big_endian</code>. The file's own header declares which one it uses, and every one of the 8
+      standard PLY scalar types is supported — both the short Stanford names (<code>uchar</code>, <code>short</code>,
+      <code>float</code>, <code>double</code>, and so on) and their explicit-width aliases (<code>uint8</code>,
+      <code>int16</code>, <code>float32</code>, <code>float64</code>).
+    </p>
+
+    <h2>What happens to vertex colors and normals</h2>
+    <p>
+      STL stores surface geometry only. Vertex colors, per-vertex normals and texture coordinates are not included
+      in the download — this is a limitation of the STL format itself, not something MeshKit chooses to drop.
+      Geometric face normals are always recalculated from the final triangle positions rather than trusting a PLY
+      file's own per-vertex normals, since STL can't represent smooth shading anyway. If your file includes any of
+      these, a warning appears before you download.
+    </p>
+
+    <h2>What happens to unrecognized elements and properties</h2>
+    <p>
+      A PLY file can declare elements and properties beyond <code>vertex</code> and <code>face</code> — scanner
+      metadata, per-vertex confidence or intensity values, edge lists, application-specific data. MeshKit reads past
+      these safely (so the rest of the file still parses correctly) without interpreting them, and shows a single
+      summary warning rather than one warning per skipped field.
+    </p>
+
+    <h2>Why a point cloud (no faces) can't convert</h2>
+    <p>
+      Some PLY files contain only a <code>vertex</code> element — a raw point cloud with no <code>face</code>
+      element at all, common straight off a 3D scanner before surface reconstruction. MeshKit rejects these with a
+      clear error instead of guessing at a surface: turning scattered points into a watertight mesh is a
+      surface-reconstruction problem, not a format-conversion one, and doing it silently would produce geometry that
+      only coincidentally resembles your object.
+    </p>
+
+    <h2>Double-precision coordinates</h2>
+    <p>
+      STL only stores single-precision (float32) coordinates. If your PLY file declares its <code>x</code>/<code
+      >y</code>/<code>z</code> vertex properties as <code>double</code> (float64), MeshKit narrows them to float32
+      for the STL output and shows a warning — this is an unavoidable precision loss inherent to the STL format, not
+      something MeshKit could preserve by converting differently.
+    </p>
+
+    <h2>PLY versus STL</h2>
+    <p>
+      PLY (the Polygon File Format, sometimes called the Stanford Triangle Format) is a flexible, self-describing
+      format that can carry an arbitrary set of per-vertex and per-face properties — colors, normals, confidence
+      values, and more — in either ASCII or binary form. STL stores only raw triangle geometry, with no units and no
+      metadata, but remains the most widely supported format across slicers and CAD tools — which is why converting
+      to it is useful even though it's the simpler format.
+    </p>
+
+    <h2>Why a PLY may fail to convert</h2>
+    <ul>
+      <li>The file's header is malformed, missing a required <code>format</code> line, or never reaches <code>end_header</code>.</li>
+      <li>The file declares an unrecognized property type, or a property before any element.</li>
+      <li>The file's <code>vertex</code> element is missing an <code>x</code>, <code>y</code> or <code>z</code> property.</li>
+      <li>The file has no <code>face</code> element, or its face element has no <code>vertex_indices</code>/<code>vertex_index</code> property MeshKit can use — including a point-cloud-only file.</li>
+      <li>A face references a vertex that doesn't exist, or has fewer than three (usable) vertices.</li>
+      <li>A face's edges cross themselves, or the face is severely non-planar.</li>
+      <li>The file's declared data doesn't match its actual size — a truncated or corrupted ASCII or binary body.</li>
+      <li>The file is more complex (vertices, triangles, or vertices on a single face) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side conversion route in MeshKit. Your browser reads the PLY file, parses it, and
+      builds the STL file, all on your device. You can verify this yourself: open your browser's developer tools,
+      watch the network tab, and convert a file. No request containing your file will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conversion-warnings {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6e5;
+    color: #7a5200;
+    font-size: 0.85rem;
+  }
+  .conversion-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+  .unitless-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>

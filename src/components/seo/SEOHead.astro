@@ -1,0 +1,109 @@
+---
+import StructuredData from "./StructuredData.astro";
+import { siteConfig } from "../../config/site";
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface WebApplicationInfo {
+  name: string;
+  applicationCategory: string;
+  description?: string;
+  offers: { price: string; priceCurrency: string; category: string }[];
+}
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path relative to the site root, e.g. "/" or "/foundation-preview/". */
+  path: string;
+  /** Override when Open Graph copy should differ from the page title/description. */
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: string;
+  noindex?: boolean;
+  socialImage?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  faqs?: FaqItem[];
+  webApplication?: WebApplicationInfo;
+}
+
+const {
+  title,
+  description,
+  path,
+  ogTitle = title,
+  ogDescription = description,
+  ogType = siteConfig.social.ogType,
+  noindex = false,
+  socialImage,
+  breadcrumbs,
+  faqs,
+  webApplication,
+} = Astro.props;
+
+const canonicalUrl = new URL(path, siteConfig.siteUrl).toString();
+
+const structuredData: Record<string, unknown>[] = [];
+
+if (breadcrumbs && breadcrumbs.length > 0) {
+  structuredData.push({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.path, siteConfig.siteUrl).toString(),
+    })),
+  });
+}
+
+if (faqs && faqs.length > 0) {
+  structuredData.push({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  });
+}
+
+if (webApplication) {
+  structuredData.push({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: webApplication.name,
+    applicationCategory: webApplication.applicationCategory,
+    operatingSystem: "Any modern web browser",
+    ...(webApplication.description ? { description: webApplication.description } : {}),
+    offers: webApplication.offers.map((offer) => ({ "@type": "Offer", ...offer })),
+  });
+}
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDescription} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonicalUrl} />
+{socialImage && <meta property="og:image" content={new URL(socialImage, siteConfig.siteUrl).toString()} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={ogTitle} />
+<meta name="twitter:description" content={ogDescription} />
+
+{structuredData.map((entry) => <StructuredData data={entry} />)}

@@ -1,0 +1,109 @@
+---
+/**
+ * Internal technical proof, not a public tool. noindex/nofollow (enforced
+ * via ToolLayout -> BaseLayout -> SEOHead), excluded from the sitemap via
+ * astro.config.mjs's sitemap `filter`, and never linked from the public
+ * homepage. See docs/ARCHITECTURE.md for what this page is proving.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import { siteConfig } from "../../config/site";
+
+const acceptAttr = siteConfig.launchFormats.map((ext) => `.${ext}`).join(",");
+---
+
+<ToolLayout
+  title="Foundation Preview (internal) | MeshKit"
+  description="Internal technical test of MeshKit's local file, worker, WebAssembly and Three.js foundation. Not a public tool."
+  path="/foundation-preview/"
+  h1="Foundation preview"
+  intro="This is an internal technical test, not a real viewer or converter. It exists to prove the local file intake, Web Worker protocol, WebAssembly loader and Three.js viewport all work together before any real tool is built on top of them."
+  noindex={true}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Foundation test only. The selected file remains on this device and is discarded when you reset or leave the page."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="foundation-file-input"
+      label="Select any file to test the local pipeline"
+      accept={acceptAttr}
+      helpText={`Up to 200 MB, ${siteConfig.launchFormats.join(", ").toUpperCase()}. This does not parse or render your model — it only proves the file's bytes can reach a local worker without leaving your device.`}
+    />
+  </div>
+
+  <div slot="status">
+    <ToolStatus id="foundation-status" />
+  </div>
+
+  <div slot="workspace" class="foundation-workspace">
+    <ToolViewport
+      id="foundation-viewport"
+      description="A rotating wireframe icosahedron, proving the local Three.js viewport initializes, renders and disposes correctly. It is not a preview of your selected file."
+    />
+
+    <ul class="foundation-diagnostics" data-diagnostics aria-label="Foundation diagnostics">
+      <li data-diagnostic="capabilities">Browser capabilities: checking…</li>
+      <li data-diagnostic="worker">Worker: not started</li>
+      <li data-diagnostic="wasm">WebAssembly: not started</li>
+    </ul>
+
+    <div class="tool-actions">
+      <button type="button" data-variant="primary" data-action="run" disabled>Run foundation test</button>
+      <button type="button" data-action="cancel" disabled>Cancel</button>
+      <button type="button" data-action="reset">Reset</button>
+    </div>
+
+    <ToolError id="foundation-error" />
+  </div>
+
+  <div slot="results">
+    <dl class="tool-result-list" data-results hidden>
+      <div><dt>File name</dt><dd data-result-name></dd></div>
+      <div><dt>Byte length</dt><dd data-result-bytes></dd></div>
+      <div><dt>Foundation checksum</dt><dd data-result-checksum></dd></div>
+    </dl>
+  </div>
+
+  <div slot="seo-content">
+    <h2>What this page proves</h2>
+    <ol>
+      <li>Three.js can initialize and render a simple local primitive.</li>
+      <li>The Web Worker can initialize.</li>
+      <li>A locally selected file can be validated.</li>
+      <li>Its bytes can be transferred to the worker.</li>
+      <li>The worker can return byte length and a foundation checksum.</li>
+      <li>WebAssembly can initialize successfully.</li>
+      <li>Cancellation and reset work.</li>
+      <li>All resources can be disposed.</li>
+      <li>No file data is uploaded — open your browser's network tab to confirm.</li>
+    </ol>
+  </div>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .foundation-workspace {
+    display: grid;
+    gap: 16px;
+  }
+  .foundation-diagnostics {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+</style>
