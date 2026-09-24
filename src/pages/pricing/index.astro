@@ -1,0 +1,189 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/site/SiteHeader.astro";
+import SiteFooter from "../../components/site/SiteFooter.astro";
+import { siteConfig } from "../../config/site";
+---
+
+<BaseLayout
+  title={`Pricing — ${siteConfig.productName} Pro`}
+  description={`Upgrade to ${siteConfig.productName} Pro for $${siteConfig.proPriceUsd} once: batch entire folders, reusable presets, and an ad-free workflow.`}
+  path="/pricing/"
+>
+  <SiteHeader />
+
+  <main id="main">
+    <section class="pricing-hero section-shell">
+      <div id="payment-failed-banner" class="payment-banner payment-banner-error" role="alert" hidden>
+        <strong>Your payment didn't go through.</strong>
+        <span>No charge was made. You can try again below, or use "Forgot your license key?" if you already purchased Pro under a different session.</span>
+      </div>
+
+      <div class="pricing-heading">
+        <span class="kicker">{siteConfig.productName} Pro</span>
+        <h1>One price. Every batch tool. Forever.</h1>
+        <p>Free tools stay free, one file at a time. Pro unlocks batch folders, reusable presets and an ad-free workflow — a single ${siteConfig.proPriceUsd} payment, no subscription.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <article class="pricing-card pricing-card-buy">
+          <div class="price-line"><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once<br />yours forever</span></div>
+          <ul>
+            <li>Batch entire folders</li>
+            <li>Reusable repair &amp; optimization presets</li>
+            <li>Large-file and offline-friendly queues</li>
+            <li>No ads</li>
+          </ul>
+          <form id="checkout-form" class="pricing-form">
+            <label for="checkout-email">Email address</label>
+            <input id="checkout-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+            <button type="submit" class="button button-pro" data-checkout-submit>
+              <span data-label>Buy Pro — ${siteConfig.proPriceUsd}</span>
+              <span data-spinner hidden aria-hidden="true">…</span>
+            </button>
+            <p class="form-error" data-checkout-error role="alert" hidden></p>
+          </form>
+        </article>
+
+        <article id="activate" class="pricing-card">
+          <h2>Have a license key?</h2>
+          <p>Enter it below to unlock Pro on this device.</p>
+          <form id="activate-form" class="pricing-form">
+            <label for="activate-key">License key</label>
+            <input id="activate-key" name="licenseKey" type="text" required placeholder="PRO-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" />
+            <button type="submit" class="button button-secondary" data-activate-submit>
+              <span data-label>Activate</span>
+              <span data-spinner hidden aria-hidden="true">…</span>
+            </button>
+            <p class="form-error" data-activate-error role="alert" hidden></p>
+            <p class="form-success" data-activate-success role="status" hidden></p>
+          </form>
+
+          <hr />
+
+          <h3>Forgot your license key?</h3>
+          <p>We'll email it to the address you purchased with.</p>
+          <form id="forgot-form" class="pricing-form">
+            <label for="forgot-email">Email address</label>
+            <input id="forgot-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
+            <button type="submit" class="button button-secondary" data-forgot-submit>
+              <span data-label>Email my license key</span>
+              <span data-spinner hidden aria-hidden="true">…</span>
+            </button>
+            <p class="form-success" data-forgot-success role="status" hidden></p>
+          </form>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .pricing-hero {
+    padding-top: 48px;
+    padding-bottom: 90px;
+  }
+  .payment-banner {
+    margin-bottom: 28px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    display: grid;
+    gap: 4px;
+  }
+  .payment-banner[hidden] {
+    display: none;
+  }
+  .payment-banner-error {
+    background: #fdeceb;
+    border: 1px solid #f3b9b4;
+    color: #7a2318;
+  }
+  .pricing-heading {
+    max-width: 640px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+  .pricing-heading h1 {
+    margin: 14px 0;
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .pricing-card {
+    padding: 32px;
+    border-radius: 24px;
+    border: 1px solid var(--line);
+    background: white;
+    box-shadow: 0 20px 50px rgba(37, 27, 68, 0.06);
+  }
+  .pricing-card-buy {
+    background: linear-gradient(145deg, #1a172d 10%, #2d2053 65%, #49224f);
+    color: white;
+    border: none;
+  }
+  .pricing-card-buy ul {
+    margin: 20px 0 26px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+    color: #d8d2ea;
+  }
+  .pricing-card-buy li::before {
+    content: "✓";
+    margin-right: 8px;
+    color: #77e5bf;
+    font-weight: 800;
+  }
+  .pricing-card h2 {
+    margin-top: 0;
+  }
+  .pricing-card hr {
+    margin: 28px 0;
+    border: none;
+    border-top: 1px solid var(--line);
+  }
+  .pricing-form {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .pricing-form label {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .pricing-form input {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 0.95rem;
+  }
+  .pricing-form button {
+    margin-top: 4px;
+    justify-self: start;
+  }
+  .form-error {
+    color: #c0392b;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .form-success {
+    color: #159d7b;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  @media (max-width: 860px) {
+    .pricing-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

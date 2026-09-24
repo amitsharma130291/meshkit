@@ -28,8 +28,9 @@ import {
 import { checkUniqueness, checkSitemap, checkRobotsTxt, checkLinkGraph } from "./seo-audit/sitewide-checks.mjs";
 import { scanForStaleClaims } from "./seo-audit/content-accuracy.mjs";
 import { resolveProductionSiteUrl } from "./seo-audit/site-url-resolver.mjs";
+import { resolveDistDir } from "./dist-dir.mjs";
 
-const distDir = path.resolve(process.cwd(), "dist");
+const distDir = resolveDistDir();
 
 function htmlFileForPathname(pathname) {
   if (pathname === "/") return path.join(distDir, "index.html");

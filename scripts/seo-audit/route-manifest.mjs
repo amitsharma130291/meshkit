@@ -199,6 +199,24 @@ export const routeManifest = [
     toolId: null,
     primaryIntent: "internal architecture proof, never a public tool",
   },
+  {
+    pathname: "/pricing/",
+    classification: "indexable-primary",
+    toolId: null,
+    primaryIntent: "buy Pro, activate a license key, or recover a forgotten license key",
+  },
+  {
+    pathname: "/pro/welcome/",
+    classification: "noindex-utility",
+    toolId: null,
+    primaryIntent: "post-checkout landing page (Dodo Payments return_url) that activates the license and hands off to the app — a real page, but never a search destination",
+  },
+  {
+    pathname: "/contact/",
+    classification: "indexable-primary",
+    toolId: null,
+    primaryIntent: "send a message to the team — questions, feedback, or support requests",
+  },
 ];
 
 export function getRouteEntry(pathname) {

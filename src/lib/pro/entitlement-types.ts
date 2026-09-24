@@ -2,7 +2,7 @@ import { freezeCapabilitySet, type ProCapability } from "./capabilities";
 
 export type EntitlementStatus = "free" | "pro" | "unknown" | "invalid" | "expired" | "unavailable";
 
-export type EntitlementSource = "production-default" | "test";
+export type EntitlementSource = "production-default" | "license-key" | "test";
 
 export interface EntitlementSnapshot {
   status: EntitlementStatus;

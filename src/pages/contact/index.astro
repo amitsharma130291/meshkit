@@ -1,0 +1,135 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/site/SiteHeader.astro";
+import SiteFooter from "../../components/site/SiteFooter.astro";
+import { siteConfig } from "../../config/site";
+---
+
+<BaseLayout
+  title={`Contact — ${siteConfig.productName}`}
+  description={`Get in touch with the ${siteConfig.productName} team — questions, feedback, or support requests.`}
+  path="/contact/"
+>
+  <SiteHeader />
+
+  <main id="main">
+    <section class="contact-hero section-shell">
+      <div class="contact-heading">
+        <span class="kicker">Get in touch</span>
+        <h1>Contact us</h1>
+        <p>Questions, feedback, or something not working right? Send a message below and we'll reply to the email address you provide.</p>
+      </div>
+
+      <form id="contact-form" class="contact-form">
+        <div class="contact-form-row">
+          <label for="contact-name">Name</label>
+          <input id="contact-name" name="name" type="text" required autocomplete="name" placeholder="Jane Doe" />
+        </div>
+        <div class="contact-form-row">
+          <label for="contact-email">Email address</label>
+          <input id="contact-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" />
+        </div>
+        <div class="contact-form-row">
+          <label for="contact-subject">Subject</label>
+          <input id="contact-subject" name="subject" type="text" required placeholder="What's this about?" />
+        </div>
+        <div class="contact-form-row">
+          <label for="contact-message">Message</label>
+          <textarea id="contact-message" name="message" required rows="6" placeholder="How can we help?"></textarea>
+        </div>
+
+        <button type="submit" class="button button-primary" data-contact-submit>
+          <span data-label>Send message</span>
+          <span data-spinner hidden aria-hidden="true">…</span>
+        </button>
+
+        <p class="form-error" data-contact-error role="alert" hidden></p>
+      </form>
+
+      <div id="contact-success" class="contact-success" role="status" hidden>
+        <span class="contact-success-check" aria-hidden="true">✓</span>
+        <div>
+          <strong>Message sent — thank you.</strong>
+          <p>We'll reply to your email soon.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .contact-hero {
+    max-width: 640px;
+    margin: 0 auto;
+    padding-top: 48px;
+    padding-bottom: 90px;
+  }
+  .contact-heading {
+    margin-bottom: 36px;
+  }
+  .contact-heading h1 {
+    margin: 14px 0;
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+  }
+  .contact-form {
+    display: grid;
+    gap: 18px;
+  }
+  .contact-form[hidden] {
+    display: none;
+  }
+  .contact-form-row {
+    display: grid;
+    gap: 8px;
+  }
+  .contact-form-row label {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .contact-form-row input,
+  .contact-form-row textarea {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .contact-form button {
+    justify-self: start;
+    margin-top: 4px;
+  }
+  .form-error {
+    color: #c0392b;
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .contact-success {
+    margin-top: 24px;
+    padding: 20px 22px;
+    border-radius: 16px;
+    background: #eefaf4;
+    border: 1px solid #b7e6cf;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .contact-success[hidden] {
+    display: none;
+  }
+  .contact-success-check {
+    color: #159d7b;
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+  .contact-success p {
+    margin: 4px 0 0;
+    color: var(--muted);
+  }
+</style>

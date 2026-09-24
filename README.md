@@ -105,8 +105,15 @@ npm run dev
 ```bash
 npm run check   # astro check — type-checks .astro and .ts files
 npm run test    # vitest — unit tests for lib/* logic
-npm run build   # astro build — static output to dist/, then a postbuild
-                 # step (scripts/generate-csp-headers.mjs) hardens dist/_headers
+npm run build   # astro build, chained directly with
+                 # scripts/generate-response-headers.mjs (deliberately
+                 # part of the same "build" script, not a separate npm
+                 # "postbuild" lifecycle hook, so it always runs
+                 # regardless of exactly how a host invokes the build) —
+                 # hardens the security headers for both Netlify/
+                 # Cloudflare Pages (dist/client/_headers) and Vercel
+                 # (.vercel/output/config.json) — see that script's own
+                 # comment for why both targets are needed
 ```
 
 The production origin is `https://meshwrench.com`, set once in
@@ -308,7 +315,11 @@ src/
     └── foundation-preview/         internal, noindex, proves the architecture
 
 scripts/
-├── generate-csp-headers.mjs     postbuild — hashes every JSON-LD block into dist/_headers' CSP
+├── generate-response-headers.mjs chained onto `npm run build` — hashes every JSON-LD block into the CSP, for both
+│                                  Netlify/Cloudflare Pages (_headers) and Vercel (config.json)
+├── dist-dir.mjs                  resolves the real static-output root (dist/client/ once the
+│                                  Vercel adapter is active, dist/ otherwise) — shared by the two
+│                                  scripts above
 ├── generate-foundation-wasm.mjs  builds the Phase 1 foundation-preview test WASM module
 ├── audit-seo.mjs                Phase 7 — `npm run seo:audit` entry point; builds, then audits dist/
 └── seo-audit/                   Phase 7 — pure, independently unit-tested audit modules:

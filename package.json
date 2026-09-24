@@ -3,18 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "18.20.8 || ^20.3.0 || >=22.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
-    "postbuild": "node scripts/generate-csp-headers.mjs",
+    "build": "astro build && node scripts/generate-response-headers.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
     "seo:audit": "npm run build && node scripts/audit-seo.mjs"
   },
   "dependencies": {
+    "@astrojs/vercel": "^9.0.5",
+    "@dodopayments/astro": "^0.2.11",
+    "@upstash/redis": "^1.39.0",
     "astro": "^5.14.1",
     "fflate": "^0.8.3",
+    "nodemailer": "^10.0.10",
     "three": "^0.169.0"
   },
   "devDependencies": {

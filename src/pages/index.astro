@@ -38,7 +38,7 @@ const faqs = [
   ["Are my 3D files uploaded?", "No. Processing happens locally in your browser. Your files never need to leave your computer."],
   ["Do I need an account?", "No account, email address or sign-in is required to use the free single-file tools."],
   ["What is included in Pro?", "Pro is designed for repeat work: batch folders, reusable presets, larger queues, offline use and an ad-free experience."],
-  ["Is Pro a subscription?", "No. The planned price is $39 once for lifetime access to the Pro workflow."],
+  ["Is Pro a subscription?", "No. It's $39 once for lifetime access to the Pro workflow — no recurring charge."],
   [
     "Which formats are supported?",
     `MeshWrench currently reads and writes ${supportedFormats}, across ${readyTools.length} free browser tools, with more formats added only when they can be handled reliably in-browser.`,
@@ -56,12 +56,13 @@ const faqs = [
     name: siteConfig.productName,
     applicationCategory: "UtilitiesApplication",
     description: `Private browser-based tools to view, convert, diagnose and repair 3D files — ${readyTools.length} free tools shipped today.`,
-    // Only the real, usable $0 offer — never a priced "Pro" Offer. No
-    // checkout, license product or payment implementation exists yet, so a
-    // priced Offer would be misleading structured data even though the
-    // visible Pro copy on this page is honestly hedged as "planned." See
-    // docs/PRODUCT-READINESS-AUDIT.md section 4 and
-    // scripts/seo-audit/checks.mjs's own regression check for this.
+    // Only the free-tier Offer here. Phase 11 added a real, working $39
+    // Pro checkout (see /pricing/), but this schema intentionally still
+    // advertises only the $0 tier — adding a second, nonzero-price Offer
+    // needs scripts/seo-audit/checks.mjs's purchasable-Offer guard
+    // updated (and tested) first; see that check's own comment for why
+    // it currently treats any nonzero price as suspicious. Left as a
+    // known follow-up rather than loosening that guard in passing.
     offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tools" }],
   }}
 >
@@ -187,7 +188,7 @@ const faqs = [
           <p>Batch the folder, reuse your settings and move on to the part of the job that needs you.</p>
           <ul><li>Batch entire folders</li><li>Reusable repair presets</li><li>Large-file and offline modes</li><li>No ads</li></ul>
           <div class="price-line"><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once<br />yours forever</span></div>
-          <a class="button button-pro" href="#final-cta">See the Pro promise <span>→</span></a>
+          <a class="button button-pro" href="/pricing/">Get Pro — ${siteConfig.proPriceUsd} <span>→</span></a>
         </article>
       </div>
     </section>

@@ -1,8 +1,0 @@
-# Netlify/Cloudflare Pages redirect rules.
-#
-# /online-stl-viewer/ intentionally has no page of its own — it would be
-# near-duplicate content with /stl-viewer/ (same tool, same intent), which
-# risks keyword cannibalization instead of helping either page rank. A real
-# 301 keeps the search-intent traffic without a second indexable page. See
-# docs/ARCHITECTURE.md's "Route strategy" section for the full reasoning.
-/online-stl-viewer/  /stl-viewer/  301

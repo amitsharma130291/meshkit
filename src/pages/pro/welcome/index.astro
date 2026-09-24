@@ -1,0 +1,105 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import SiteHeader from "../../../components/site/SiteHeader.astro";
+import SiteFooter from "../../../components/site/SiteFooter.astro";
+import { siteConfig } from "../../../config/site";
+---
+
+<BaseLayout
+  title={`Finishing your purchase — ${siteConfig.productName} Pro`}
+  description={`Confirming your payment and activating ${siteConfig.productName} Pro on this device.`}
+  path="/pro/welcome/"
+  noindex={true}
+>
+  <SiteHeader />
+
+  <main id="main">
+    <section class="welcome-shell section-shell">
+      <div id="welcome-loading" class="welcome-state">
+        <span class="welcome-spinner" aria-hidden="true"></span>
+        <h1>Finishing up…</h1>
+        <p>Confirming your payment and activating Pro on this device. This only takes a moment.</p>
+      </div>
+
+      <div id="welcome-success" class="welcome-state" hidden>
+        <p class="welcome-heading" role="heading" aria-level="1">You're all set</p>
+        <p>{siteConfig.productName} Pro is active on this device.</p>
+        <p class="welcome-key-label">Your license key</p>
+        <p id="welcome-key" class="welcome-key"></p>
+        <a href="/" class="button button-primary">Go to the app →</a>
+        <p class="welcome-note">We've also emailed this key to you — keep it somewhere safe in case you ever need to re-activate.</p>
+      </div>
+
+      <div id="welcome-error" class="welcome-state" hidden>
+        <p class="welcome-heading" role="heading" aria-level="1">Something went wrong</p>
+        <p id="welcome-error-message">We couldn't confirm your purchase automatically.</p>
+        <a href="/pricing/#activate" class="button button-secondary">Enter your license key manually →</a>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .welcome-shell {
+    min-height: 60vh;
+    display: grid;
+    place-items: center;
+    padding: 80px 0;
+    text-align: center;
+  }
+  .welcome-state {
+    max-width: 480px;
+    display: grid;
+    gap: 14px;
+    justify-items: center;
+  }
+  .welcome-state[hidden] {
+    display: none;
+  }
+  .welcome-state h1,
+  .welcome-state .welcome-heading {
+    margin-top: 0;
+    font-size: 2rem;
+  }
+  .welcome-heading {
+    font-family: var(--display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .welcome-spinner {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid var(--line);
+    border-top-color: var(--violet);
+    animation: welcome-spin 0.8s linear infinite;
+  }
+  @keyframes welcome-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .welcome-key-label {
+    margin: 10px 0 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .welcome-key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.1rem;
+    background: #f4f4f4;
+    padding: 10px 16px;
+    border-radius: 10px;
+  }
+  .welcome-note {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
