@@ -1,0 +1,60 @@
+---
+/**
+ * Presentation only, following the same `aria-pressed`/labelled-button
+ * contract every other viewer's controls component uses. Overlay
+ * toggles use both a color swatch AND a text label — never color alone.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-repair-controls" } = Astro.props;
+
+const OVERLAYS = [
+  { key: "removed-triangles", label: "Removed triangles", swatch: "#e0303f" },
+  { key: "flipped-triangles", label: "Flipped triangles", swatch: "#c837d6" },
+  { key: "welded-vertices", label: "Welded vertices", swatch: "#22c3c3" },
+  { key: "filled-holes", label: "Filled holes", swatch: "#2ecc71" },
+  { key: "removed-shells", label: "Removed shells", swatch: "#f5a623" },
+  { key: "unresolved-boundary", label: "Unresolved boundary edges", swatch: "#ff8a3d" },
+  { key: "unresolved-non-manifold", label: "Unresolved non-manifold edges", swatch: "#e0303f" },
+  { key: "unresolved-intersections", label: "Unresolved self-intersections", swatch: "#ff1f4b" },
+] as const;
+---
+
+<div class="viewer-controls stl-repair-controls" id={id} role="group" aria-label="Repair viewer controls">
+  <div class="model-toggle" role="group" aria-label="Model to show">
+    <button type="button" class="control-button" data-action="show-original" aria-pressed="true">Original</button>
+    <button type="button" class="control-button" data-action="show-repaired" aria-pressed="false" disabled>Repaired</button>
+  </div>
+
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">Wireframe</button>
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <fieldset class="overlay-toggles">
+    <legend>Issue overlays</legend>
+    {
+      OVERLAYS.map((overlay) => (
+        <button type="button" class="control-button overlay-toggle" data-action="toggle-overlay" data-overlay={overlay.key} aria-pressed="false" disabled>
+          <span class="overlay-swatch" style={`background:${overlay.swatch}`} aria-hidden="true" />
+          {overlay.label}
+        </button>
+      ))
+    }
+  </fieldset>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

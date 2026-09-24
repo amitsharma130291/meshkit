@@ -1,0 +1,27 @@
+---
+/**
+ * Presentation only — src/pages/stl-checker/_client.ts fills every
+ * `data-*` node. The verdict badge's 4 states map 1:1 to
+ * `WatertightVerdict` (`src/lib/stl-diagnostics/types.ts`): watertight,
+ * not-watertight, invalid-topology, indeterminate ("some checks
+ * incomplete"). Slicer-risk flags and their disclaimers are rendered
+ * separately from the verdict itself — a risk flag is an observation,
+ * never a second verdict.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-diagnostics-summary" } = Astro.props;
+---
+
+<section class="diagnostics-summary" id={id} data-diagnostics-summary hidden aria-label="Watertightness summary">
+  <div class="verdict-badge" data-verdict-badge data-verdict="">
+    <span class="verdict-label" data-verdict-label></span>
+  </div>
+  <p class="verdict-detail" data-verdict-detail></p>
+
+  <ul class="slicer-risk-list" data-slicer-risk-list></ul>
+
+  <div class="slicer-disclaimers" data-slicer-disclaimers></div>
+</section>

@@ -91,7 +91,7 @@ async function handleProcess(message: Extract<WorkerRequest, { type: "process" }
     const stlBuffer = serializeBinarySTL({
       positions: scene.positions,
       normals: scene.normals,
-      header: "MeshKit GLB to STL conversion",
+      header: "MeshWrench GLB to STL conversion",
     });
 
     const result: GLBToSTLResult = {

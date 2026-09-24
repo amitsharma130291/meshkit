@@ -1,0 +1,46 @@
+---
+/**
+ * VISUAL playback only — never described as a firmware/motion
+ * simulator. `_client.ts` drives `src/lib/gcode/playback.ts`'s pure
+ * state machine and fills these nodes from its own state.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-playback-controls" } = Astro.props;
+---
+
+<div class="viewer-controls gcode-playback-controls" id={id} role="group" aria-label="Playback controls">
+  <div class="playback-buttons">
+    <button type="button" class="control-button" data-action="play-pause" aria-pressed="false">Play</button>
+    <button type="button" class="control-button" data-action="restart">Restart</button>
+    <button type="button" class="control-button" data-action="step-backward">Step back</button>
+    <button type="button" class="control-button" data-action="step-forward">Step forward</button>
+  </div>
+
+  <label class="control-field">
+    <span>Progress</span>
+    <input type="range" data-action="progress-scrub" min="0" max="0" step="1" value="0" />
+  </label>
+
+  <label class="control-field">
+    <span>Playback speed</span>
+    <select data-action="playback-rate">
+      <option value="0.25">0.25×</option>
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+      <option value="4">4×</option>
+      <option value="10">10×</option>
+    </select>
+  </label>
+
+  <dl class="model-info-grid playback-status">
+    <div><dt>Current command</dt><dd data-current-command>—</dd></div>
+    <div><dt>Position (X/Y/Z)</dt><dd data-current-position>—</dd></div>
+    <div><dt>Extrusion (E)</dt><dd data-current-e>—</dd></div>
+    <div><dt>Feed rate</dt><dd data-current-feed-rate>—</dd></div>
+    <div><dt>Elapsed (feed-rate-only estimate)</dt><dd data-current-elapsed>—</dd></div>
+  </dl>
+</div>

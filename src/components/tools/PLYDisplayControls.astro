@@ -1,0 +1,72 @@
+---
+/**
+ * Presentation only, following GLBDisplayControls.astro's contract (real
+ * labelled buttons/selects, `aria-pressed` kept in sync by the client
+ * script). PLY has no scene graph and no materials, so per-category
+ * visibility lives in PLYGeometryPanel.astro instead of here — this panel
+ * is purely render/viewport options. Controls that only apply when the
+ * loaded file has the right content (shading, vertex-color mode,
+ * wireframe, point size) start hidden and are revealed by _client.ts only
+ * when applicable.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "ply-viewer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls ply-viewer-controls" id={id} role="group" aria-label="Viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-all">Fit all</button>
+  <button type="button" class="control-button" data-action="fit-visible">Fit visible</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false" data-control="wireframe" hidden>
+    Wireframe
+  </button>
+
+  <label class="control-field" data-control="color-mode" hidden>
+    <span>Surface color</span>
+    <select data-action="color-mode">
+      <option value="vertex-colors">Vertex colors</option>
+      <option value="neutral">Neutral material</option>
+    </select>
+  </label>
+
+  <label class="control-field" data-control="shading" hidden>
+    <span>Shading</span>
+    <select data-action="shading-mode">
+      <option value="smooth">Smooth normals</option>
+      <option value="flat">Flat normals</option>
+    </select>
+  </label>
+
+  <label class="control-field">
+    <span>Model color</span>
+    <select data-action="model-color">
+      <option value="#c7c2de">Neutral</option>
+      <option value="#6d42f5">Violet</option>
+      <option value="#24b8d8">Cyan</option>
+      <option value="#ed4b93">Pink</option>
+    </select>
+  </label>
+
+  <label class="control-field" data-control="point-size" hidden>
+    <span>Point size</span>
+    <input type="range" min="1" max="12" step="1" value="4" data-action="point-size" />
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

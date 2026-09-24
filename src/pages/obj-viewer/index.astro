@@ -1,0 +1,285 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import ViewerDisplayControls from "../../components/tools/ViewerDisplayControls.astro";
+import OBJModelInfo from "../../components/tools/OBJModelInfo.astro";
+import SceneTree from "../../components/tools/SceneTree.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("obj-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "OBJ Viewer", path: "/obj-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my OBJ file uploaded?",
+    answer:
+      "No. The file is read and parsed entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Does this viewer load materials or textures?",
+    answer:
+      "No. MeshWrench shows which materials and textures your file references, but it never fetches a .mtl library or any image file — that would mean making a request, and this viewer never sends your file (or any path inside it) anywhere. Geometry is shown with a neutral preview material instead.",
+  },
+  {
+    question: "What units are the dimensions shown in?",
+    answer:
+      "OBJ doesn't define a universal measurement unit, so dimensions are always shown in model units — this viewer never labels them as millimeters or any other real-world unit.",
+  },
+  {
+    question: "Does this tool repair or validate my OBJ file?",
+    answer:
+      "No. This is a viewer only — it doesn't check for holes, non-manifold edges or flipped normals, and it doesn't modify your geometry in any way.",
+  },
+  {
+    question: "Can I view multiple OBJ files at once?",
+    answer: "Not yet. This viewer opens one file at a time. Loading a new file replaces the current one.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="OBJ Viewer — Open and Inspect OBJ Files Online | MeshWrench"
+  description="Open and inspect OBJ files directly in your browser. Rotate, zoom, explore objects and groups, and view geometry statistics without uploading your model."
+  path="/obj-viewer/"
+  h1="OBJ Viewer"
+  intro="Open and inspect OBJ files directly in your browser. Rotate, zoom, explore objects and groups, and view geometry statistics without uploading your model."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench OBJ Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect OBJ files locally in the browser — rotate, zoom, explore objects and groups, and check geometry statistics. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your OBJ stays on this device. MeshWrench reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="obj-file-input"
+      label="Select an OBJ file"
+      accept=".obj,text/plain,model/obj,application/octet-stream"
+      helpText="Up to 150 MB. Materials and textures referenced in the file are never fetched — only geometry is shown."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="obj-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="obj-viewer-viewport"
+      description="Interactive 3D preview of your OBJ model. Drag to rotate, scroll to zoom. Objects and groups can be shown or hidden using the panel below."
+    />
+    <ViewerDisplayControls id="obj-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <OBJModelInfo id="obj-viewer-model-info" />
+    <SceneTree id="obj-viewer-scene-tree" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="obj-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view an OBJ file</h2>
+    <ol>
+      <li>Select an OBJ file using the picker above.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>
+        Once parsing finishes, drag to rotate, scroll to zoom, and use the panel below the viewport to fit the
+        view, toggle wireframe, change shading, or show and hide individual objects and groups.
+      </li>
+    </ol>
+
+    <h2>What the OBJ Viewer displays</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, declared vertex/normal/texture-coordinate
+      counts, source face count, rendered triangle count, object and group counts, referenced MTL libraries and
+      material names, line and point primitive counts, and the bounding box. A scene tree lists every object and
+      group so you can inspect — and individually show or hide — the pieces of a multi-part model.
+    </p>
+
+    <h2>Objects and groups in OBJ</h2>
+    <p>
+      OBJ files can organize geometry into named <code>o</code> objects and <code>g</code> groups, and a face can
+      belong to more than one group at once. This viewer preserves those boundaries: faces that appear before the
+      first <code>o</code> or <code>g</code> statement are labeled <strong>Default</strong>, and every object/group
+      combination becomes its own entry in the scene tree, in the order it appears in the file, so you can toggle
+      visibility for one part of a model without affecting the rest.
+    </p>
+
+    <h2>How normals affect shading</h2>
+    <p>
+      Unlike MeshWrench's OBJ to STL converter — which always recalculates flat geometric normals, since STL has no
+      field for smooth shading — this viewer can use your file's own <code>vn</code> vertex normals where they're
+      valid, giving curved surfaces a smooth appearance. A zero-length or missing normal falls back to a computed
+      geometric normal for that corner rather than being trusted blindly. If a file has no usable vertex normals at
+      all, the source/smooth shading option is disabled and the viewer defaults to flat shading.
+    </p>
+
+    <h2>Why materials and textures may be missing</h2>
+    <p>
+      This viewer reports which <code>mtllib</code> libraries and <code>usemtl</code> materials your file
+      references, but it never fetches the referenced <code>.mtl</code> file or any image — doing so would mean
+      making a request outside your browser's local processing, which MeshWrench never does. Texture coordinates are
+      present, but textures require separate material and image files. MeshWrench does not fetch external files.
+      Geometry is always shown with a neutral preview material instead.
+    </p>
+
+    <h2>How dimensions are shown</h2>
+    <p>
+      OBJ does not define a universal measurement unit. Dimensions are shown in model units — this viewer never
+      assumes millimeters, inches or any other real-world scale, unlike some STL-focused tools that default to a
+      3D-printing convention.
+    </p>
+
+    <h2>OBJ versus STL</h2>
+    <p>
+      OBJ is a plain-text format that can describe polygon faces, texture coordinates, vertex normals, named
+      objects/groups and material references. STL stores only raw triangle geometry with no metadata at all. This
+      viewer can show OBJ's richer structure — objects, groups, smooth shading, lines and points — that a
+      converter's STL output can't carry over.
+    </p>
+
+    <h2>Why an OBJ may not open</h2>
+    <ul>
+      <li>A face references a vertex, texture-coordinate or normal index that doesn't exist.</li>
+      <li>A face has fewer than three (usable) vertices, or its edges cross themselves.</li>
+      <li>The file doesn't contain any triangle, line or point geometry to display.</li>
+      <li>A vertex or face line uses a value MeshWrench can't parse as a number, or an ambiguous field count.</li>
+      <li>The file is more complex (vertices, triangles, objects or groups) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the OBJ uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file with the
+      standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
+      WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the
+      network tab, and load a file. No request containing your file, or any path found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

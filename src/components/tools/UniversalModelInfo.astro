@@ -1,0 +1,36 @@
+---
+/**
+ * Presentation only — src/pages/viewer/_client.ts fills every
+ * `data-info-*` node. Unlike a dedicated viewer's own `*ModelInfo.astro`
+ * (a fixed field list, since that page only ever shows one format's
+ * data), this panel splits into a small FIXED set of fields every format
+ * shares (filename, size, detected format, confidence, dimensions) and
+ * one DYNAMIC grid (`data-info-format-specific`) the active adapter's
+ * own `info()`/`dimensions()` output populates at runtime — the six
+ * formats simply don't have the same number of concepts to show.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "universal-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File</dt><dd data-info-filename></dd></div>
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>Detected format</dt><dd data-info-format></dd></div>
+    <div><dt>Detection confidence</dt><dd data-info-confidence></dd></div>
+    <div><dt>Width</dt><dd data-info-width></dd></div>
+    <div><dt>Height</dt><dd data-info-height></dd></div>
+    <div><dt>Depth</dt><dd data-info-depth></dd></div>
+  </dl>
+
+  <dl class="model-info-grid" data-info-format-specific></dl>
+
+  <p class="model-info-unit-note" data-info-unit-note></p>
+  <p class="model-info-materials-note" data-info-extension-mismatch hidden></p>
+  <p class="model-info-materials-note" data-info-unsupported-features hidden></p>
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

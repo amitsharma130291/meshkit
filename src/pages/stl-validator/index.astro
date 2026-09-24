@@ -1,0 +1,271 @@
+---
+/**
+ * The secondary SEO route for the exact same STL Diagnostics tool
+ * `/stl-checker/` provides. Canonical strategy (documented): this page
+ * self-canonicalizes to `/stl-validator/` rather than pointing at
+ * `/stl-checker/`, because its copy below is genuinely distinct —
+ * different framing (validation/error-checking intent vs. general
+ * checking intent), a different FAQ set, and different section ordering
+ * — not a mechanical duplicate. This matches how every other pair of
+ * related MeshWrench tool pages (e.g. the six per-format viewers) is
+ * indexed: each ranks for its own distinct search intent rather than
+ * consolidating onto one canonical URL. The interactive tool itself is
+ * never duplicated — this page's script tag imports the exact same
+ * `../stl-checker/_client` module `/stl-checker/` uses, and every
+ * results/controls component below is the same shared Astro component
+ * `/stl-checker/` renders.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLDiagnosticsControls from "../../components/tools/STLDiagnosticsControls.astro";
+import STLDiagnosticsSummary from "../../components/tools/STLDiagnosticsSummary.astro";
+import STLDiagnosticsChecks from "../../components/tools/STLDiagnosticsChecks.astro";
+import STLDiagnosticsDetails from "../../components/tools/STLDiagnosticsDetails.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-validator")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL Validator", path: "/stl-validator/" },
+];
+
+const faqs = [
+  {
+    question: "Does validating an STL file here upload it anywhere?",
+    answer:
+      "No. Validation runs entirely inside your browser, in a background Web Worker. Your file's bytes never cross the network — open your browser's dev tools and watch the network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "What does \"invalid topology\" mean?",
+    answer:
+      "It means the file has no usable surface to validate at all — for example, every triangle is degenerate (zero-area or has a repeated vertex). This is distinct from \"not watertight,\" which means real geometry exists but fails one or more strict checks.",
+  },
+  {
+    question: "Is this a manifold checker?",
+    answer:
+      "Yes — checking for non-manifold edges (an edge shared by more than two triangles) is one of the checks this validator runs, alongside boundary-edge, winding-conflict, duplicate-face, orientation and self-intersection validation.",
+  },
+  {
+    question: "Can I get a machine-readable validation result?",
+    answer:
+      "Yes. Download the full JSON validation report — it includes the verdict, every count, per-shell detail, and which checks completed versus were skipped due to a safety limit.",
+  },
+  {
+    question: "Will this validator modify or fix my file?",
+    answer:
+      "No. This tool only reports errors — it never welds, repairs, reorients or re-exports your mesh. A separate repair tool is planned for that.",
+  },
+];
+---
+
+<ToolLayout
+  title="STL Validator — Validate STL Files for Manifold Errors | MeshWrench"
+  description="Validate an STL file online for manifold errors, boundary gaps, winding conflicts and self-intersections — free, local, no upload required."
+  path="/stl-validator/"
+  h1="STL Validator"
+  intro="Validate an STL file's mesh topology against a precise, disclosed rule set — manifold errors, boundary gaps, winding conflicts, duplicate faces and self-intersections — entirely on your device."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench STL Validator",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Validate an STL file's mesh topology locally in the browser against a precise, disclosed watertightness rule set. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench validates it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to validate"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-diagnostics-viewport" description="Interactive 3D preview with issue overlays. Drag to rotate, scroll to zoom." />
+    <STLDiagnosticsControls id="stl-diagnostics-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Validated locally — nothing was uploaded.
+    </p>
+    <STLDiagnosticsSummary id="stl-diagnostics-summary" />
+    <STLDiagnosticsChecks id="stl-diagnostics-checks" />
+    <STLDiagnosticsDetails id="stl-diagnostics-details" />
+    <ToolError id="stl-diagnostics-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>What this validator checks</h2>
+    <p>
+      Each rule below is validated independently and reported with an exact count — never a single pass/fail score.
+      An STL file is <strong>valid (watertight)</strong> only when every rule passes: zero boundary edges, zero
+      non-manifold edges, zero winding conflicts, zero duplicate faces, and a completed self-intersection scan that
+      finds none.
+    </p>
+    <ul>
+      <li><strong>Manifold validation</strong> — every edge must be shared by exactly two triangles.</li>
+      <li><strong>Boundary validation</strong> — open edges are grouped into closed loops, open chains, branches or non-simple shapes.</li>
+      <li><strong>Winding validation</strong> — adjacent triangles must agree on traversal direction across a shared edge.</li>
+      <li><strong>Duplicate-face validation</strong> — no triangle may exactly repeat another's three vertices.</li>
+      <li><strong>Orientation validation</strong> — closed, consistently-wound shells are checked for inward (inverted) orientation via signed volume.</li>
+      <li><strong>Self-intersection validation</strong> — no two triangles may geometrically cross, outside expected shared-edge adjacency.</li>
+      <li><strong>Degenerate-triangle detection</strong> — zero- and near-zero-area triangles are found and excluded from every rule above.</li>
+    </ul>
+
+    <h2>Validation error reference</h2>
+    <dl class="check-explanation-list">
+      <div>
+        <dt>"Has boundary edges" / open mesh error</dt>
+        <dd>Real gaps in the surface exist — the closed-loop count usually corresponds to the number of holes.</dd>
+      </div>
+      <div>
+        <dt>"Has non-manifold edges"</dt>
+        <dd>At least one edge is shared by three or more triangles — an ambiguous, non-manifold surface at that edge.</dd>
+      </div>
+      <div>
+        <dt>"Has winding conflicts"</dt>
+        <dd>Two adjacent triangles disagree on winding direction, even though the edge itself is manifold.</dd>
+      </div>
+      <div>
+        <dt>"Has duplicate faces"</dt>
+        <dd>At least one triangle exactly repeats another's three vertices, same or reversed winding.</dd>
+      </div>
+      <div>
+        <dt>"Self-intersections found"</dt>
+        <dd>At least one pair of triangles genuinely overlaps in 3D space.</dd>
+      </div>
+      <div>
+        <dt>"Self-intersections not checked"</dt>
+        <dd>The model was too complex to fully validate within this tool's safety limits — reported honestly, never as a pass.</dd>
+      </div>
+    </dl>
+
+    <h2>How validation results are computed</h2>
+    <p>
+      Validation starts from exact-identity vertex matching (bit-exact float32 comparison, never a distance
+      tolerance — a tolerance would change the model's real topology and could mask a genuine gap). From there, an
+      edge-incidence table classifies every edge, boundary edges are grouped into components, triangles are grouped
+      into connected shells, each shell's orientation is propagated and its signed volume computed when meaningful,
+      duplicate faces are grouped by canonical vertex identity, and self-intersections are found via a spatial-grid
+      broad phase plus a robust triangle-triangle test.
+    </p>
+
+    <h2>Validation limitations</h2>
+    <ul>
+      <li>This tool validates only — it never modifies, repairs or re-exports a file.</li>
+      <li>A passing validation result does not certify printability; a failing one does not mean a file can't be sliced.</li>
+      <li>Every check has a disclosed safety limit; a check that can't finish safely is reported as skipped, never as passed.</li>
+    </ul>
+
+    <h2>After validation: repairing errors</h2>
+    <p>
+      This validator identifies problems only. STL Repair — a planned, separate MeshWrench tool — will fix what's found
+      here (holes, inverted normals, non-manifold geometry) locally in your browser, once it ships.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) => (
+          <li>
+            <a href={related!.path}>{related!.name}</a>
+            <span class="related-tool-status">{related!.status === "ready" ? "Available" : "Planned"}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../stl-checker/_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .check-explanation-list dt {
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .check-explanation-list dd {
+    margin: 4px 0 0;
+    color: var(--muted);
+  }
+</style>

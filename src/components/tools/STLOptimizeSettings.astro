@@ -1,0 +1,62 @@
+---
+/**
+ * Presentation only. Two real radio groups: the target mode (percentage
+ * preset vs. an explicit triangle count) and the quality preset. The
+ * "reduction" percentage is always labelled as such — never "retained
+ * %" — and the resolved target triangle count is shown live by
+ * `_client.ts` before the user ever runs anything.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-optimize-settings" } = Astro.props;
+---
+
+<section class="optimize-settings" id={id} aria-label="Optimization settings">
+  <fieldset class="target-choice">
+    <legend>Target reduction</legend>
+    <label class="preset-option">
+      <input type="radio" name="target-preset" value="25" checked data-action="select-target-preset" />
+      <span class="preset-label">25% fewer triangles</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="target-preset" value="50" data-action="select-target-preset" />
+      <span class="preset-label">50% fewer triangles</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="target-preset" value="75" data-action="select-target-preset" />
+      <span class="preset-label">75% fewer triangles</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="target-preset" value="custom" data-action="select-target-preset" />
+      <span class="preset-label">Custom target triangle count</span>
+    </label>
+    <label class="control-field custom-target-field" data-custom-target-field hidden>
+      <span>Target triangle count</span>
+      <input type="number" step="1" min="1" data-action="custom-target-count" disabled />
+    </label>
+    <p class="control-note" data-resolved-target-note>Resolved target: — triangles</p>
+  </fieldset>
+
+  <fieldset class="preset-choice">
+    <legend>Quality preset</legend>
+    <label class="preset-option">
+      <input type="radio" name="quality-preset" value="preserve-details" data-action="select-quality-preset" />
+      <span class="preset-label">Preserve details</span>
+      <span class="preset-desc">Tightest safety limits — sharp edges and fine features are least likely to be smoothed away.</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="quality-preset" value="balanced" checked data-action="select-quality-preset" />
+      <span class="preset-label">Balanced <span class="preset-badge">Default</span></span>
+      <span class="preset-desc">A reasonable middle ground between detail and reduction.</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="quality-preset" value="maximum-reduction" data-action="select-quality-preset" />
+      <span class="preset-label">Maximum reduction</span>
+      <span class="preset-desc">Loosest safety limits — still topology-safe, but detail loss is more likely.</span>
+    </label>
+  </fieldset>
+
+  <button type="button" class="control-button" data-action="analyze-optimize-plan">Show optimization plan</button>
+</section>

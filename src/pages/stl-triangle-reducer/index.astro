@@ -1,0 +1,195 @@
+---
+/**
+ * Secondary SEO route for the same optimization engine
+ * `/reduce-stl-file-size/` uses. Self-canonicalizes since its copy below
+ * targets a distinct, technical "too many triangles" intent — the exact
+ * phrase slicer software itself often uses in its own warnings/errors —
+ * framed around slicing/processing performance rather than file size or
+ * general mesh detail. The interactive tool is never duplicated: this
+ * page's script tag imports the exact same
+ * `../reduce-stl-file-size/_client` module.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLOptimizeSettings from "../../components/tools/STLOptimizeSettings.astro";
+import STLOptimizePlan from "../../components/tools/STLOptimizePlan.astro";
+import STLOptimizeResult from "../../components/tools/STLOptimizeResult.astro";
+import STLOptimizeComparison from "../../components/tools/STLOptimizeComparison.astro";
+import STLOptimizeControls from "../../components/tools/STLOptimizeControls.astro";
+import BatchPlanWorkspace from "../../components/tools/BatchPlanWorkspace.astro";
+import BatchOptimizeSettings from "../../components/tools/BatchOptimizeSettings.astro";
+import RelatedTools from "../../components/tools/RelatedTools.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-triangle-reducer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id));
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL Triangle Reducer", path: "/stl-triangle-reducer/" },
+];
+
+const faqs = [
+  {
+    question: "My slicer says my STL has too many triangles / facets — will this fix that?",
+    answer:
+      "Yes — that's exactly this tool's job. Reduce the triangle count below whatever ceiling your slicer or downstream tool enforces, using an explicit target triangle count if you know the exact limit.",
+  },
+  {
+    question: "Can I set an exact target triangle count instead of a percentage?",
+    answer:
+      "Yes — switch to \"Custom target triangle count\" and enter the exact number. The tool clamps it to a safe minimum if needed (it will never delete an entire shell or force unsafe topology) and shows you the resolved target before running.",
+  },
+  {
+    question: "Why does my slicer care about triangle count at all?",
+    answer:
+      "Slicing performance and memory use scale with triangle count, and some slicers/printers enforce a hard ceiling. A binary STL's own file size scales directly with triangle count too — reducing one reduces both.",
+  },
+  {
+    question: "Will reducing triangles break my model for slicing?",
+    answer:
+      "No — this tool always preserves manifold topology (a watertight input stays watertight), boundary loops, and shell count, and verifies the actual output by re-parsing and re-diagnosing it before reporting success.",
+  },
+  {
+    question: "Is there a limit on how many triangles this tool can handle?",
+    answer:
+      "Yes, a disclosed safety ceiling protects your browser from freezing on an extremely dense file — this isn't a Pro restriction, and hitting it is reported honestly rather than silently producing an incomplete result.",
+  },
+];
+---
+
+<ToolLayout
+  title={`STL Triangle Reducer — Fix "Too Many Triangles" Errors | MeshWrench`}
+  description="Reduce an STL file's triangle count to fix slicer facet-count limits — topology-safe, verified, free. No upload required."
+  path="/stl-triangle-reducer/"
+  h1="STL Triangle Reducer"
+  intro="Bring an STL file's triangle count down to a specific target — useful when a slicer or downstream tool enforces a facet-count ceiling — with manifold topology, boundary loops and shell structure all preserved and verified."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench STL Triangle Reducer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Reduce an STL file's triangle count to an explicit target locally in the browser, using quadric-error-metric edge-collapse simplification with manifold topology preserved and every reduction verified against its own serialized output. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench reduces it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to reduce"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-optimize-viewport" description="Interactive 3D preview of the original and reduced model. Drag to rotate, scroll to zoom." />
+    <STLOptimizeControls id="stl-optimize-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <STLOptimizeSettings id="stl-optimize-settings" />
+    <STLOptimizePlan id="stl-optimize-plan" />
+    <STLOptimizeResult id="stl-optimize-result" />
+    <STLOptimizeComparison id="stl-optimize-comparison" />
+    <ToolError id="stl-optimize-error" />
+
+    <BatchPlanWorkspace id="stl-triangle-reducer-batch-workspace" acceptHint="STL files only, same limits as single-file optimization.">
+      <BatchOptimizeSettings slot="settings" />
+    </BatchPlanWorkspace>
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Steps to reduce triangle count to a target</h2>
+    <ol>
+      <li>Select your STL file — MeshWrench checks it locally and shows its current triangle count.</li>
+      <li>Choose "Custom target triangle count" and enter your slicer's own limit (or a percentage preset).</li>
+      <li>Review the plan — the resolved (safety-clamped) target is shown before you run anything.</li>
+      <li>Run the reduction, verify the achieved count in the comparison table, then download the result.</li>
+    </ol>
+
+    <h2>Common triangle-count / facet-count slicer errors</h2>
+    <ul>
+      <li><strong>"Too many facets" / "Mesh too complex":</strong> the exact case this tool targets — set an explicit target triangle count below your slicer's own ceiling.</li>
+      <li><strong>Slow slicing or high memory use:</strong> triangle count drives both; a moderate reduction (the "Balanced" preset) often helps without visible quality loss.</li>
+      <li><strong>Large file upload limits</strong> (for a cloud slicing service): binary STL size scales directly with triangle count, so reducing one reduces the other by the same proportion.</li>
+    </ul>
+
+    <h2>What "achieved" vs. "requested" means here</h2>
+    <p>
+      This tool always distinguishes the reduction you asked for from the reduction it actually, safely achieved.
+      An exact target is never forced through an unsafe collapse — if your requested count isn't safely reachable
+      (because of a shell-minimum floor or the remaining candidates all failing a safety check), the tool stops at
+      the best safe result and reports that honestly, rather than claiming a false success.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>Non-manifold input is never reduced by default — fix it in STL Repair first.</li>
+      <li>An extremely small requested target relative to shell count/complexity may not be reachable — the tool explains why.</li>
+      <li>This tool doesn't guarantee printability or fitness for any specific printer, only mesh triangle count and verified topology safety.</li>
+    </ul>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <RelatedTools slot="related-tools" relatedTools={relatedTools} note="Reducing many files? Try the Batch tab above — batch optimization is a Pro capability; Pro activation is coming in the payment phase." />
+</ToolLayout>
+
+<script>
+  import "../reduce-stl-file-size/_client";
+</script>
+
+<style>
+  .faq-section-tool {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+</style>

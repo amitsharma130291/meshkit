@@ -42,7 +42,8 @@ export function detectSTLEncoding(buffer: ArrayBuffer): STLDetectionResult {
   return { encoding: "binary", confident: false };
 }
 
-function looksLikeAsciiSTL(buffer: ArrayBuffer): boolean {
+/** Exported for `src/lib/viewer/format-detection.ts` (Phase 4F) — the universal viewer's own ASCII-STL sniff reuses this exact heuristic rather than a second, possibly-diverging one. */
+export function looksLikeAsciiSTL(buffer: ArrayBuffer): boolean {
   const sampleLength = Math.min(buffer.byteLength, 4096);
   if (sampleLength === 0) return false;
 

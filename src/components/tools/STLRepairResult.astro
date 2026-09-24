@@ -1,0 +1,38 @@
+---
+/**
+ * Presentation only — the outcome badge, operation results, and
+ * before/after counts. `_client.ts` fills every `data-*` node from the
+ * worker's own `RepairResult`.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-repair-result" } = Astro.props;
+---
+
+<section class="repair-result" id={id} data-repair-result hidden aria-label="Repair result">
+  <div class="outcome-badge" data-outcome-badge data-outcome="">
+    <span data-outcome-label></span>
+  </div>
+  <p class="outcome-detail" data-outcome-detail></p>
+
+  <h3>Operations</h3>
+  <ul class="operation-list" data-operation-list></ul>
+
+  <h3>Unresolved problems</h3>
+  <ul class="unresolved-list" data-unresolved-list></ul>
+  <p class="unresolved-none" data-unresolved-none hidden>None — every targeted problem was resolved.</p>
+
+  <h3>Hole-fill details</h3>
+  <ul class="hole-skip-list" data-hole-skip-list></ul>
+
+  <div class="repair-warnings" data-repair-warnings hidden></div>
+
+  <div class="download-actions">
+    <button type="button" class="control-button" data-action="download-repaired-stl" disabled>Download repaired STL</button>
+    <button type="button" class="control-button" data-action="download-repair-report" disabled>Download JSON report</button>
+  </div>
+
+  <p class="pro-transition-note">Repairing many files? Batch repair is planned for Pro.</p>
+</section>

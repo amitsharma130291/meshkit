@@ -17,12 +17,20 @@ export interface MeshObjectFixture {
   kind: "mesh";
   vertices: [number, number, number][];
   triangles: [number, number, number][];
+  /** Viewer-only, additive: object display name / default color-property reference. */
+  name?: string;
+  pid?: string;
+  pindex?: number;
+  /** Viewer-only, additive: raw `<triangle .../>` strings used instead of the auto-generated v1/v2/v3 ones — for tests needing pid/p1/p2/p3, which the plain `triangles` tuples can't express. Must have the same length as `triangles` when provided. */
+  triangleXML?: string[];
 }
 
 export interface ComponentsObjectFixture {
   id: string;
   kind: "components";
-  components: { objectId: string; transform?: string }[];
+  components: { objectId: string; transform?: string; path?: string }[];
+  /** Viewer-only, additive. */
+  name?: string;
 }
 
 export type ObjectFixture = MeshObjectFixture | ComponentsObjectFixture;
@@ -50,10 +58,12 @@ export function simpleTriangleMesh(id = "1"): MeshObjectFixture {
 export interface ModelXMLOptions {
   unit?: string;
   objects: ObjectFixture[];
-  buildItems: { objectId: string; transform?: string }[];
+  buildItems: { objectId: string; transform?: string; partnumber?: string; path?: string }[];
   unsupportedFeatures?: ("basematerials" | "colorgroup" | "texture2d" | "metadata")[];
   /** Omit the unit attribute entirely (to test the spec default) instead of using `unit`. */
   omitUnitAttribute?: boolean;
+  /** Viewer-only, additive: raw XML injected into <resources>, before the objects — for basematerials/colorgroup/metadata fixtures the fixed `unsupportedFeatures` placeholders can't express. */
+  resourcesXML?: string;
 }
 
 export function buildModelXML(options: ModelXMLOptions): string {
@@ -71,17 +81,27 @@ export function buildModelXML(options: ModelXMLOptions): string {
     if (feature === "texture2d") lines.push(`<texture2d id="902" path="/2D/tex.png" contenttype="image/png"/>`);
   }
 
+  if (options.resourcesXML) lines.push(options.resourcesXML);
+
   for (const obj of options.objects) {
+    const nameAttr = obj.name ? ` name="${obj.name}"` : "";
     if (obj.kind === "mesh") {
-      lines.push(`<object id="${obj.id}" type="model"><mesh><vertices>`);
+      const pidAttr = obj.pid !== undefined ? ` pid="${obj.pid}"` : "";
+      const pindexAttr = obj.pindex !== undefined ? ` pindex="${obj.pindex}"` : "";
+      lines.push(`<object id="${obj.id}" type="model"${nameAttr}${pidAttr}${pindexAttr}><mesh><vertices>`);
       for (const [x, y, z] of obj.vertices) lines.push(`<vertex x="${x}" y="${y}" z="${z}"/>`);
       lines.push(`</vertices><triangles>`);
-      for (const [v1, v2, v3] of obj.triangles) lines.push(`<triangle v1="${v1}" v2="${v2}" v3="${v3}"/>`);
+      if (obj.triangleXML) {
+        for (const t of obj.triangleXML) lines.push(t);
+      } else {
+        for (const [v1, v2, v3] of obj.triangles) lines.push(`<triangle v1="${v1}" v2="${v2}" v3="${v3}"/>`);
+      }
       lines.push(`</triangles></mesh></object>`);
     } else {
-      lines.push(`<object id="${obj.id}" type="model"><components>`);
+      lines.push(`<object id="${obj.id}" type="model"${nameAttr}><components>`);
       for (const c of obj.components) {
-        lines.push(`<component objectid="${c.objectId}"${c.transform ? ` transform="${c.transform}"` : ""}/>`);
+        const pathAttr = c.path ? ` path="${c.path}"` : "";
+        lines.push(`<component objectid="${c.objectId}"${c.transform ? ` transform="${c.transform}"` : ""}${pathAttr}/>`);
       }
       lines.push(`</components></object>`);
     }
@@ -89,7 +109,9 @@ export function buildModelXML(options: ModelXMLOptions): string {
 
   lines.push(`</resources><build>`);
   for (const item of options.buildItems) {
-    lines.push(`<item objectid="${item.objectId}"${item.transform ? ` transform="${item.transform}"` : ""}/>`);
+    const partnumberAttr = item.partnumber ? ` partnumber="${item.partnumber}"` : "";
+    const pathAttr = item.path ? ` path="${item.path}"` : "";
+    lines.push(`<item objectid="${item.objectId}"${item.transform ? ` transform="${item.transform}"` : ""}${partnumberAttr}${pathAttr}/>`);
   }
   lines.push(`</build></model>`);
   return lines.join("");

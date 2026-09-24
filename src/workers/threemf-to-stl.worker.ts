@@ -83,7 +83,7 @@ async function handleProcess(message: Extract<WorkerRequest, { type: "process" }
     const stlBuffer = serializeBinarySTL({
       positions: scene.positions,
       normals: scene.normals,
-      header: "MeshKit 3MF to STL conversion",
+      header: "MeshWrench 3MF to STL conversion",
     });
 
     const result: ThreeMFToSTLResult = {

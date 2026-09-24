@@ -1,0 +1,77 @@
+---
+/**
+ * Presentation only, following ViewerControls.astro/GLBDisplayControls.astro's
+ * contract (real labelled buttons, `aria-pressed` kept in sync by
+ * `_client.ts`). Overlay toggles are never color-only — each has a text
+ * label naming the category, and the legend below repeats the same
+ * category/color pairing as text, never relying on color alone (see the
+ * `<dl class="legend">` below).
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-diagnostics-controls" } = Astro.props;
+
+const OVERLAYS = [
+  { key: "surface", label: "Surface", swatch: null },
+  { key: "wireframe", label: "Wireframe", swatch: null },
+  { key: "boundary-edges", label: "Boundary edges", swatch: "#ff8a3d" },
+  { key: "non-manifold-edges", label: "Non-manifold edges", swatch: "#e0303f" },
+  { key: "winding-conflicts", label: "Winding conflicts", swatch: "#c837d6" },
+  { key: "degenerate-triangles", label: "Degenerate triangles", swatch: "#e8c400" },
+  { key: "duplicate-faces", label: "Duplicate faces", swatch: "#22c3c3" },
+  { key: "self-intersections", label: "Self-intersections", swatch: "#ff1f4b" },
+] as const;
+---
+
+<div class="viewer-controls stl-diagnostics-controls" id={id} role="group" aria-label="Diagnostics viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-all">Fit all</button>
+  <button type="button" class="control-button" data-action="fit-selected-issue" disabled>Fit selected issue</button>
+
+  <fieldset class="overlay-toggles">
+    <legend>Show/hide</legend>
+    {
+      OVERLAYS.map((overlay) => (
+        <button
+          type="button"
+          class="control-button overlay-toggle"
+          data-action="toggle-overlay"
+          data-overlay={overlay.key}
+          aria-pressed="true"
+        >
+          {overlay.swatch && <span class="overlay-swatch" style={`background:${overlay.swatch}`} aria-hidden="true" />}
+          {overlay.label}
+        </button>
+      ))
+    }
+  </fieldset>
+
+  <div class="overlay-bulk-actions">
+    <button type="button" class="control-button small" data-action="show-all-overlays">Show all</button>
+    <button type="button" class="control-button small" data-action="hide-all-overlays">Hide all</button>
+  </div>
+
+  <dl class="legend" aria-label="Overlay color legend">
+    {
+      OVERLAYS.filter((o) => o.swatch).map((overlay) => (
+        <div class="legend-entry">
+          <dt><span class="overlay-swatch" style={`background:${overlay.swatch}`} aria-hidden="true" /> {overlay.label}</dt>
+        </div>
+      ))
+    }
+  </dl>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

@@ -26,8 +26,8 @@ describe("sanitizeDownloadBasename", () => {
 });
 
 describe("buildScreenshotFilename", () => {
-  it("appends the meshkit-preview suffix and .png extension", () => {
-    expect(buildScreenshotFilename("bracket-final.stl")).toBe("bracket-final-meshkit-preview.png");
+  it("appends the meshwrench-preview suffix and .png extension", () => {
+    expect(buildScreenshotFilename("bracket-final.stl")).toBe("bracket-final-meshwrench-preview.png");
   });
 });
 

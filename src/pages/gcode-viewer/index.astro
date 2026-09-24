@@ -1,0 +1,240 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GCodeDisplayControls from "../../components/tools/GCodeDisplayControls.astro";
+import GCodeLayerControls from "../../components/tools/GCodeLayerControls.astro";
+import GCodePlaybackControls from "../../components/tools/GCodePlaybackControls.astro";
+import GCodeModelInfo from "../../components/tools/GCodeModelInfo.astro";
+import GCodeStatistics from "../../components/tools/GCodeStatistics.astro";
+import GCodeWarnings from "../../components/tools/GCodeWarnings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("gcode-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "G-code Viewer", path: "/gcode-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my G-code file uploaded?",
+    answer: "No. It's read and parsed entirely in your browser, inside a background Web Worker. Nothing is sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Does this connect to my printer?",
+    answer: "No, never. This tool never uses WebSerial, never connects to any device, and never executes a G-code command. It only reads a file and draws what it describes.",
+  },
+  {
+    question: "Which slicers are supported?",
+    answer: "A documented subset of common FDM output aimed at Marlin- and Klipper-style printers, covering typical output patterns from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio. Unknown or unsupported commands are counted and disclosed, never silently ignored or faked.",
+  },
+  {
+    question: "Is the time estimate accurate?",
+    answer: "The feed-rate-only estimate divides path distance by commanded feed rate. It never models acceleration, jerk, pressure advance or firmware queues, so it's never the same as your slicer's own estimate or actual print time — both are always shown as separate, clearly labelled numbers when available.",
+  },
+  {
+    question: "Can this convert an STL to G-code?",
+    answer: "No. Slicing is outside this tool's scope — this is a viewer for G-code that already exists, not a slicer.",
+  },
+];
+---
+
+<ToolLayout
+  title="G-code Viewer — Open and Inspect G-code Files Online | MeshWrench"
+  description="Open a G-code file and inspect its statistics, layers, tools and time estimates in your browser — no upload, no printer connection."
+  path="/gcode-viewer/"
+  h1="G-code Viewer"
+  intro="Open a G-code file and inspect its statistics — layers, tools, movement counts, bounds and time estimates — directly in your browser."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench G-code Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description: "Inspect a G-code file's statistics, layers, tools and time estimates locally in the browser. No upload, no printer connection, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your G-code file stays on this device. MeshWrench reads and renders it locally in your browser — it never connects to a printer." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="gcode-file-input"
+      label="Select a G-code file"
+      accept=".gcode,text/plain"
+      helpText="Up to 400 MB. Targets common FDM slicer output (Marlin/Klipper-style) from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="gcode-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="gcode-viewer-viewport" description="Interactive toolpath preview. Drag to rotate, scroll to zoom." />
+    <GCodeDisplayControls id="gcode-viewer-display-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden><span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.</p>
+
+    <GCodeModelInfo id="gcode-viewer-model-info" />
+    <GCodeLayerControls id="gcode-viewer-layer-controls" />
+    <GCodePlaybackControls id="gcode-viewer-playback-controls" />
+    <GCodeStatistics id="gcode-viewer-statistics" />
+    <GCodeWarnings id="gcode-viewer-warnings" />
+
+    <div class="download-actions">
+      <button type="button" class="control-button" data-action="download-gcode-report" disabled>Download JSON report</button>
+    </div>
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="gcode-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view a G-code file</h2>
+    <ol>
+      <li>Select a G-code file using the picker above.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>Once parsing finishes, drag to rotate, scroll to zoom, and use the panels below to inspect statistics, filter by layer, or play back the toolpath.</li>
+    </ol>
+
+    <h2>What this tool is — and isn't</h2>
+    <p>
+      This is a static <strong>viewer, visualizer and visual simulator</strong> for a G-code file that already
+      exists. It is never a slicer, never a firmware emulator, and never a machine controller — it doesn't use
+      WebSerial, doesn't connect to any printer, and never executes a single command. Playback is a visual
+      reconstruction of the parsed toolpath, not a claim that it exactly reproduces physical printer motion.
+    </p>
+
+    <h2>Supported G-code scope</h2>
+    <p>
+      MeshWrench targets a documented semantic subset of G-code aimed at common FDM slicer output for Marlin- and
+      Klipper-style printers, including typical patterns from <strong>Cura, PrusaSlicer, OrcaSlicer and Bambu
+      Studio</strong>. This is not universal G-code support — unknown or unsupported commands are counted and
+      disclosed, and parsing continues around them rather than failing the whole file.
+    </p>
+
+    <h2>What the model info panel shows</h2>
+    <p>
+      File size, decoded line count, detected slicer (when a file declares one), layer count and detection method
+      (explicit markers vs. inferred from height changes), tool count, linear and arc move counts, rendered segment
+      count, unknown-command and malformed-line counts, checksum status, and the model's own bounds.
+    </p>
+
+    <h2>Time estimates, kept honest</h2>
+    <p>
+      When a file declares its own slicer-estimated print time, that number is shown separately from MeshWrench's own
+      <strong>feed-rate-only estimate</strong> — path distance divided by commanded feed rate. The feed-rate-only
+      estimate never models acceleration, jerk, pressure advance, or firmware queues, so it's never presented as
+      actual print time.
+    </p>
+
+    <h2>Is the file uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file with the
+      standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
+      WebGL — also on your device.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) =>
+          related!.status === "ready" ? (
+            <li>
+              <a class="related-tool-name" href={related!.path}>{related!.name}</a>
+              <span class="related-tool-status">Available</span>
+            </li>
+          ) : (
+            <li>
+              <span class="related-tool-name">{related!.name}</span>
+              <span class="related-tool-status">Planned</span>
+            </li>
+          ),
+        )}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

@@ -1,0 +1,291 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GLBDisplayControls from "../../components/tools/GLBDisplayControls.astro";
+import GLBModelInfo from "../../components/tools/GLBModelInfo.astro";
+import GLBSceneTree from "../../components/tools/GLBSceneTree.astro";
+import GLBMaterialInfo from "../../components/tools/GLBMaterialInfo.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("glb-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "GLB Viewer", path: "/glb-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my GLB file uploaded?",
+    answer:
+      "No. The file is read and resolved entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Does this viewer show the file's real materials and textures?",
+    answer:
+      "Yes, at a practical first-viewer level: base-color factors, base-color textures embedded in the file, metallic/roughness factors, emissive color and alpha mode all render. Other texture maps (metallic-roughness, normal, occlusion) are detected and reported, but not decoded in this phase — MeshWrench never fetches a texture from anywhere; only image bytes already embedded in the file are used.",
+  },
+  {
+    question: "What unit are the dimensions shown in?",
+    answer:
+      "glTF always uses meters. This viewer shows dimensions in meters and converts them to millimeters for reference — no rendering scale is applied to the model, unlike MeshWrench's GLB to STL converter, which scales its output ×1000 for millimeter-based slicers.",
+  },
+  {
+    question: "Does this tool play animations or apply a skin?",
+    answer:
+      "No. This viewer renders the file's static base scene only — animation channels, skin deformation and morph targets are detected and disclosed, but never applied. What you see is the model's default pose, not an animated or posed result.",
+  },
+  {
+    question: "Does it support Draco or Meshopt-compressed files?",
+    answer:
+      "No. Files that require Draco mesh compression or Meshopt compression to read their geometry are rejected with a clear error — MeshWrench doesn't fetch or run a compression decoder.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="GLB Viewer — Open and Inspect GLB Files Online | MeshWrench"
+  description="Open and inspect GLB models directly in your browser. Explore scenes, nodes, materials and embedded textures without uploading your file."
+  path="/glb-viewer/"
+  h1="GLB Viewer"
+  intro="Open and inspect GLB models directly in your browser. Explore scenes, nodes, materials and embedded textures without uploading your file."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench GLB Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect GLB files locally in the browser — rotate, zoom, explore scenes and nodes, and see core PBR materials and embedded base-color textures. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your GLB stays on this device. MeshWrench reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="glb-file-input"
+      label="Select a GLB file"
+      accept=".glb,model/gltf-binary,application/octet-stream"
+      helpText="Up to 150 MB. Embedded base-color textures render directly from the file; other texture maps and external resources are never fetched."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="glb-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="glb-viewer-viewport"
+      description="Interactive 3D preview of your GLB model. Drag to rotate, scroll to zoom. Nodes and primitives can be shown or hidden using the panel below."
+    />
+    <GLBDisplayControls id="glb-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <GLBModelInfo id="glb-viewer-model-info" />
+    <GLBSceneTree id="glb-viewer-scene-tree" />
+    <GLBMaterialInfo id="glb-viewer-material-info" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="glb-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view a GLB file</h2>
+    <ol>
+      <li>Select a GLB file using the picker above.</li>
+      <li>MeshWrench resolves it locally, in a background worker — nothing leaves your device.</li>
+      <li>
+        Once resolution finishes, drag to rotate, scroll to zoom, and use the panel below the viewport to fit the
+        view, toggle wireframe, switch material display, or show and hide individual nodes and primitives.
+      </li>
+    </ol>
+
+    <h2>What the GLB Viewer displays</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, glTF version, the selected scene, scene and
+      node counts, mesh and primitive counts, resolved node-instance count, source vertex and rendered triangle
+      counts, line and point counts, material/texture/embedded-image counts, animation/skin/morph-target counts, and
+      whether source normals, tangents and vertex colors are present. A node tree lists every node and primitive so
+      you can inspect — and individually show or hide — the pieces of a multi-node scene.
+    </p>
+
+    <h2>Scenes, nodes and mesh instances</h2>
+    <p>
+      A GLB file organizes geometry as a real scene graph: a scene selects one or more root nodes, each node can
+      have child nodes and its own transform, and a node references a mesh made of one or more primitives. This
+      viewer walks that real structure — the same default-scene selection and node hierarchy the GLB to STL
+      converter uses — rather than inventing object boundaries. A single mesh referenced by more than one node
+      renders as separate, independently placed and independently visible instances.
+    </p>
+
+    <h2>How embedded materials and textures work</h2>
+    <p>
+      This viewer supports the core metallic-roughness material model at a practical first-viewer level:
+      base-color factor and texture, metallic and roughness factors, emissive color, alpha mode and double-sided
+      rendering. Base-color textures embedded directly in the GLB file (as PNG or JPEG image bytes) are decoded and
+      shown — MeshWrench never fetches an external image. Metallic-roughness, normal and occlusion texture maps are
+      detected and reported but not decoded in this phase; affected surfaces still render using their material
+      factors. "Neutral material," "Vertex colors" and "Color by node" display modes are also available — the last
+      one uses a deterministic internal palette purely as a visualization aid, never presented as the file's real
+      appearance.
+    </p>
+
+    <h2>How dimensions are shown</h2>
+    <p>
+      glTF always uses meters as its coordinate unit. This viewer shows dimensions in meters and converts them to
+      millimeters for reference, but never applies a rendering scale to the model itself — unlike MeshWrench's GLB to
+      STL converter, which deliberately scales its STL output ×1000 for millimeter-based slicers. What you see here
+      is the file's own, unscaled geometry.
+    </p>
+
+    <h2>What happens to animations and skins</h2>
+    <p>
+      This viewer renders the file's static base scene only. Animation channels aren't played, skin deformation
+      isn't applied, and morph targets aren't applied — if a file includes any of these, a clear warning says so.
+      What's shown is the model's default pose, not an animated or posed result.
+    </p>
+
+    <h2>GLB versus STL</h2>
+    <p>
+      GLB is a compact binary container for a full glTF scene — real hierarchy, materials, embedded textures,
+      vertex colors and (optionally) animation, all in one file. STL stores only raw triangle geometry, with no
+      units, no materials and no metadata at all. This viewer can show GLB's richer structure that a converter's
+      flat STL output can't carry over.
+    </p>
+
+    <h2>Why a GLB may not open</h2>
+    <ul>
+      <li>The file isn't a valid GLB container, or its header/chunk framing is corrupted.</li>
+      <li>The glTF JSON is malformed, or references a node, mesh, accessor or material that doesn't exist.</li>
+      <li>A node hierarchy forms a cycle, or nests deeper than this tool's safety limit allows.</li>
+      <li>The file requires Draco or Meshopt compression, or another required extension this tool doesn't support.</li>
+      <li>The file is more complex (vertices, triangles, nodes or instances) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the GLB uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file, resolves
+      its scene graph, decodes any embedded texture images, and renders the result with WebGL — all on your
+      device. You can verify this yourself: open your browser's developer tools, watch the network tab, and load a
+      file. No request containing your file, or any image or metadata found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

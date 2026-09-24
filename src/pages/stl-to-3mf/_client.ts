@@ -6,7 +6,7 @@
  * differences here: the output is a 3MF package instead of OBJ text, the
  * info panel always shows the fixed unit-declaration facts (input
  * unknown, output millimetres, no scaling) rather than any detected
- * value, and dimensions are displayed as plain numbers — MeshKit
+ * value, and dimensions are displayed as plain numbers — MeshWrench
  * declares millimetres for the *package*, but never claims to know what
  * the source STL's numbers actually represent.
  *
@@ -24,6 +24,8 @@ import type { ConversionWarning, STLToThreeMFResult } from "../../lib/stl-to-thr
 import type { STLBounds } from "../../lib/stl/types";
 import { TOOL_STATE_LABELS, type ToolState } from "../../lib/tool-state";
 import { WorkerClient, type WorkerLike } from "../../lib/workers/worker-client";
+import { initBatchEntitlementGate } from "../../lib/pro/batch-entitlement-gate";
+import { createProductionEntitlementProvider } from "../../lib/pro/production-provider";
 
 type ThreeModule = typeof import("three");
 type ToolViewportCtor = typeof import("../../lib/three/viewport").ToolViewport;
@@ -80,6 +82,9 @@ function init(): void {
   const wireframeButton = document.querySelector<HTMLButtonElement>('[data-action="toggle-wireframe"]')!;
   const downloadButton = document.querySelector<HTMLButtonElement>('[data-action="download"]')!;
   const clearButton = document.querySelector<HTMLButtonElement>('[data-action="clear-file"]')!;
+
+  const batchWorkspaceRoot = document.querySelector<HTMLElement>("[data-batch-workspace]");
+  if (batchWorkspaceRoot) initBatchEntitlementGate(batchWorkspaceRoot, "convert-stl-to-3mf", "batch-conversion", createProductionEntitlementProvider());
 
   let currentSession: FileSession | null = null;
   let workerClient: WorkerClient | null = null;

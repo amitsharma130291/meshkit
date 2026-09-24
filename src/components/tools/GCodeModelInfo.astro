@@ -1,0 +1,33 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-model-info" } = Astro.props;
+---
+
+<section class="model-info" id={id} aria-label="G-code file information">
+  <div class="outcome-badge" data-status-badge data-status="">
+    <span data-status-label></span>
+  </div>
+
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-file-size></dd></div>
+    <div><dt>Decoded lines</dt><dd data-decoded-lines></dd></div>
+    <div><dt>Detected slicer</dt><dd data-dialect></dd></div>
+    <div><dt>Layers</dt><dd data-layer-count></dd></div>
+    <div><dt>Layer detection</dt><dd data-layer-detection-mode></dd></div>
+    <div><dt>Tools</dt><dd data-tool-count></dd></div>
+    <div><dt>Linear moves</dt><dd data-linear-moves></dd></div>
+    <div><dt>Arc moves</dt><dd data-arc-moves></dd></div>
+    <div><dt>Rendered segments</dt><dd data-generated-segments></dd></div>
+    <div><dt>Unknown commands</dt><dd data-unknown-commands></dd></div>
+    <div><dt>Malformed lines</dt><dd data-malformed-lines></dd></div>
+    <div><dt>Checksums</dt><dd data-checksum-summary></dd></div>
+    <div><dt>Model width</dt><dd data-bounds-width></dd></div>
+    <div><dt>Model depth</dt><dd data-bounds-depth></dd></div>
+    <div><dt>Model height</dt><dd data-bounds-height></dd></div>
+  </dl>
+
+  <p class="non-planar-note" data-non-planar-note hidden></p>
+</section>

@@ -1,0 +1,31 @@
+---
+/**
+ * Presentation only — a before/after numeric comparison table, same
+ * shape as `STLRepairComparison.astro`. The 3D viewport itself is shared
+ * (a single `ToolViewport`, toggled via `STLOptimizeControls`'s own
+ * toggle button) rather than two independent side-by-side viewports —
+ * same disclosed scope note as STL Repair's own comparison view.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-optimize-comparison" } = Astro.props;
+---
+
+<section class="optimize-comparison" id={id} data-optimize-comparison hidden aria-label="Before and after comparison">
+  <h3>Before / after</h3>
+  <table class="comparison-table">
+    <thead>
+      <tr><th scope="col">Measure</th><th scope="col">Before</th><th scope="col">After</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Watertight verdict</th><td data-compare-verdict-before></td><td data-compare-verdict-after></td></tr>
+      <tr><th scope="row">Triangles</th><td data-compare-triangles-before></td><td data-compare-triangles-after></td></tr>
+      <tr><th scope="row">Unique vertices</th><td data-compare-vertices-before></td><td data-compare-vertices-after></td></tr>
+      <tr><th scope="row">Shells</th><td data-compare-shells-before></td><td data-compare-shells-after></td></tr>
+      <tr><th scope="row">Boundary edges</th><td data-compare-boundary-before></td><td data-compare-boundary-after></td></tr>
+      <tr><th scope="row">Non-manifold edges</th><td data-compare-nonmanifold-before></td><td data-compare-nonmanifold-after></td></tr>
+    </tbody>
+  </table>
+</section>

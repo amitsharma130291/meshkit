@@ -1,0 +1,48 @@
+---
+/**
+ * Presentation only — src/pages/3mf-viewer/_client.ts fills every
+ * `data-info-*` node and toggles `hidden`. Unlike ModelInfoPanel.astro
+ * (STL) and OBJModelInfo.astro (OBJ), 3MF declares a real measurement
+ * unit, so this panel shows dimensions in BOTH the declared unit and
+ * millimeters — never a generic "model units" label.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "threemf-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>Package entries</dt><dd data-info-entry-count></dd></div>
+    <div><dt>Declared unit</dt><dd data-info-unit></dd></div>
+    <div><dt>Unit → millimeter scale</dt><dd data-info-unit-scale></dd></div>
+    <div><dt>Width (declared unit)</dt><dd data-info-width-declared></dd></div>
+    <div><dt>Height (declared unit)</dt><dd data-info-height-declared></dd></div>
+    <div><dt>Depth (declared unit)</dt><dd data-info-depth-declared></dd></div>
+    <div><dt>Width (mm)</dt><dd data-info-width-mm></dd></div>
+    <div><dt>Height (mm)</dt><dd data-info-height-mm></dd></div>
+    <div><dt>Depth (mm)</dt><dd data-info-depth-mm></dd></div>
+    <div><dt>Bounding min (mm)</dt><dd data-info-bbox-min></dd></div>
+    <div><dt>Bounding max (mm)</dt><dd data-info-bbox-max></dd></div>
+    <div><dt>Mesh objects</dt><dd data-info-mesh-objects></dd></div>
+    <div><dt>Component objects</dt><dd data-info-component-objects></dd></div>
+    <div><dt>Build items</dt><dd data-info-build-items></dd></div>
+    <div><dt>Resolved instances</dt><dd data-info-resolved-instances></dd></div>
+    <div><dt>Source vertices</dt><dd data-info-source-vertices></dd></div>
+    <div><dt>Rendered triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Base materials</dt><dd data-info-base-materials></dd></div>
+    <div><dt>Color groups</dt><dd data-info-color-groups></dd></div>
+    <div><dt>Texture resources</dt><dd data-info-texture-resources></dd></div>
+    <div><dt>Metadata entries</dt><dd data-info-metadata-count></dd></div>
+  </dl>
+
+  <p class="model-info-unit-note">
+    3MF declares a real measurement unit. Dimensions above are shown as declared and converted to millimeters —
+    the conversion is applied once, using the file's own declared unit.
+  </p>
+
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

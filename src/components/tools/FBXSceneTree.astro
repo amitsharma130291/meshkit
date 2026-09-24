@@ -1,0 +1,25 @@
+---
+/**
+ * Presentation shell only — rows are built by src/pages/fbx-viewer/_client.ts,
+ * grouped by Model (FBX's own real Model hierarchy, walked via
+ * `resolveModelHierarchy()`), the same shell/row-cap pattern
+ * GLBSceneTree.astro/ThreeMFSceneTree.astro/SceneTree.astro already use.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "fbx-scene-tree" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-scene-tree hidden aria-label="Models and mesh instances">
+  <div class="scene-tree-header">
+    <h2>Models &amp; mesh instances</h2>
+    <div class="scene-tree-actions">
+      <button type="button" class="control-button" data-action="show-all-segments">Show all</button>
+      <button type="button" class="control-button" data-action="hide-all-segments">Hide all</button>
+    </div>
+  </div>
+  <p class="scene-tree-note" data-scene-tree-note></p>
+  <div class="scene-tree-list" data-scene-tree-list role="group" aria-label="Mesh instance visibility"></div>
+</section>

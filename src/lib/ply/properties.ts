@@ -10,9 +10,9 @@ import { plyError } from "./errors";
 import { isIntegerScalarType } from "./scalar-types";
 import type { PLYElement, PLYHeader, PLYListProperty } from "./types";
 
-const VERTEX_COLOR_NAMES = new Set(["red", "green", "blue", "alpha", "r", "g", "b", "a"]);
-const VERTEX_NORMAL_NAMES = new Set(["nx", "ny", "nz"]);
-const VERTEX_TEXCOORD_NAMES = new Set(["s", "t", "u", "v", "texture_u", "texture_v"]);
+export const VERTEX_COLOR_NAMES = new Set(["red", "green", "blue", "alpha", "r", "g", "b", "a"]);
+export const VERTEX_NORMAL_NAMES = new Set(["nx", "ny", "nz"]);
+export const VERTEX_TEXCOORD_NAMES = new Set(["s", "t", "u", "v", "texture_u", "texture_v"]);
 const FACE_INDEX_NAMES = new Set(["vertex_indices", "vertex_index"]);
 
 export function findVertexElement(header: PLYHeader): PLYElement {

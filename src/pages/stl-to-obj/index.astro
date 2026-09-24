@@ -5,6 +5,7 @@ import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
 import ToolStatus from "../../components/tools/ToolStatus.astro";
 import ToolViewport from "../../components/tools/ToolViewport.astro";
 import ToolError from "../../components/tools/ToolError.astro";
+import BatchWorkspace from "../../components/tools/BatchWorkspace.astro";
 import { getToolById } from "../../config/tools";
 
 const tool = getToolById("stl-to-obj")!;
@@ -34,18 +35,18 @@ const faqs = [
   {
     question: "What units does the downloaded OBJ use?",
     answer:
-      "Neither STL nor OBJ define a universal measurement unit. MeshKit preserves your file's numeric coordinates exactly — it never multiplies them by any conversion factor. Your destination application decides how to interpret the numbers.",
+      "Neither STL nor OBJ define a universal measurement unit. MeshWrench preserves your file's numeric coordinates exactly — it never multiplies them by any conversion factor. Your destination application decides how to interpret the numbers.",
   },
   {
     question: "Why did my conversion fail?",
     answer:
-      "Usually because the file isn't a valid STL, or every triangle in it has zero area (a degenerate mesh with nothing to export) — see \"Why an STL may fail to convert\" below for the full list MeshKit checks for.",
+      "Usually because the file isn't a valid STL, or every triangle in it has zero area (a degenerate mesh with nothing to export) — see \"Why an STL may fail to convert\" below for the full list MeshWrench checks for.",
   },
 ];
 ---
 
 <ToolLayout
-  title="STL to OBJ Converter — Convert STL Files Online | MeshKit"
+  title="STL to OBJ Converter — Convert STL Files Online | MeshWrench"
   description="Convert STL files to OBJ directly in your browser. Your model is processed locally and never uploaded."
   path="/stl-to-obj/"
   h1="STL to OBJ Converter"
@@ -53,7 +54,7 @@ const faqs = [
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   webApplication={{
-    name: "MeshKit STL to OBJ Converter",
+    name: "MeshWrench STL to OBJ Converter",
     applicationCategory: "UtilitiesApplication",
     description:
       "Convert binary or ASCII STL files to indexed OBJ locally in the browser, deduplicating exactly identical vertices and writing geometric face normals. No upload, no account required.",
@@ -62,7 +63,7 @@ const faqs = [
 >
   <PrivacyNotice
     slot="privacy-notice"
-    message="Your STL stays on this device. MeshKit converts it to OBJ locally in your browser."
+    message="Your STL stays on this device. MeshWrench converts it to OBJ locally in your browser."
   />
 
   <div slot="file-input">
@@ -126,19 +127,21 @@ const faqs = [
     </div>
 
     <ToolError id="stl-to-obj-error" />
+
+    <BatchWorkspace id="stl-to-obj-batch-workspace" acceptHint="STL files only, same limits as single-file conversion." />
   </div>
 
   <Fragment slot="seo-content">
     <h2>How to convert STL to OBJ</h2>
     <ol>
       <li>Select an STL file using the picker above — binary or ASCII both work.</li>
-      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
       <li>Review the preview, dimensions and any warnings, then download the converted OBJ file.</li>
     </ol>
 
     <h2>What geometry is preserved</h2>
     <p>
-      The converter reuses MeshKit's existing STL parser (the same one <a href="/stl-viewer/">STL Viewer</a> uses) to
+      The converter reuses MeshWrench's existing STL parser (the same one <a href="/stl-viewer/">STL Viewer</a> uses) to
       read your file's triangle geometry exactly as written — numeric coordinates are never changed, and triangle
       winding is preserved. The output is valid, indexed OBJ geometry with one geometric face normal per triangle.
     </p>
@@ -146,7 +149,7 @@ const faqs = [
     <h2>How duplicate STL vertices are handled</h2>
     <p>
       STL stores every triangle's three vertices independently, so the same position commonly repeats many times
-      across a mesh. OBJ supports indexed vertices, so MeshKit merges vertices whose coordinates are exactly,
+      across a mesh. OBJ supports indexed vertices, so MeshWrench merges vertices whose coordinates are exactly,
       bit-for-bit identical into a single vertex record. This is not mesh repair: vertices that are close but not
       identical are always kept distinct, with no distance tolerance and no seam welding.
     </p>
@@ -154,13 +157,13 @@ const faqs = [
     <h2>How normals are written</h2>
     <p>
       Each output triangle gets one recalculated geometric face normal, referenced from its face line as{" "}
-      <code>f a//n b//n c//n</code>, with smoothing explicitly disabled (<code>s off</code>). MeshKit doesn't attempt
+      <code>f a//n b//n c//n</code>, with smoothing explicitly disabled (<code>s off</code>). MeshWrench doesn't attempt
       to reconstruct smooth per-vertex normals, since STL itself has no reliable smoothing information to draw from.
     </p>
 
     <h2>How units are handled</h2>
     <p>
-      Neither STL nor OBJ define a universal measurement unit. MeshKit preserves your file's numeric coordinates
+      Neither STL nor OBJ define a universal measurement unit. MeshWrench preserves your file's numeric coordinates
       exactly — it never multiplies them by any conversion factor, and dimensions are shown as model units. Your
       destination application decides how to interpret the numbers.
     </p>
@@ -175,7 +178,7 @@ const faqs = [
 
     <h2>Does the OBJ include materials or textures?</h2>
     <p>
-      No. STL has no field for color, material or texture data, so there is nothing for MeshKit to carry over. The
+      No. STL has no field for color, material or texture data, so there is nothing for MeshWrench to carry over. The
       generated OBJ never includes an <code>mtllib</code> reference, a <code>usemtl</code> statement or texture
       coordinates — only vertex positions, geometric normals and faces.
     </p>
@@ -189,7 +192,7 @@ const faqs = [
 
     <h2>Is the file uploaded?</h2>
     <p>
-      No. There is no server-side conversion route in MeshKit. Your browser reads the STL file, parses it, and
+      No. There is no server-side conversion route in MeshWrench. Your browser reads the STL file, parses it, and
       builds the OBJ file, all on your device. You can verify this yourself: open your browser's developer tools,
       watch the network tab, and convert a file. No request containing your file will appear.
     </p>

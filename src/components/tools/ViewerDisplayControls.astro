@@ -1,0 +1,64 @@
+---
+/**
+ * Presentation only, following ViewerControls.astro's contract (real
+ * labelled buttons/selects, `aria-pressed` kept in sync by the client
+ * script). Controls that only apply to files with the right content
+ * (source/flat shading, lines, points) start `hidden` and are revealed by
+ * _client.ts only when the loaded file actually has that content — see
+ * "Only display a control when the loaded file supports it" in the Phase
+ * 4A spec.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "obj-viewer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls obj-viewer-controls" id={id} role="group" aria-label="Viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-all">Fit all</button>
+  <button type="button" class="control-button" data-action="fit-visible">Fit visible</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">Wireframe</button>
+
+  <label class="control-field" data-control="shading">
+    <span>Shading</span>
+    <select data-action="shading-mode">
+      <option value="smooth">Source / smooth normals</option>
+      <option value="flat">Flat face normals</option>
+    </select>
+  </label>
+  <p class="control-note" data-shading-note hidden></p>
+
+  <label class="control-field">
+    <span>Model color</span>
+    <select data-action="model-color">
+      <option value="#c7c2de">Neutral</option>
+      <option value="#6d42f5">Violet</option>
+      <option value="#24b8d8">Cyan</option>
+      <option value="#ed4b93">Pink</option>
+    </select>
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <button type="button" class="control-button" data-action="toggle-lines" aria-pressed="true" data-control="lines" hidden>
+    Hide lines
+  </button>
+  <button type="button" class="control-button" data-action="toggle-points" aria-pressed="true" data-control="points" hidden>
+    Hide points
+  </button>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

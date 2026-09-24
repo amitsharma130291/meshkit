@@ -23,6 +23,8 @@ import type { ConversionWarning, STLToOBJResult } from "../../lib/stl-to-obj/typ
 import type { STLBounds } from "../../lib/stl/types";
 import { TOOL_STATE_LABELS, type ToolState } from "../../lib/tool-state";
 import { WorkerClient, type WorkerLike } from "../../lib/workers/worker-client";
+import { initBatchEntitlementGate } from "../../lib/pro/batch-entitlement-gate";
+import { createProductionEntitlementProvider } from "../../lib/pro/production-provider";
 
 type ThreeModule = typeof import("three");
 type ToolViewportCtor = typeof import("../../lib/three/viewport").ToolViewport;
@@ -79,6 +81,9 @@ function init(): void {
   const wireframeButton = document.querySelector<HTMLButtonElement>('[data-action="toggle-wireframe"]')!;
   const downloadButton = document.querySelector<HTMLButtonElement>('[data-action="download"]')!;
   const clearButton = document.querySelector<HTMLButtonElement>('[data-action="clear-file"]')!;
+
+  const batchWorkspaceRoot = document.querySelector<HTMLElement>("[data-batch-workspace]");
+  if (batchWorkspaceRoot) initBatchEntitlementGate(batchWorkspaceRoot, "convert-stl-to-obj", "batch-conversion", createProductionEntitlementProvider());
 
   let currentSession: FileSession | null = null;
   let workerClient: WorkerClient | null = null;

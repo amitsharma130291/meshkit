@@ -1,0 +1,20 @@
+---
+/**
+ * Presentation only — shows the operations a repair run WOULD perform,
+ * before any geometry is touched. `_client.ts` populates
+ * `data-plan-steps` from the worker's own "plan" mode result and only
+ * enables `data-action="run-repair"` once a plan has actually been
+ * shown, so repair can never run automatically before the user sees it.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-repair-plan" } = Astro.props;
+---
+
+<section class="repair-plan" id={id} data-repair-plan hidden aria-label="Planned repair operations">
+  <h2>Planned operations</h2>
+  <ul class="plan-steps-list" data-plan-steps></ul>
+  <button type="button" class="control-button primary" data-action="run-repair" disabled>Run repair</button>
+</section>

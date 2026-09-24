@@ -1,0 +1,337 @@
+---
+/**
+ * The reusable Batch workspace for planning-capable operations (STL
+ * Repair, STL Optimization) — unlike `BatchWorkspace.astro`'s
+ * immediate-run flow, this one NEVER processes a file the instant it's
+ * added: `files selected → analyze & plan each file → aggregate plan
+ * shown → user confirms → jobs run`, mirroring the single-file pages'
+ * own "see a plan before mutation" guarantee. Operation-specific
+ * settings controls (Safe/Standard/Custom for repair, quality
+ * preset/target for optimization) are provided via the `settings` slot.
+ */
+import ProBatchLockedNotice from "./ProBatchLockedNotice.astro";
+
+interface Props {
+  id: string;
+  acceptHint: string;
+}
+const { id, acceptHint } = Astro.props;
+---
+
+<div id={id} class="batch-workspace" data-batch-workspace>
+  <div class="batch-tabs" role="tablist" aria-label="Processing mode">
+    <button type="button" role="tab" id={`${id}-tab-single`} aria-controls={`${id}-panel-single`} data-batch-tab="single" aria-selected="true">
+      Single file
+    </button>
+    <button type="button" role="tab" id={`${id}-tab-batch`} aria-controls={`${id}-panel-batch`} data-batch-tab="batch" aria-selected="false" tabindex="-1">
+      Batch
+    </button>
+  </div>
+
+  <div id={`${id}-panel-batch`} role="tabpanel" aria-labelledby={`${id}-tab-batch`} data-batch-panel="batch" hidden>
+    <div data-batch-locked-slot>
+      <ProBatchLockedNotice id={`${id}-locked-notice`} />
+    </div>
+
+    <div data-batch-unlocked-content hidden>
+      <!-- Stage 1: intake -->
+      <div data-batch-stage-intake>
+        <div class="batch-dropzone" data-batch-dropzone tabindex="0" role="button" aria-label={`Add files to the batch. ${acceptHint} Click or press Enter to browse, or drag files here.`}>
+          <p>Drag files here, or click to browse</p>
+          <p class="batch-dropzone-hint">{acceptHint}</p>
+          <input type="file" multiple data-batch-file-input class="sr-only" aria-label={`Add files to the batch. ${acceptHint}`} tabindex="-1" />
+        </div>
+
+        <section class="batch-settings" data-batch-settings aria-label="Batch settings">
+          <slot name="settings" />
+          <div class="batch-preset-row" data-batch-preset-row hidden>
+            <label class="control-field">
+              <span>Saved preset</span>
+              <select data-batch-preset-select>
+                <option value="">— none —</option>
+              </select>
+            </label>
+            <button type="button" class="control-button" data-action="save-preset">Save current settings as preset…</button>
+            <button type="button" class="control-button" data-action="manage-presets" aria-expanded="false" aria-controls={`${id}-preset-manager`}>Manage presets</button>
+          </div>
+
+          <div id={`${id}-preset-manager`} class="batch-preset-manager" data-batch-preset-manager hidden>
+            <h4>Manage presets</h4>
+            <p class="batch-preset-manager-status" data-preset-manager-status role="status" aria-live="polite"></p>
+            <div class="batch-preset-manager-list" data-preset-manager-list role="list" aria-label="Saved presets"></div>
+            <div class="batch-controls" role="group" aria-label="Preset import and export">
+              <button type="button" class="control-button" data-action="export-presets">Export presets…</button>
+              <button type="button" class="control-button" data-action="import-presets">Import presets…</button>
+              <input type="file" accept="application/json" class="sr-only" data-action="import-presets-file" aria-label="Import presets from a JSON file" tabindex="-1" />
+              <button type="button" class="control-button" data-action="close-preset-manager">Close</button>
+            </div>
+          </div>
+        </section>
+
+        <fieldset class="batch-concurrency" data-batch-concurrency>
+          <legend>Files processed at once</legend>
+          <label><input type="radio" name={`${id}-concurrency`} value="1" checked /> 1 file at a time</label>
+          <label><input type="radio" name={`${id}-concurrency`} value="2" /> 2 files at a time</label>
+          <p class="batch-concurrency-status" data-batch-concurrency-status role="status" aria-live="polite"></p>
+        </fieldset>
+
+        <p class="batch-queue-summary" data-batch-intake-summary role="status" aria-live="polite"></p>
+        <div class="batch-file-list" data-batch-staged-rows role="list" aria-label="Files staged for planning"></div>
+
+        <div class="batch-controls" role="group" aria-label="Planning actions">
+          <button type="button" data-variant="primary" data-action="analyze-and-plan" disabled>Analyze &amp; plan</button>
+          <button type="button" class="control-button" data-action="cancel-planning" hidden>Cancel planning</button>
+        </div>
+      </div>
+
+      <!-- Stage 2: aggregate plan review -->
+      <div data-batch-stage-plan hidden>
+        <h3>Review the plan before anything is changed</h3>
+        <div class="batch-plan-list" data-batch-plan-rows role="list" aria-label="Per-file repair/optimization plan"></div>
+        <div class="batch-controls" role="group" aria-label="Plan confirmation">
+          <button type="button" class="control-button" data-action="back-to-intake">Add or remove files</button>
+          <button type="button" data-variant="primary" data-action="confirm-plan" disabled>Confirm and run</button>
+        </div>
+      </div>
+
+      <!-- Stage 3: run (progress, results, downloads) -->
+      <div data-batch-stage-run hidden>
+        <p class="batch-queue-summary" data-batch-queue-summary role="status" aria-live="polite"></p>
+        <div class="batch-file-list" data-batch-file-rows role="list" aria-label="Batch files"></div>
+        <div class="batch-controls" role="group" aria-label="Batch actions">
+          <button type="button" class="control-button" data-action="cancel-all">Cancel all</button>
+          <button type="button" class="control-button" data-action="clear-completed">Clear completed</button>
+          <button type="button" data-variant="primary" data-action="download-zip" disabled>Download all as ZIP</button>
+          <button type="button" class="control-button" data-action="download-batch-report" disabled>Download batch report (JSON)</button>
+        </div>
+      </div>
+
+      <template data-batch-row-template>
+        <div class="batch-file-row" role="listitem">
+          <div class="batch-file-cell" data-cell="name"></div>
+          <div class="batch-file-cell" data-label="Status:" data-cell="state"></div>
+          <div class="batch-file-cell" data-label="Progress:" data-cell="progress">
+            <progress max="100" value="0"></progress>
+          </div>
+          <div class="batch-file-cell batch-file-actions" data-cell="actions">
+            <button type="button" class="control-button" data-row-action="retry" hidden>Retry</button>
+            <button type="button" class="control-button" data-row-action="cancel" hidden>Cancel</button>
+            <button type="button" class="control-button" data-row-action="remove" hidden>Remove</button>
+            <a class="control-button" data-row-action="download" hidden>Download</a>
+          </div>
+        </div>
+      </template>
+
+      <template data-batch-staged-row-template>
+        <div class="batch-file-row batch-staged-row" role="listitem">
+          <div class="batch-file-cell" data-cell="name"></div>
+          <div class="batch-file-cell" data-label="Size:" data-cell="size"></div>
+          <div class="batch-file-cell batch-file-actions" data-cell="actions">
+            <button type="button" class="control-button" data-row-action="remove">Remove</button>
+          </div>
+        </div>
+      </template>
+
+      <template data-preset-manager-row-template>
+        <div class="batch-preset-manager-row" role="listitem">
+          <span data-cell="name"></span>
+          <div class="batch-file-actions">
+            <button type="button" class="control-button" data-row-action="rename-preset">Rename</button>
+            <button type="button" class="control-button" data-row-action="delete-preset">Delete</button>
+          </div>
+        </div>
+      </template>
+
+      <template data-batch-plan-row-template>
+        <div class="batch-plan-row" role="listitem">
+          <h4 data-cell="name"></h4>
+          <p data-cell="status"></p>
+          <dl class="batch-plan-details" data-cell="details" hidden>
+            <div><dt>Detected issues</dt><dd data-plan="issues"></dd></div>
+            <div><dt>Planned operations</dt><dd data-plan="planned"></dd></div>
+            <div><dt>Skipped operations</dt><dd data-plan="skipped"></dd></div>
+            <div><dt>Eligibility</dt><dd data-plan="eligibility"></dd></div>
+            <div><dt>Warnings</dt><dd data-plan="warnings"></dd></div>
+          </dl>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<style>
+  .batch-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .batch-tabs button {
+    border: none;
+    background: transparent;
+    padding: 10px 16px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .batch-tabs button[aria-selected="true"] {
+    color: var(--violet-dark);
+    border-bottom-color: var(--violet);
+  }
+  .batch-dropzone {
+    border: 2px dashed var(--line);
+    border-radius: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .batch-dropzone:focus-visible {
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
+  .batch-dropzone-hint {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 4px;
+  }
+  .batch-settings {
+    margin-top: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .batch-preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: end;
+  }
+  .batch-concurrency {
+    margin: 14px 0;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .batch-concurrency legend {
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0 4px;
+  }
+  .batch-concurrency label {
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .batch-concurrency-status {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    flex-basis: 100%;
+  }
+  .batch-preset-manager {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+  .batch-preset-manager h4 {
+    margin: 0 0 8px;
+  }
+  .batch-preset-manager-status:empty {
+    display: none;
+  }
+  .batch-preset-manager-list {
+    display: grid;
+    gap: 6px;
+  }
+  .batch-preset-manager-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .batch-queue-summary {
+    margin: 12px 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .batch-file-list {
+    display: grid;
+    gap: 8px;
+  }
+  .batch-file-row {
+    display: grid;
+    grid-template-columns: 1fr auto 140px auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+  .batch-staged-row {
+    grid-template-columns: 1fr auto auto;
+  }
+  .batch-file-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .batch-plan-row {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+  .batch-plan-row h4 {
+    margin: 0 0 4px;
+  }
+  .batch-plan-details {
+    margin: 8px 0 0;
+    display: grid;
+    gap: 4px;
+    font-size: 0.85rem;
+  }
+  .batch-plan-details div {
+    display: flex;
+    gap: 6px;
+  }
+  .batch-plan-details dt {
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 140px;
+  }
+  .batch-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  @media (max-width: 480px) {
+    .batch-file-row,
+    .batch-staged-row {
+      grid-template-columns: 1fr;
+    }
+    .batch-file-row [data-label]::before {
+      content: attr(data-label);
+      font-weight: 700;
+      margin-right: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .batch-plan-details div {
+      flex-direction: column;
+      gap: 2px;
+    }
+    .batch-plan-details dt {
+      min-width: 0;
+    }
+  }
+</style>

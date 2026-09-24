@@ -9,7 +9,8 @@
     "postbuild": "node scripts/generate-csp-headers.mjs",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seo:audit": "npm run build && node scripts/audit-seo.mjs"
   },
   "dependencies": {
     "astro": "^5.14.1",
@@ -20,6 +21,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.2.1",
     "@types/three": "^0.169.0",
+    "linkedom": "^0.18.13",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }

@@ -29,7 +29,18 @@ interface Props {
   ogDescription?: string;
   ogType?: string;
   noindex?: boolean;
+  /** Path relative to the site root. Defaults to `siteConfig.defaultSocialImage`
+   *  — pass this only when a page has a genuinely distinct, higher-value
+   *  preview image (see the "Open Graph and social metadata" note in
+   *  docs/ARCHITECTURE.md for why MeshWrench deliberately does not maintain
+   *  one bespoke image per tool page). */
   socialImage?: string;
+  /** Real pixel dimensions of `socialImage`/the default image. Required
+   *  whenever `socialImage` is overridden with an image whose dimensions
+   *  differ from the sitewide default (1254×1254) — never guessed. */
+  socialImageWidth?: number;
+  socialImageHeight?: number;
+  socialImageAlt?: string;
   breadcrumbs?: BreadcrumbItem[];
   faqs?: FaqItem[];
   webApplication?: WebApplicationInfo;
@@ -43,13 +54,17 @@ const {
   ogDescription = description,
   ogType = siteConfig.social.ogType,
   noindex = false,
-  socialImage,
+  socialImage = siteConfig.defaultSocialImage,
+  socialImageWidth = 1254,
+  socialImageHeight = 1254,
+  socialImageAlt = `${siteConfig.productName} — a colorful polygonal 3D mesh model`,
   breadcrumbs,
   faqs,
   webApplication,
 } = Astro.props;
 
 const canonicalUrl = new URL(path, siteConfig.siteUrl).toString();
+const socialImageUrl = new URL(socialImage, siteConfig.siteUrl).toString();
 
 const structuredData: Record<string, unknown>[] = [];
 
@@ -96,14 +111,20 @@ if (webApplication) {
 <link rel="canonical" href={canonicalUrl} />
 <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 
+<meta property="og:site_name" content={siteConfig.productName} />
 <meta property="og:title" content={ogTitle} />
 <meta property="og:description" content={ogDescription} />
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalUrl} />
-{socialImage && <meta property="og:image" content={new URL(socialImage, siteConfig.siteUrl).toString()} />}
+<meta property="og:image" content={socialImageUrl} />
+<meta property="og:image:width" content={String(socialImageWidth)} />
+<meta property="og:image:height" content={String(socialImageHeight)} />
+<meta property="og:image:alt" content={socialImageAlt} />
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={ogTitle} />
 <meta name="twitter:description" content={ogDescription} />
+<meta name="twitter:image" content={socialImageUrl} />
+<meta name="twitter:image:alt" content={socialImageAlt} />
 
 {structuredData.map((entry) => <StructuredData data={entry} />)}

@@ -9,11 +9,7 @@ import { siteConfig } from "../../config/site";
 
 <header class="site-header" data-header>
   <a class="brand" href="/#top" aria-label={`${siteConfig.productName} home`}>
-    <span class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 32 32"><path d="M7 9.5 16 4l9 5.5v13L16 28l-9-5.5v-13Z"></path><path d="m7 9.5 9 5.5 9-5.5M16 15v13"
-        ></path></svg>
-    </span>
-    <span>{siteConfig.productName}</span>
+    <img class="brand-logo" src="/meshwrench-logo-horizontal.png" width="1600" height="366" alt={siteConfig.productName} loading="eager" />
   </a>
 
   <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-button>

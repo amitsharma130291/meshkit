@@ -1,0 +1,155 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GCodeDisplayControls from "../../components/tools/GCodeDisplayControls.astro";
+import GCodeLayerControls from "../../components/tools/GCodeLayerControls.astro";
+import GCodePlaybackControls from "../../components/tools/GCodePlaybackControls.astro";
+import GCodeModelInfo from "../../components/tools/GCodeModelInfo.astro";
+import GCodeStatistics from "../../components/tools/GCodeStatistics.astro";
+import GCodeWarnings from "../../components/tools/GCodeWarnings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("gcode-visualizer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "G-code Visualizer", path: "/gcode-visualizer/" },
+];
+
+const faqs = [
+  {
+    question: "What do the color modes show?",
+    answer: "Feature type (walls, infill, support, bridges, etc. — from the slicer's own comments), movement type (extrusion vs. travel vs. retract), tool, layer (a gradient from first to last layer), and feed rate (a gradient from slowest to fastest commanded speed).",
+  },
+  {
+    question: "Is my G-code file uploaded?",
+    answer: "No. It's parsed and rendered entirely in your browser, inside a background Web Worker.",
+  },
+  {
+    question: "Does this execute the G-code or connect to a printer?",
+    answer: "No, never. This is a visual renderer only — it never uses WebSerial and never sends a command anywhere.",
+  },
+];
+---
+
+<ToolLayout
+  title="G-code Visualizer — Render Categorized Toolpaths Online | MeshWrench"
+  description="Render a G-code file's toolpaths by feature, movement type, tool or feed rate, locally in your browser."
+  path="/gcode-visualizer/"
+  h1="G-code Visualizer"
+  intro="Render a G-code file's toolpaths, colored by feature, movement type, tool or feed rate — directly in your browser."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench G-code Visualizer",
+    applicationCategory: "UtilitiesApplication",
+    description: "Render a G-code file's categorized toolpaths locally in the browser, colored by feature, movement type, tool or feed rate.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your G-code file stays on this device. MeshWrench reads and renders it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker id="gcode-file-input" label="Select a G-code file" accept=".gcode,text/plain" helpText="Up to 400 MB. Targets common FDM slicer output from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio." />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="gcode-visualizer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="gcode-visualizer-viewport" description="Interactive, categorized toolpath preview. Drag to rotate, scroll to zoom." />
+    <GCodeDisplayControls id="gcode-visualizer-display-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden><span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.</p>
+    <GCodeModelInfo id="gcode-visualizer-model-info" />
+    <GCodeLayerControls id="gcode-visualizer-layer-controls" />
+    <GCodePlaybackControls id="gcode-visualizer-playback-controls" />
+    <GCodeStatistics id="gcode-visualizer-statistics" />
+    <GCodeWarnings id="gcode-visualizer-warnings" />
+    <div class="download-actions">
+      <button type="button" class="control-button" data-action="download-gcode-report" disabled>Download JSON report</button>
+    </div>
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+    <ToolError id="gcode-visualizer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Five ways to color a toolpath</h2>
+    <ul>
+      <li><strong>Feature type</strong> — outer/inner walls, infill, solid infill, top/bottom surfaces, support, bridges, skirt, brim, raft, purge and prime-tower, read from the slicer's own comment labels.</li>
+      <li><strong>Movement type</strong> — extrusion, travel, and retract, from the actual computed E delta of each move, never merely whether an E token was present on the line.</li>
+      <li><strong>Tool</strong> — a distinct color per extruder/tool index.</li>
+      <li><strong>Layer</strong> — a gradient across the model's own layer range.</li>
+      <li><strong>Feed rate</strong> — a gradient from the file's own slowest to fastest commanded speed.</li>
+    </ul>
+
+    <h2>What this isn't</h2>
+    <p>
+      This is a visual renderer for a G-code file that already exists — never a slicer, never a firmware emulator,
+      never a printer connection. It never uses WebSerial and never executes a single command.
+    </p>
+
+    <h2>Supported G-code scope</h2>
+    <p>
+      A documented semantic subset aimed at common FDM output for Marlin- and Klipper-style printers, covering
+      typical patterns from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio — not universal G-code support. Unknown
+      commands are counted and disclosed, never silently faked.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) =>
+          related!.status === "ready" ? (
+            <li><a class="related-tool-name" href={related!.path}>{related!.name}</a><span class="related-tool-status">Available</span></li>
+          ) : (
+            <li><span class="related-tool-name">{related!.name}</span><span class="related-tool-status">Planned</span></li>
+          ),
+        )}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../gcode-viewer/_client";
+</script>
+
+<style>
+  .faq-section-tool, .related-tools-section { margin-top: 20px; }
+  .faq-list-tool { border-top: 1px solid var(--line); }
+  .faq-list-tool details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .faq-list-tool summary { cursor: pointer; font-weight: 700; }
+  .faq-list-tool p { margin: 10px 0 0; color: var(--muted); }
+  .related-tools-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .related-tools-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .related-tool-name { font-weight: 700; }
+  .related-tool-status { padding: 3px 10px; border-radius: 999px; background: #f3f1fb; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>

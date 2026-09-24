@@ -1,0 +1,286 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLDiagnosticsControls from "../../components/tools/STLDiagnosticsControls.astro";
+import STLDiagnosticsSummary from "../../components/tools/STLDiagnosticsSummary.astro";
+import STLDiagnosticsChecks from "../../components/tools/STLDiagnosticsChecks.astro";
+import STLDiagnosticsDetails from "../../components/tools/STLDiagnosticsDetails.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-checker")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL Checker", path: "/stl-checker/" },
+];
+
+const faqs = [
+  {
+    question: "Is my STL file uploaded when I use this checker?",
+    answer:
+      "No. Your file is read and analyzed entirely in your browser, inside a background Web Worker. It is never sent to a server — you can confirm this yourself by watching your browser's network tab while a file loads.",
+  },
+  {
+    question: "Does a \"watertight\" result guarantee my model will print successfully?",
+    answer:
+      "No. Watertight means the surface is closed, manifold, consistently wound and free of duplicate/self-intersecting triangles — a strict topology check. It says nothing about wall thickness, physical scale, your printer's limits, support requirements or manufacturing tolerances.",
+  },
+  {
+    question: "My model failed a check — can it still be sliced?",
+    answer:
+      "Often, yes. Many slicers auto-repair minor issues like small gaps or duplicate faces. A failing result here is a precise, honest report of what this checker found, not a claim that your file is unusable.",
+  },
+  {
+    question: "Does this tool fix the problems it finds?",
+    answer:
+      "Not yet. This is a diagnostic tool only — it never modifies, repairs, welds, reorients or exports a changed mesh. STL Repair, a separate tool, will handle fixing what this checker finds.",
+  },
+  {
+    question: "Why does vertex matching use exact positions instead of a tolerance?",
+    answer:
+      "Welding \"close enough\" vertices would change the model's topology and could hide a real gap between two surfaces. This checker reports vertices as identical only when their coordinates match exactly, consistent with how every MeshWrench converter already treats vertex identity.",
+  },
+  {
+    question: "What happens with a very large or complex model?",
+    answer:
+      "Every check has an explicit safety limit. If a check can't be completed safely within those limits — most commonly self-intersection testing on a very complex mesh — it's honestly reported as \"not checked,\" never silently reported as passing.",
+  },
+];
+---
+
+<ToolLayout
+  title="STL Checker — Check STL Files for Holes & Errors Online | MeshWrench"
+  description="Check an STL file for holes, non-manifold edges, flipped normals, self-intersections and more — entirely in your browser. Free, local, no upload."
+  path="/stl-checker/"
+  h1="STL Checker"
+  intro="Analyze an STL file for watertightness, holes, non-manifold edges, inconsistent winding, self-intersections and more — locally in your browser, before you send it to a slicer."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench STL Checker",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Analyze an STL file's mesh topology locally in the browser — watertightness, holes, non-manifold edges, winding conflicts, disconnected shells, degenerate triangles and self-intersections. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench analyzes it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to check"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-diagnostics-viewport" description="Interactive 3D preview with issue overlays. Drag to rotate, scroll to zoom." />
+    <STLDiagnosticsControls id="stl-diagnostics-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Analyzed locally — nothing was uploaded.
+    </p>
+    <STLDiagnosticsSummary id="stl-diagnostics-summary" />
+    <STLDiagnosticsChecks id="stl-diagnostics-checks" />
+    <STLDiagnosticsDetails id="stl-diagnostics-details" />
+    <ToolError id="stl-diagnostics-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to check an STL file</h2>
+    <ol>
+      <li>Select an STL file using the picker above (or drag one in once you're on the page).</li>
+      <li>MeshWrench reads and analyzes the file locally in a background worker — nothing leaves your device.</li>
+      <li>Review the watertightness verdict, the individual check results, and the 3D preview with issue overlays.</li>
+      <li>Download a JSON report, or continue to STL Repair once it's available.</li>
+    </ol>
+
+    <h2>What each check means</h2>
+    <dl class="check-explanation-list">
+      <div>
+        <dt>Degenerate triangles</dt>
+        <dd>A triangle with a repeated vertex, or with zero/near-zero area. These are excluded from every other check below, and reported separately.</dd>
+      </div>
+      <div>
+        <dt>Duplicate faces</dt>
+        <dd>Two or more triangles that share the exact same three vertices, either with the same winding (an exact stacked copy) or reversed winding.</dd>
+      </div>
+      <div>
+        <dt>Boundary / open edges &amp; holes</dt>
+        <dd>An edge used by only one triangle is a boundary edge. Boundary edges are grouped into connected components and classified as a closed loop (a likely hole), an open chain, a branched junction, or a non-simple shape.</dd>
+      </div>
+      <div>
+        <dt>Non-manifold edges</dt>
+        <dd>An edge shared by more than two triangles — ambiguous "inside vs. outside" geometry at that edge.</dd>
+      </div>
+      <div>
+        <dt>Inconsistent winding</dt>
+        <dd>Two triangles sharing an edge that traverse it in the same direction, rather than opposite directions — a sign the surface isn't consistently oriented there.</dd>
+      </div>
+      <div>
+        <dt>Inward-oriented shells</dt>
+        <dd>A closed, consistently-wound shell whose normals point inward rather than outward, determined from its own signed volume. Still watertight, but likely inverted.</dd>
+      </div>
+      <div>
+        <dt>Disconnected shells</dt>
+        <dd>The model is made of more than one separate, unconnected piece of geometry — sometimes intentional (multi-part models), sometimes a sign of a fragmented file.</dd>
+      </div>
+      <div>
+        <dt>Self-intersections</dt>
+        <dd>Triangles that geometrically cross through each other. Checked with a broad-phase spatial index plus a robust triangle-triangle test — ordinary shared-edge adjacency is never flagged.</dd>
+      </div>
+    </dl>
+
+    <h2>What "watertight" means here</h2>
+    <p>
+      This checker's watertight verdict is a strict, disclosed policy: zero boundary edges, zero non-manifold edges,
+      zero winding conflicts, zero duplicate faces, and a completed self-intersection check with none found. A model
+      that fails one of these criteria is reported "not watertight," with the specific reason. A model whose
+      self-intersection check couldn't complete within this checker's safety limits is reported "some checks
+      incomplete" — never silently reported as passing.
+    </p>
+
+    <h2>Common slicer symptoms this checker can explain</h2>
+    <ul>
+      <li><strong>"STL not watertight" / slicer refuses to slice:</strong> check the boundary-edge and non-manifold results.</li>
+      <li><strong>"STL has holes":</strong> look at the closed-loop boundary component count.</li>
+      <li><strong>Non-manifold geometry errors:</strong> the non-manifold-edge check reports the exact count.</li>
+      <li><strong>Inverted normals / model renders inside-out:</strong> the inward-shell and winding-conflict checks.</li>
+      <li><strong>Self-intersections / slicer produces strange internal geometry:</strong> the self-intersection check.</li>
+      <li><strong>Disconnected pieces flying apart:</strong> the disconnected-shells check and per-shell bounds.</li>
+      <li><strong>Degenerate triangle warnings:</strong> the degenerate-triangle count and its two sub-categories.</li>
+      <li><strong>"STL will not slice" with no clear reason:</strong> download the full JSON report for every count at once.</li>
+    </ul>
+
+    <h2>How the analysis works</h2>
+    <p>
+      Every check starts from an exact-identity topology layer: source STL vertices (which commonly repeat for every
+      triangle) are collapsed to unique positions using the same bit-exact float32 matching every MeshWrench converter
+      already uses — never a distance tolerance, since welding nearby-but-different vertices would change the
+      model's real topology. From there, an edge-incidence map classifies every edge as boundary, manifold or
+      non-manifold and detects winding conflicts; boundary edges are grouped into components; triangles are grouped
+      into connected shells; each shell's orientation is propagated and, for closed shells, its signed volume decides
+      inward vs. outward; duplicate faces are grouped by canonical identity; and self-intersections are found via a
+      spatial-grid broad phase followed by a robust triangle-triangle test, always excluding ordinary shared-edge
+      adjacency.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>This is a diagnostic tool only — it never modifies, repairs, welds, reorients or exports a changed mesh.</li>
+      <li>Vertex identity is exact-position matching, never tolerance-welded.</li>
+      <li>Passing every check does not guarantee successful printing; failing one does not mean a file can't be sliced.</li>
+      <li>Wall thickness, physical scale, your printer's limits, support needs and manufacturing tolerances are outside this checker's scope.</li>
+      <li>Every check has an explicit safety limit; a check that can't complete safely is reported "not checked," never as passing.</li>
+    </ul>
+
+    <h2>What's next: STL Repair</h2>
+    <p>
+      Problems found? STL Repair — a separate MeshWrench tool — will fix holes, flip inverted normals, weld gaps and
+      resolve non-manifold geometry, locally in your browser. It isn't built yet; this checker never claims to
+      repair anything, and never links to a route that doesn't exist.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) => (
+          <li>
+            <a href={related!.path}>{related!.name}</a>
+            <span class="related-tool-status">{related!.status === "ready" ? "Available" : "Planned"}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .check-explanation-list dt {
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .check-explanation-list dd {
+    margin: 4px 0 0;
+    color: var(--muted);
+  }
+</style>

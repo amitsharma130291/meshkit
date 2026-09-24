@@ -1,0 +1,85 @@
+---
+/**
+ * Batch optimization's settings slot content for
+ * `BatchPlanWorkspace.astro`. Presentation only —
+ * `batch-optimize-plan-client.ts` reads these controls to build a real
+ * `OptimizeSettings` object, the same shape the single-file page uses.
+ */
+---
+
+<fieldset class="preset-choice" data-batch-optimize-preset-choice>
+  <legend>Quality preset (applies to every file in this batch)</legend>
+  <label class="preset-option">
+    <input type="radio" name="batch-optimize-preset" value="preserve-details" data-action="batch-select-quality-preset" />
+    <span class="preset-label">Preserve details</span>
+    <span class="preset-desc">Tightest deviation/surface-area/volume thresholds — conservative reduction.</span>
+  </label>
+  <label class="preset-option">
+    <input type="radio" name="batch-optimize-preset" value="balanced" checked data-action="batch-select-quality-preset" />
+    <span class="preset-label">Balanced <span class="preset-badge">Default</span></span>
+    <span class="preset-desc">A reasonable middle ground between reduction and shape fidelity.</span>
+  </label>
+  <label class="preset-option">
+    <input type="radio" name="batch-optimize-preset" value="maximum-reduction" data-action="batch-select-quality-preset" />
+    <span class="preset-label">Maximum reduction</span>
+    <span class="preset-desc">Looser thresholds — prioritizes the smallest safe triangle count.</span>
+  </label>
+</fieldset>
+
+<fieldset class="target-controls" data-batch-optimize-target-controls>
+  <legend>Reduction target</legend>
+  <label class="control-field">
+    <span>Target mode</span>
+    <select data-action="batch-target-mode">
+      <option value="percentage" selected>Percentage reduction</option>
+      <option value="triangle-count">Fixed triangle count</option>
+    </select>
+  </label>
+  <label class="control-field">
+    <span data-target-value-label>Target percentage (%)</span>
+    <input type="number" step="1" min="1" max="99" value="50" data-action="batch-target-value" />
+  </label>
+  <p class="control-note">A percentage target is calculated per file, scaled to each file's own source triangle count.</p>
+</fieldset>
+
+<style>
+  .preset-choice,
+  .target-controls {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .preset-option {
+    display: grid;
+    gap: 2px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .preset-label {
+    font-weight: 700;
+  }
+  .preset-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--violet-dark);
+    margin-left: 6px;
+  }
+  .preset-desc {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .control-field {
+    display: grid;
+    gap: 4px;
+    max-width: 280px;
+  }
+  .control-note {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin: 0;
+  }
+</style>

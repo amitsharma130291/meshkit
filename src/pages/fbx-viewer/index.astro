@@ -1,0 +1,284 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import FBXDisplayControls from "../../components/tools/FBXDisplayControls.astro";
+import FBXModelInfo from "../../components/tools/FBXModelInfo.astro";
+import FBXSceneTree from "../../components/tools/FBXSceneTree.astro";
+import FBXMaterialPanel from "../../components/tools/FBXMaterialPanel.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("fbx-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "FBX Viewer", path: "/fbx-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my FBX file uploaded?",
+    answer:
+      "No. The file is read and resolved entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Does this viewer support ASCII FBX files?",
+    answer:
+      "No, not in this phase. MeshWrench currently reads binary FBX 7.x files only. An ASCII FBX file is detected and clearly rejected, rather than being silently misread as binary data.",
+  },
+  {
+    question: "Which FBX versions are supported?",
+    answer:
+      "Binary FBX versions 7000 through 7700 — both the 32-bit node-record layout used below version 7500 and the 64-bit layout used from 7500 onward. A version outside that range is rejected with a clear error rather than a best-effort guess.",
+  },
+  {
+    question: "Does this viewer support animation, rigging or skinning?",
+    answer:
+      "No. This is a static-mesh viewer. Animation stacks/curves, skin deformers, skeletons and blend shapes are detected and disclosed in the model info panel, but never applied — only the file's default, undeformed geometry renders.",
+  },
+  {
+    question: "Does it render materials and textures?",
+    answer:
+      "Yes, at a practical first-viewer level: Lambert/Phong diffuse color and factor, opacity where it's deterministically available, and embedded PNG/JPEG textures connected through a Video object's own embedded bytes. MeshWrench never fetches an externally-referenced texture file.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="FBX Viewer — Open and Inspect Binary FBX Files Online | MeshWrench"
+  description="Open and inspect binary FBX files in your browser. See static meshes, model hierarchy, materials and embedded textures — no upload required."
+  path="/fbx-viewer/"
+  h1="FBX Viewer"
+  intro="Open and inspect binary FBX files directly in your browser. Explore static meshes, model hierarchy, materials and embedded textures, without uploading your file."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench FBX Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect binary FBX files locally in the browser — rotate, zoom, explore model hierarchy, and see Lambert/Phong materials and embedded textures. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your FBX stays on this device. MeshWrench reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="fbx-file-input"
+      label="Select an FBX file"
+      accept=".fbx,application/octet-stream"
+      helpText="Up to 150 MB. Binary FBX 7.0–7.7 only — ASCII FBX files are detected and rejected with a clear message."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="fbx-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="fbx-viewer-viewport"
+      description="Interactive 3D preview of your FBX model. Drag to rotate, scroll to zoom. Individual mesh instances can be shown or hidden using the panel below."
+    />
+    <FBXDisplayControls id="fbx-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <FBXModelInfo id="fbx-viewer-model-info" />
+    <FBXSceneTree id="fbx-viewer-scene-tree" />
+    <FBXMaterialPanel id="fbx-viewer-material-info" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="fbx-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view an FBX file</h2>
+    <ol>
+      <li>Select a binary FBX file using the picker above.</li>
+      <li>MeshWrench resolves it locally, in a background worker — nothing leaves your device.</li>
+      <li>
+        Once resolution finishes, drag to rotate, scroll to zoom, and use the panel below the viewport to fit the
+        view, toggle wireframe, switch material display or shading, or show and hide individual mesh instances.
+      </li>
+    </ol>
+
+    <h2>What the FBX Viewer displays</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, FBX version, encoding, model/geometry/
+      mesh-instance/material counts, embedded and external texture counts, control-point and polygon counts,
+      rendered triangle count, skipped-polygon count, source-normal/UV/vertex-color availability, the file's own
+      declared unit scale and axis system, and normalized dimensions. A scene tree lists every model and mesh
+      instance in the file's real hierarchy, so you can inspect — and individually show or hide — the pieces of a
+      multi-part model.
+    </p>
+
+    <h2>Supported binary FBX versions</h2>
+    <p>
+      This viewer reads binary FBX versions <strong>7000 through 7700</strong> — both node-record layouts binary
+      FBX has used across that range: 32-bit offset and length fields below version 7500, and 64-bit fields from
+      7500 onward. A version outside this range, or an <strong>ASCII</strong> FBX file, is rejected clearly and
+      safely, rather than misread as something it isn't. This is a deliberately scoped first implementation, not a
+      claim of universal FBX compatibility.
+    </p>
+
+    <h2>Materials and embedded textures</h2>
+    <p>
+      A practical first-viewer subset renders: Lambert and Phong diffuse color and factor, opacity where it's
+      deterministically available from the file's own declared properties, and each mesh instance's connected
+      material. A texture embedded directly in the file — connected through a Video object's own embedded bytes — is decoded
+      and shown, the same way MeshWrench's GLB Viewer decodes its own embedded base-color textures. A texture that only
+      references an external file is detected and disclosed, but MeshWrench never fetches it — doing so would mean
+      making a network request outside your browser's local processing, which this project never does.
+    </p>
+
+    <h2>Units and axis handling</h2>
+    <p>
+      FBX files declare their own coordinate unit scale and axis system in <code>GlobalSettings</code>. When a file
+      declares both completely and consistently, this viewer converts its coordinates exactly once into a
+      right-handed, Y-up system, normalized to meters. When either is missing or contradictory, MeshWrench doesn't
+      guess: coordinates are shown exactly as declared, in plain model units, with a clear note explaining why.
+    </p>
+
+    <h2>What this viewer doesn't do: animation and rigging</h2>
+    <p>
+      This is a <strong>static mesh</strong> viewer. Animation stacks and curves, skin deformers, skeletons, blend
+      shapes, cameras, lights, NURBS/patch geometry, subdivision surfaces and constraints are all detected and
+      listed in the model info panel when present, but never applied — what renders is always the file's default,
+      undeformed base geometry. MeshWrench doesn't claim animated, rigged or skinned FBX support.
+    </p>
+
+    <h2>Why an FBX may not open</h2>
+    <ul>
+      <li>The file is an ASCII FBX file rather than binary — only binary FBX is supported in this phase.</li>
+      <li>The file's declared FBX version is outside the 7000–7700 range this viewer supports.</li>
+      <li>The file's internal node-record data is truncated, corrupted, or references an offset outside the file.</li>
+      <li>A mesh references a control point or polygon that doesn't exist, or a polygon has fewer than three vertices.</li>
+      <li>The file's model hierarchy contains a circular reference.</li>
+      <li>The file is more complex (models, geometries, polygons or triangles) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the FBX uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file with the
+      standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
+      WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the
+      network tab, and load a file. No request containing your file, or any value found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

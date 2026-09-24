@@ -22,8 +22,8 @@ describe("serializeOBJ — structure", () => {
     const { geometry, normals } = await buildTriangle();
     const result = await serializeOBJ(geometry, normals, LIMITS);
     const text = decode(result.bytes);
-    expect(text.startsWith("# Generated locally by MeshKit\n")).toBe(true);
-    expect(text).toContain("o MeshKit_Converted\n");
+    expect(text.startsWith("# Generated locally by MeshWrench\n")).toBe(true);
+    expect(text).toContain("o MeshWrench_Converted\n");
     expect(text).toContain("s off\n");
   });
 

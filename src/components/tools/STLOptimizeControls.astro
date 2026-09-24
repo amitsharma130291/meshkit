@@ -1,0 +1,39 @@
+---
+/**
+ * Presentation only, same `aria-pressed`/labelled-button contract as
+ * `STLRepairControls.astro`. This phase has no issue-overlay buffers
+ * (see the "Known limitations" section this phase's own docs disclose),
+ * so there are no overlay toggles here — original/optimized comparison
+ * is via the model toggle and the numeric comparison table only.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-optimize-controls" } = Astro.props;
+---
+
+<div class="viewer-controls stl-optimize-controls" id={id} role="group" aria-label="Optimization viewer controls">
+  <div class="model-toggle" role="group" aria-label="Model to show">
+    <button type="button" class="control-button" data-action="show-original" aria-pressed="true">Original</button>
+    <button type="button" class="control-button" data-action="show-optimized" aria-pressed="false" disabled>Optimized</button>
+  </div>
+
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-model">Fit model</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">Wireframe</button>
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

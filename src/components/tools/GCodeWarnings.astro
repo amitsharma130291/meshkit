@@ -1,0 +1,13 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-warnings" } = Astro.props;
+---
+
+<section class="gcode-warnings" id={id} aria-label="Warnings">
+  <h3>Things to know about this file</h3>
+  <ul class="unresolved-list" data-warnings-list></ul>
+  <p class="unresolved-none" data-warnings-none hidden>None — this file processed cleanly within every safety limit.</p>
+</section>

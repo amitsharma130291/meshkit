@@ -24,7 +24,7 @@ const WARNING_COPY: Record<ConversionWarning["code"], string> = {
 };
 
 /** Per the spec's default-scene fallback rule: `scenes[0]` when `scene` is omitted but a `scenes` array exists. */
-function selectRootNodeIndices(doc: GLTFDocument): { rootNodes: number[]; sceneName?: string } {
+export function selectRootNodeIndices(doc: GLTFDocument): { rootNodes: number[]; sceneName?: string } {
   if (doc.scenes.length > 0) {
     const sceneIndex = doc.scene ?? 0;
     const scene = doc.scenes[sceneIndex];
@@ -53,7 +53,7 @@ function selectRootNodeIndices(doc: GLTFDocument): { rootNodes: number[]; sceneN
   return { rootNodes };
 }
 
-function localMatrixForNode(node: GLTFNode): Mat4 {
+export function localMatrixForNode(node: GLTFNode): Mat4 {
   if (node.matrix) {
     const m = node.matrix as unknown as Mat4;
     if (!isFiniteMat4(m)) throw glbError("GLB_TRANSFORM_INVALID");

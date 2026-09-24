@@ -1,0 +1,26 @@
+---
+/**
+ * Presentation shell only — rows are built by src/pages/viewer/_client.ts
+ * from the active adapter's own `segments()` output, grouped by each
+ * row's `groupLabel`. Same shell/row-cap pattern every dedicated
+ * viewer's own scene tree already uses; hidden entirely for a format
+ * whose adapter reports no segments (STL).
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "universal-scene-tree" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-scene-tree hidden aria-label="Model structure">
+  <div class="scene-tree-header">
+    <h2>Model structure</h2>
+    <div class="scene-tree-actions">
+      <button type="button" class="control-button" data-action="show-all-segments">Show all</button>
+      <button type="button" class="control-button" data-action="hide-all-segments">Hide all</button>
+    </div>
+  </div>
+  <p class="scene-tree-note" data-scene-tree-note></p>
+  <div class="scene-tree-list" data-scene-tree-list role="group" aria-label="Visibility"></div>
+</section>

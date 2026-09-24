@@ -42,13 +42,13 @@ export interface ParsedOBJDocument {
 
 const FLOAT_PATTERN = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
 
-function parseFloatToken(token: string): number {
+export function parseFloatToken(token: string): number {
   return FLOAT_PATTERN.test(token) ? Number(token) : NaN;
 }
 
 /**
  * Parses a `v` statement's numeric fields. OBJ's `v` line has no single
- * canonical arity, so MeshKit applies a documented, deterministic
+ * canonical arity, so MeshWrench applies a documented, deterministic
  * disambiguation policy rather than guessing:
  *
  *   - 3 fields: `x y z` — used as-is.
@@ -61,7 +61,7 @@ function parseFloatToken(token: string): number {
  *     interpretation — a 7-field line could mean "x y z w r g b" or a
  *     mistyped color line — so it is rejected rather than guessed at.
  */
-function parseVertexStatement(args: string[]): { x: number; y: number; z: number; hasColorExtension: boolean } {
+export function parseVertexStatement(args: string[]): { x: number; y: number; z: number; hasColorExtension: boolean } {
   if (args.length !== 3 && args.length !== 4 && args.length !== 6) {
     throw objError("OBJ_VERTEX_INVALID");
   }
@@ -80,24 +80,24 @@ function parseVertexStatement(args: string[]): { x: number; y: number; z: number
   return { x: numbers[0], y: numbers[1], z: numbers[2], hasColorExtension: numbers.length === 6 };
 }
 
-function assertFiniteTriplet(args: string[]): void {
+export function assertFiniteTriplet(args: string[]): void {
   if (args.length < 3) throw objError("OBJ_VERTEX_INVALID");
   for (let i = 0; i < 3; i++) {
     if (!Number.isFinite(parseFloatToken(args[i]))) throw objError("OBJ_VERTEX_INVALID");
   }
 }
 
-function assertMagnitude(value: number, limits: OBJLimits): void {
+export function assertMagnitude(value: number, limits: OBJLimits): void {
   if (Math.abs(value) > limits.maxCoordinateMagnitude) throw objError("OBJ_VERTEX_INVALID");
 }
 
-function isSmoothingOff(args: string[]): boolean {
+export function isSmoothingOff(args: string[]): boolean {
   const value = (args[0] ?? "").toLowerCase();
   return value === "off" || value === "0" || value === "";
 }
 
 /** Strips a single trailing reference that duplicates the face's first vertex (the common "closed ring" notation, e.g. `f 1 2 3 1`). */
-function dedupeClosingVertex(refs: FaceVertexRef[]): FaceVertexRef[] {
+export function dedupeClosingVertex(refs: FaceVertexRef[]): FaceVertexRef[] {
   if (refs.length >= 2 && refs[0].vertexIndex === refs[refs.length - 1].vertexIndex) {
     return refs.slice(0, -1);
   }
@@ -105,7 +105,7 @@ function dedupeClosingVertex(refs: FaceVertexRef[]): FaceVertexRef[] {
 }
 
 /** Any OTHER repeated vertex reference collapses the polygon into invalid/degenerate geometry rather than a legitimate shape, so it's rejected outright instead of silently deduplicated. */
-function assertNoCollapsedVertices(refs: FaceVertexRef[]): void {
+export function assertNoCollapsedVertices(refs: FaceVertexRef[]): void {
   const seen = new Set<number>();
   for (const ref of refs) {
     if (seen.has(ref.vertexIndex)) throw objError("OBJ_FACE_INVALID");

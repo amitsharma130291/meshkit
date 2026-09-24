@@ -1,0 +1,26 @@
+---
+/**
+ * Presentation shell only — rows are built by src/pages/glb-viewer/_client.ts,
+ * grouped by mesh-bearing node (glTF's real hierarchy: Scene → node →
+ * child node → mesh → primitive), since that structure is only known
+ * after a file is parsed. See ThreeMFSceneTree.astro / SceneTree.astro for
+ * the same shell/row-cap pattern this follows.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "glb-scene-tree" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-scene-tree hidden aria-label="Nodes and primitives">
+  <div class="scene-tree-header">
+    <h2>Nodes &amp; primitives</h2>
+    <div class="scene-tree-actions">
+      <button type="button" class="control-button" data-action="show-all-segments">Show all</button>
+      <button type="button" class="control-button" data-action="hide-all-segments">Hide all</button>
+    </div>
+  </div>
+  <p class="scene-tree-note" data-scene-tree-note></p>
+  <div class="scene-tree-list" data-scene-tree-list role="group" aria-label="Primitive visibility"></div>
+</section>

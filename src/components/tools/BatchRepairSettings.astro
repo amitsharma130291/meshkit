@@ -1,0 +1,90 @@
+---
+/**
+ * Batch repair's settings slot content for `BatchPlanWorkspace.astro`.
+ * Presentation only — `batch-repair-plan-client.ts` reads these
+ * controls to build a real `RepairSettings` object, the exact same
+ * shape (`safePreset()`/`standardPreset()`/a Custom object) the
+ * single-file page already uses.
+ */
+---
+
+<fieldset class="preset-choice" data-batch-repair-preset-choice>
+  <legend>Repair mode (applies to every file in this batch)</legend>
+  <label class="preset-option">
+    <input type="radio" name="batch-repair-preset" value="safe" checked data-action="batch-select-preset" />
+    <span class="preset-label">Safe <span class="preset-badge">Default</span></span>
+    <span class="preset-desc">Exact cleanup, consistent winding, outward orientation, simple hole filling. No welding.</span>
+  </label>
+  <label class="preset-option">
+    <input type="radio" name="batch-repair-preset" value="standard" data-action="batch-select-preset" />
+    <span class="preset-label">Standard</span>
+    <span class="preset-desc">Everything in Safe, plus tolerance-based vertex welding and near-zero-area cleanup.</span>
+  </label>
+  <label class="preset-option">
+    <input type="radio" name="batch-repair-preset" value="custom" data-action="batch-select-preset" />
+    <span class="preset-label">Custom</span>
+    <span class="preset-desc">Choose weld tolerance and small-shell cleanup individually.</span>
+  </label>
+</fieldset>
+
+<fieldset class="custom-controls" data-batch-repair-custom-controls disabled>
+  <legend>Custom operations</legend>
+  <label class="control-checkbox">
+    <input type="checkbox" data-action="batch-custom-weld-enabled" disabled />
+    Weld nearby vertices within a tolerance
+  </label>
+  <label class="control-field">
+    <span>Weld tolerance (model units)</span>
+    <input type="number" step="any" min="0" value="0.01" data-action="batch-custom-weld-tolerance" disabled />
+  </label>
+  <label class="control-checkbox">
+    <input type="checkbox" data-action="batch-custom-remove-small-shells" disabled />
+    Remove small disconnected shells
+  </label>
+  <label class="control-field">
+    <span>Small-shell threshold (triangle count)</span>
+    <input type="number" step="1" min="1" value="4" data-action="batch-custom-shell-threshold" disabled />
+  </label>
+</fieldset>
+
+<style>
+  .preset-choice,
+  .custom-controls {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .preset-option {
+    display: grid;
+    gap: 2px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .preset-label {
+    font-weight: 700;
+  }
+  .preset-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--violet-dark);
+    margin-left: 6px;
+  }
+  .preset-desc {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .control-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .control-field {
+    display: grid;
+    gap: 4px;
+    max-width: 280px;
+  }
+</style>

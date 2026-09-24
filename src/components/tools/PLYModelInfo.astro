@@ -1,0 +1,50 @@
+---
+/**
+ * Presentation only — src/pages/ply-viewer/_client.ts fills every
+ * `data-info-*` node and toggles `hidden`. PLY defines no measurement
+ * unit at all (unlike STL's mm/cm/in convention or GLB's fixed meters),
+ * so dimensions are always shown in plain model units, matching
+ * OBJModelInfo.astro's own no-unit-selector precedent.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "ply-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>Encoding</dt><dd data-info-encoding></dd></div>
+    <div><dt>Vertices</dt><dd data-info-vertices></dd></div>
+    <div><dt>Source faces</dt><dd data-info-source-faces></dd></div>
+    <div><dt>Rendered triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Explicit edges</dt><dd data-info-edges></dd></div>
+    <div><dt>Rendered points</dt><dd data-info-points></dd></div>
+    <div><dt>Vertex properties</dt><dd data-info-vertex-properties></dd></div>
+    <div><dt>Face properties</dt><dd data-info-face-properties></dd></div>
+    <div><dt>Comment lines</dt><dd data-info-comments></dd></div>
+    <div><dt>obj_info lines</dt><dd data-info-obj-info></dd></div>
+    <div><dt>Unknown elements</dt><dd data-info-unknown-elements></dd></div>
+    <div><dt>Unknown properties</dt><dd data-info-unknown-properties></dd></div>
+    <div><dt>Source normals</dt><dd data-info-source-normals></dd></div>
+    <div><dt>Vertex colors</dt><dd data-info-vertex-colors></dd></div>
+    <div><dt>Alpha channel</dt><dd data-info-alpha></dd></div>
+    <div><dt>Texture coordinates</dt><dd data-info-texcoords></dd></div>
+    <div><dt>Width</dt><dd data-info-width></dd></div>
+    <div><dt>Height</dt><dd data-info-height></dd></div>
+    <div><dt>Depth</dt><dd data-info-depth></dd></div>
+  </dl>
+
+  <p class="model-info-unit-note">
+    PLY does not define a universal measurement unit. Dimensions are shown in model units, unscaled from the file's
+    own coordinate values.
+  </p>
+
+  <p class="model-info-materials-note" data-info-texcoords-note hidden>
+    Texture coordinates are metadata only — this viewer has no texture image to sample them against.
+  </p>
+
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

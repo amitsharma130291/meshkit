@@ -121,7 +121,7 @@ function buildWarnings(doc: ParsedOBJDocument): ConversionWarning[] {
   if (doc.hasNonPlanarFaces) {
     warnings.push({
       code: "non-planar-faces",
-      message: "Some faces in this file aren't perfectly flat — MeshKit triangulated them with a small tolerance.",
+      message: "Some faces in this file aren't perfectly flat — MeshWrench triangulated them with a small tolerance.",
     });
   }
 

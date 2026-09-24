@@ -1,0 +1,64 @@
+---
+/**
+ * Presentation only — the outcome badge and verified reduction metrics.
+ * `_client.ts` fills every `data-*` node from the worker's own
+ * `OptimizeResult`. Requested vs. achieved reduction are always shown as
+ * two separate, clearly labelled numbers — never merged into one.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-optimize-result" } = Astro.props;
+---
+
+<section class="optimize-result" id={id} data-optimize-result hidden aria-label="Optimization result">
+  <div class="outcome-badge" data-outcome-badge data-outcome="">
+    <span data-outcome-label></span>
+  </div>
+
+  <dl class="model-info-grid">
+    <div><dt>Requested reduction</dt><dd data-requested-reduction></dd></div>
+    <div><dt>Achieved reduction</dt><dd data-achieved-reduction></dd></div>
+    <div><dt>Original triangles</dt><dd data-original-triangles></dd></div>
+    <div><dt>Optimized triangles</dt><dd data-optimized-triangles></dd></div>
+    <div><dt>Original file size</dt><dd data-original-bytes></dd></div>
+    <div><dt>Optimized file size</dt><dd data-optimized-bytes></dd></div>
+    <div><dt>Actual bytes saved</dt><dd data-bytes-saved></dd></div>
+    <div><dt>Stop reason</dt><dd data-stop-reason></dd></div>
+  </dl>
+
+  <h3>Sampled geometric deviation</h3>
+  <dl class="model-info-grid">
+    <div><dt>Max deviation (model units)</dt><dd data-deviation-max></dd></div>
+    <div><dt>Mean deviation (model units)</dt><dd data-deviation-mean></dd></div>
+    <div><dt>RMS deviation (model units)</dt><dd data-deviation-rms></dd></div>
+    <div><dt>Samples</dt><dd data-deviation-samples></dd></div>
+  </dl>
+  <p class="deviation-note" data-deviation-incomplete-note hidden>Deviation measurement was cut short by a safety limit — these values reflect a partial sample, not the full surface.</p>
+
+  <h3>Surface area &amp; volume</h3>
+  <dl class="model-info-grid">
+    <div><dt>Surface area before</dt><dd data-surface-area-before></dd></div>
+    <div><dt>Surface area after</dt><dd data-surface-area-after></dd></div>
+    <div><dt>Surface area change</dt><dd data-surface-area-change></dd></div>
+    <div><dt>Volume before</dt><dd data-volume-before></dd></div>
+    <div><dt>Volume after</dt><dd data-volume-after></dd></div>
+    <div><dt>Volume change</dt><dd data-volume-change></dd></div>
+  </dl>
+  <p class="volume-unavailable-note" data-volume-unavailable-note hidden></p>
+  <p class="threshold-note" data-threshold-note hidden></p>
+
+  <h3>Unresolved problems</h3>
+  <ul class="unresolved-list" data-unresolved-list></ul>
+  <p class="unresolved-none" data-unresolved-none hidden>None — every safety invariant held.</p>
+
+  <div class="optimize-warnings" data-optimize-warnings hidden></div>
+
+  <div class="download-actions">
+    <button type="button" class="control-button" data-action="download-optimized-stl" disabled>Download optimized STL</button>
+    <button type="button" class="control-button" data-action="download-optimize-report" disabled>Download JSON report</button>
+  </div>
+
+  <p class="pro-transition-note">Optimizing many files? Batch optimization is planned for Pro.</p>
+</section>

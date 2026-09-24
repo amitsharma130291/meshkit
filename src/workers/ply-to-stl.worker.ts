@@ -82,7 +82,7 @@ async function handleProcess(message: Extract<WorkerRequest, { type: "process" }
     const stlBuffer = serializeBinarySTL({
       positions: parsed.positions,
       normals: parsed.normals,
-      header: "MeshKit PLY to STL conversion",
+      header: "MeshWrench PLY to STL conversion",
     });
 
     const result: PLYToSTLResult = { ...parsed, stlBuffer };

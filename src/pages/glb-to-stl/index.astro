@@ -5,6 +5,7 @@ import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
 import ToolStatus from "../../components/tools/ToolStatus.astro";
 import ToolViewport from "../../components/tools/ToolViewport.astro";
 import ToolError from "../../components/tools/ToolError.astro";
+import BatchWorkspace from "../../components/tools/BatchWorkspace.astro";
 import { getToolById } from "../../config/tools";
 
 const tool = getToolById("glb-to-stl")!;
@@ -19,17 +20,17 @@ const faqs = [
   {
     question: "Is my GLB file uploaded?",
     answer:
-      "No. The file is parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself. MeshKit also never fetches an externally-referenced buffer, image or file from a GLB.",
+      "No. The file is parsed and converted entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file converts to confirm this yourself. MeshWrench also never fetches an externally-referenced buffer, image or file from a GLB.",
   },
   {
     question: "Are materials and textures preserved?",
     answer:
-      "No. STL stores surface geometry only — no material, texture, UV or vertex-color information exists in the format. If your GLB includes any of these, MeshKit shows a warning before you download, but the STL itself never contains them.",
+      "No. STL stores surface geometry only — no material, texture, UV or vertex-color information exists in the format. If your GLB includes any of these, MeshWrench shows a warning before you download, but the STL itself never contains them.",
   },
   {
     question: "What units does the downloaded STL use?",
     answer:
-      "glTF/GLB defines model dimensions in metres. STL doesn't store units at all, so MeshKit writes millimetre-scaled coordinates (multiplying by exactly 1000, once) for common slicer compatibility.",
+      "glTF/GLB defines model dimensions in metres. STL doesn't store units at all, so MeshWrench writes millimetre-scaled coordinates (multiplying by exactly 1000, once) for common slicer compatibility.",
   },
   {
     question: "Are animations, skins and morph targets applied?",
@@ -39,13 +40,13 @@ const faqs = [
   {
     question: "Why did my conversion fail?",
     answer:
-      "Usually because the file is corrupted, references external data MeshKit can't load locally, uses Draco or meshopt compression MeshKit doesn't support, or doesn't contain any convertible triangle geometry — see \"Why a GLB may fail to convert\" below for the full list MeshKit checks for.",
+      "Usually because the file is corrupted, references external data MeshWrench can't load locally, uses Draco or meshopt compression MeshWrench doesn't support, or doesn't contain any convertible triangle geometry — see \"Why a GLB may fail to convert\" below for the full list MeshWrench checks for.",
   },
 ];
 ---
 
 <ToolLayout
-  title="GLB to STL Converter — Convert GLB Files Online | MeshKit"
+  title="GLB to STL Converter — Convert GLB Files Online | MeshWrench"
   description="Convert GLB models to STL directly in your browser. Your file is processed locally and never uploaded."
   path="/glb-to-stl/"
   h1="GLB to STL Converter"
@@ -53,7 +54,7 @@ const faqs = [
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   webApplication={{
-    name: "MeshKit GLB to STL Converter",
+    name: "MeshWrench GLB to STL Converter",
     applicationCategory: "UtilitiesApplication",
     description:
       "Convert GLB (binary glTF 2.0) files to binary STL locally in the browser, resolving scenes, node transforms and mesh instancing, and scaling metre-based coordinates to millimetres. No upload, no account required.",
@@ -62,7 +63,7 @@ const faqs = [
 >
   <PrivacyNotice
     slot="privacy-notice"
-    message="Your GLB stays on this device. MeshKit converts it to STL locally in your browser."
+    message="Your GLB stays on this device. MeshWrench converts it to STL locally in your browser."
   />
 
   <div slot="file-input">
@@ -116,7 +117,7 @@ const faqs = [
         <div><dt>Depth (mm)</dt><dd data-info-depth></dd></div>
       </dl>
       <p class="unitless-note">
-        glTF stores dimensions in metres. STL has no unit field, so MeshKit writes millimetre-scaled coordinates
+        glTF stores dimensions in metres. STL has no unit field, so MeshWrench writes millimetre-scaled coordinates
         (×1000) for common slicer compatibility.
       </p>
     </section>
@@ -127,13 +128,15 @@ const faqs = [
     </div>
 
     <ToolError id="glb-error" />
+
+    <BatchWorkspace id="glb-batch-workspace" acceptHint="GLB files only, same limits as single-file conversion." />
   </div>
 
   <Fragment slot="seo-content">
     <h2>How to convert GLB to STL</h2>
     <ol>
       <li>Select a GLB file using the picker above.</li>
-      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
       <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
     </ol>
 
@@ -149,14 +152,14 @@ const faqs = [
     <h2>What happens to materials and textures</h2>
     <p>
       STL stores surface geometry only. Materials, textures, UV coordinates and vertex colors are not included in
-      the download — this is a limitation of the STL format itself, not something MeshKit chooses to drop. MeshKit
+      the download — this is a limitation of the STL format itself, not something MeshWrench chooses to drop. MeshWrench
       never fetches an externally-referenced buffer or image; only a GLB's own embedded binary data is read. If your
       file includes any of these, a warning appears before you download.
     </p>
 
     <h2>How scenes and node transforms are handled</h2>
     <p>
-      MeshKit converts the GLB's default scene (or scene zero when none is specified). Every node's transform is
+      MeshWrench converts the GLB's default scene (or scene zero when none is specified). Every node's transform is
       composed with its parent's, all the way down the scene graph, so nested and mirrored placements convert
       correctly. Point and line primitives can't be represented in STL and are skipped with a warning; animations,
       skins and morph targets are not applied — only each mesh's undeformed base geometry converts.
@@ -164,14 +167,14 @@ const faqs = [
 
     <h2>How metres are converted to millimetres</h2>
     <p>
-      glTF defines model dimensions in metres. STL does not store units, so MeshKit writes millimetre-scaled
+      glTF defines model dimensions in metres. STL does not store units, so MeshWrench writes millimetre-scaled
       coordinates for common slicer compatibility — applying a factor of exactly ×1000, once, after all node
       transforms are resolved. The source axis orientation is preserved; nothing is rotated.
     </p>
 
     <h2>What happens to animations and skins</h2>
     <p>
-      Animations, skeletal skins and morph targets are not applied or baked into the output. MeshKit converts each
+      Animations, skeletal skins and morph targets are not applied or baked into the output. MeshWrench converts each
       mesh's undeformed base geometry only — a warning appears before download whenever your file includes any of
       these, so the exported shape is never mistaken for a posed or animated result.
     </p>
@@ -187,16 +190,16 @@ const faqs = [
     <h2>Why a GLB may fail to convert</h2>
     <ul>
       <li>The file isn't a valid GLB container, or its internal chunk data is corrupted or truncated.</li>
-      <li>The file references external buffer or image data instead of embedding it — MeshKit never fetches external files.</li>
-      <li>The file uses Draco or meshopt mesh compression, which MeshKit doesn't support yet.</li>
-      <li>The file requires a glTF extension MeshKit doesn't recognize.</li>
+      <li>The file references external buffer or image data instead of embedding it — MeshWrench never fetches external files.</li>
+      <li>The file uses Draco or meshopt mesh compression, which MeshWrench doesn't support yet.</li>
+      <li>The file requires a glTF extension MeshWrench doesn't recognize.</li>
       <li>No mesh in the file has a valid <code>POSITION</code> attribute, or the scene contains no triangle geometry at all.</li>
       <li>The file is more complex (nodes, triangles, scene depth) than this tool's safety limits currently allow.</li>
     </ul>
 
     <h2>Is the file uploaded?</h2>
     <p>
-      No. There is no server-side conversion route in MeshKit. Your browser reads the GLB file, parses it, and
+      No. There is no server-side conversion route in MeshWrench. Your browser reads the GLB file, parses it, and
       builds the STL file, all on your device. You can verify this yourself: open your browser's developer tools,
       watch the network tab, and convert a file. No request containing your file — or any external resource it
       references — will appear.

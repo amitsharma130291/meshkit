@@ -1,0 +1,301 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import UniversalDisplayControls from "../../components/tools/UniversalDisplayControls.astro";
+import UniversalModelInfo from "../../components/tools/UniversalModelInfo.astro";
+import UniversalSceneTree from "../../components/tools/UniversalSceneTree.astro";
+import UniversalMaterialPanel from "../../components/tools/UniversalMaterialPanel.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "3D File Viewer", path: "/viewer/" },
+];
+
+const supportedFormats = [
+  { label: "STL", note: "Binary and ASCII" },
+  { label: "OBJ", note: "Faces, lines, points" },
+  { label: "3MF", note: "Build hierarchy, colors" },
+  { label: "GLB", note: "Materials, textures" },
+  { label: "PLY", note: "Meshes and point clouds" },
+  { label: "FBX", note: "Binary 7.x, static meshes" },
+];
+
+const faqs = [
+  {
+    question: "Is my file uploaded?",
+    answer:
+      "No. Every format is read and resolved entirely in your browser, inside the exact same background Web Worker its own dedicated viewer uses. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "How does automatic format detection work?",
+    answer:
+      "By content, never by file extension. MeshWrench checks a bounded prefix of the file's actual bytes for each format's own real signature — glTF's binary magic, FBX's binary magic, a PLY header, a genuine 3MF package structure (not just any ZIP), STL's exact binary length formula, or coherent OBJ text records. A misleading extension is only ever used to show a mismatch warning, never to override what the content actually is.",
+  },
+  {
+    question: "What happens if MeshWrench can't identify my file?",
+    answer:
+      "You'll see a clear, safe message listing the six supported formats, with no guess based on the file's extension. Nothing is dispatched to a parser for content that couldn't be confidently identified.",
+  },
+  {
+    question: "Does this replace the dedicated format viewers?",
+    answer:
+      "No — it complements them. Each dedicated viewer (STL, OBJ, 3MF, GLB, PLY, FBX) still exists as its own focused page and remains the single source of truth for parsing that format. This page automatically picks the right one for whatever file you give it.",
+  },
+  {
+    question: "Does opening this page download every format's code?",
+    answer:
+      "No. Only the shared 3D viewport and the one adapter matching your file's detected format are ever loaded. Choosing an OBJ file never downloads the FBX or GLB parsing code, and vice versa.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="3D File Viewer — STL, OBJ, 3MF, GLB, PLY & FBX Online | MeshWrench"
+  description="A free, private 3D file viewer. Automatically opens STL, OBJ, 3MF, GLB, PLY and FBX files — no upload, no account."
+  path="/viewer/"
+  h1="3D File Viewer"
+  intro="One viewer for six formats. Select a file and MeshWrench automatically detects whether it's STL, OBJ, 3MF, GLB, PLY or binary FBX, then opens it locally in your browser — no upload required."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench 3D File Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Open and inspect STL, OBJ, 3MF, GLB, PLY and binary FBX files locally in the browser, with automatic content-based format detection. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your file stays on this device. MeshWrench detects its format and renders it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="universal-file-input"
+      label="Select a 3D file"
+      accept=".stl,.obj,.3mf,.glb,.gltf,.ply,.fbx"
+      helpText="Up to 150 MB. STL, OBJ, 3MF, GLB, PLY, and binary FBX 7.0–7.7 are all supported — format is detected from content, not the file name. You can also drag and drop a file here."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="universal-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="universal-viewer-viewport" description="Interactive 3D preview of your model. Drag to rotate, scroll to zoom. Individual parts can be shown or hidden using the panel below." />
+    <UniversalDisplayControls id="universal-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <UniversalModelInfo id="universal-viewer-model-info" />
+    <UniversalSceneTree id="universal-viewer-scene-tree" />
+    <UniversalMaterialPanel id="universal-viewer-material-info" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="universal-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Supported formats</h2>
+    <div class="format-grid">
+      {
+        supportedFormats.map((f) => (
+          <div class="format-grid-cell">
+            <strong>{f.label}</strong>
+            <span>{f.note}</span>
+          </div>
+        ))
+      }
+    </div>
+
+    <h2>How to use the 3D File Viewer</h2>
+    <ol>
+      <li>Select any STL, OBJ, 3MF, GLB, PLY or binary FBX file using the picker above — or drag one onto the page.</li>
+      <li>MeshWrench inspects the file's actual bytes and identifies its real format, entirely on your device.</li>
+      <li>The matching format's own tested viewer engine loads and resolves the file in a background worker.</li>
+      <li>Drag to rotate, scroll to zoom, and use the panel below the viewport to fit the view, toggle wireframe, switch color/shading modes, or show and hide individual parts.</li>
+    </ol>
+
+    <h2>How automatic detection works</h2>
+    <p>
+      Detection is based on file content, never a file's name or extension. GLB and binary FBX each have their own exact magic bytes; PLY requires a valid bounded header ending in <code>end_header</code>; a ZIP file is only
+      classified as 3MF once its actual package structure — content types and a resolvable model relationship — is confirmed, never just because it's a ZIP; binary STL is verified against its exact declared-triangle-count byte
+      length; ASCII STL and OBJ are identified from coherent structural evidence in a bounded prefix of the file's text, not a guess from a single keyword. If a file's extension disagrees with what its content actually is,
+      MeshWrench opens it according to the content and shows a brief mismatch note — the file itself is never renamed or modified. If content can't be confidently identified at all, MeshWrench shows a clear, safe message rather than
+      guessing from the extension.
+    </p>
+
+    <h2>Format-specific capabilities</h2>
+    <p>
+      Every format keeps its own real capabilities here — nothing is reduced to the lowest common denominator. STL shows triangle geometry. OBJ shows faces, lines, points and object/group structure. 3MF shows its real
+      build/component hierarchy, declared unit and embedded colors. GLB shows its real node hierarchy, core PBR materials, embedded base-color textures, and points/lines. PLY shows surfaces, explicit edges and point clouds
+      independently, with vertex colors and normals. Binary FBX shows its real model hierarchy, Lambert/Phong materials, embedded textures, and axis/unit normalization. Each dedicated viewer remains available for a
+      format-focused workflow — this page automatically routes to the right one.
+    </p>
+
+    <h2>Units and dimensions</h2>
+    <p>
+      MeshWrench never invents a unit a format doesn't declare. OBJ and PLY have no measurement unit at all, so dimensions show in plain model units. 3MF's declared unit is preserved and converted to millimeters for reference.
+      glTF/GLB always uses meters. Binary FBX's own declared unit scale and axis system are normalized to meters and a right-handed, Y-up system when they're fully and consistently declared — and left as raw model units,
+      with a clear note, when they aren't.
+    </p>
+
+    <h2>Materials, colors and textures</h2>
+    <p>
+      STL, OBJ and PLY have no material system MeshWrench renders (OBJ material names are shown for reference only, never fetched). 3MF's embedded base-material and color-group colors render directly. GLB's core
+      metallic-roughness materials and embedded base-color textures render, decoded entirely from bytes already in the file. Binary FBX's Lambert/Phong diffuse materials and embedded PNG/JPEG textures render the same way.
+      No format's externally-referenced texture or media file is ever fetched.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>ASCII FBX is detected but rejected with a clear message — only binary FBX 7000–7700 is supported.</li>
+      <li>Animation, rigging, skinning and blend shapes are never applied in any format — only a static base mesh renders.</li>
+      <li>A generic ZIP archive that isn't a valid 3MF package is rejected, not guessed at.</li>
+      <li>Content that can't be confidently identified as one of the six supported formats is rejected with a clear message rather than a guess.</li>
+      <li>Every format's own existing safety limits (triangle/vertex/node/file-size ceilings) still apply — this page never weakens them.</li>
+    </ul>
+
+    <h2>Is my file uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file, detects its format, hands its bytes to the matching Web Worker running on your device, and renders the result with
+      WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the network tab, and load a file. No request containing your file, or any value found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .format-grid-cell {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .format-grid-cell strong {
+    font-size: 1rem;
+  }
+  .format-grid-cell span {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+</style>

@@ -1,0 +1,18 @@
+---
+/**
+ * Presentation shell only. Reuses the same `glb-material-*` class names
+ * every material-bearing dedicated viewer already shares. Hidden
+ * entirely for a format whose adapter reports no materials at all
+ * (STL, OBJ, PLY) — never shown empty.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "universal-material-info" } = Astro.props;
+---
+
+<section class="glb-material-panel" id={id} data-material-panel hidden aria-label="Materials">
+  <h2>Materials</h2>
+  <div class="glb-material-list" data-material-list></div>
+</section>

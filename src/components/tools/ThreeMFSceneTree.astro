@@ -1,0 +1,26 @@
+---
+/**
+ * Presentation shell only — rows are built by src/pages/3mf-viewer/_client.ts,
+ * grouped by build item (3MF's real hierarchy: Build → build item →
+ * component instance → ... → mesh object), since that structure is only
+ * known after a file is parsed. See SceneTree.astro (the OBJ Viewer's
+ * equivalent) for the same shell/row-cap pattern.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "threemf-scene-tree" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-scene-tree hidden aria-label="Build items and instances">
+  <div class="scene-tree-header">
+    <h2>Build items &amp; instances</h2>
+    <div class="scene-tree-actions">
+      <button type="button" class="control-button" data-action="show-all-segments">Show all</button>
+      <button type="button" class="control-button" data-action="hide-all-segments">Hide all</button>
+    </div>
+  </div>
+  <p class="scene-tree-note" data-scene-tree-note></p>
+  <div class="scene-tree-list" data-scene-tree-list role="group" aria-label="Instance visibility"></div>
+</section>

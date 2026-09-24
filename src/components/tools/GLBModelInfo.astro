@@ -1,0 +1,55 @@
+---
+/**
+ * Presentation only — src/pages/glb-viewer/_client.ts fills every
+ * `data-info-*` node and toggles `hidden`. glTF's source unit is always
+ * meters, so this panel shows dimensions in both meters and millimeters —
+ * never the GLB→STL converter's own ×1000-scaled output, and never a
+ * generic "model units" label.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "glb-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>glTF version</dt><dd data-info-version></dd></div>
+    <div><dt>Selected scene</dt><dd data-info-scene-name></dd></div>
+    <div><dt>Scenes</dt><dd data-info-scene-count></dd></div>
+    <div><dt>Nodes</dt><dd data-info-node-count></dd></div>
+    <div><dt>Meshes</dt><dd data-info-mesh-count></dd></div>
+    <div><dt>Primitives</dt><dd data-info-primitive-count></dd></div>
+    <div><dt>Node instances</dt><dd data-info-node-instances></dd></div>
+    <div><dt>Source vertices</dt><dd data-info-source-vertices></dd></div>
+    <div><dt>Rendered triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Lines</dt><dd data-info-lines></dd></div>
+    <div><dt>Points</dt><dd data-info-points></dd></div>
+    <div><dt>Materials</dt><dd data-info-materials></dd></div>
+    <div><dt>Textures</dt><dd data-info-textures></dd></div>
+    <div><dt>Embedded images</dt><dd data-info-images></dd></div>
+    <div><dt>Animations</dt><dd data-info-animations></dd></div>
+    <div><dt>Skins</dt><dd data-info-skins></dd></div>
+    <div><dt>Morph targets</dt><dd data-info-morph-targets></dd></div>
+    <div><dt>Source normals</dt><dd data-info-source-normals></dd></div>
+    <div><dt>Tangents</dt><dd data-info-tangents></dd></div>
+    <div><dt>Vertex colors</dt><dd data-info-vertex-colors></dd></div>
+    <div><dt>Width (m)</dt><dd data-info-width-m></dd></div>
+    <div><dt>Height (m)</dt><dd data-info-height-m></dd></div>
+    <div><dt>Depth (m)</dt><dd data-info-depth-m></dd></div>
+    <div><dt>Width (mm)</dt><dd data-info-width-mm></dd></div>
+    <div><dt>Height (mm)</dt><dd data-info-height-mm></dd></div>
+    <div><dt>Depth (mm)</dt><dd data-info-depth-mm></dd></div>
+  </dl>
+
+  <p class="model-info-unit-note">
+    glTF always uses meters. Dimensions above are shown in meters and converted to millimeters for reference — no
+    rendering scale is applied to the model itself.
+  </p>
+
+  <p class="model-info-extensions" data-info-extensions></p>
+
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

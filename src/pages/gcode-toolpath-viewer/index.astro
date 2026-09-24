@@ -1,0 +1,154 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GCodeDisplayControls from "../../components/tools/GCodeDisplayControls.astro";
+import GCodeLayerControls from "../../components/tools/GCodeLayerControls.astro";
+import GCodePlaybackControls from "../../components/tools/GCodePlaybackControls.astro";
+import GCodeModelInfo from "../../components/tools/GCodeModelInfo.astro";
+import GCodeStatistics from "../../components/tools/GCodeStatistics.astro";
+import GCodeWarnings from "../../components/tools/GCodeWarnings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("gcode-toolpath-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "G-code Toolpath Viewer", path: "/gcode-toolpath-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "What's the difference between extrusion and travel distance?",
+    answer: "Extrusion distance is path length while E is increasing (real printing motion); travel distance is path length while E is unchanged (repositioning). MeshWrench classifies every move from its actual computed E delta, never merely whether an E token was present on the line.",
+  },
+  {
+    question: "Does it report filament mass?",
+    answer: "No — that would require a verified filament diameter and density this tool doesn't have. It reports raw extrusion distance/units instead, and discloses when E represents a volumetric value (M200) rather than a linear length.",
+  },
+  {
+    question: "Is my file uploaded?",
+    answer: "No. Everything happens locally in your browser, in a background Web Worker.",
+  },
+];
+---
+
+<ToolLayout
+  title="G-code Toolpath Viewer — Extrusion & Feed Rate | MeshWrench"
+  description="Analyze a G-code file's extrusion, travel, tool and feed-rate statistics locally in your browser."
+  path="/gcode-toolpath-viewer/"
+  h1="G-code Toolpath Viewer"
+  intro="Analyze a G-code file's extrusion, travel, tool and feed-rate statistics — distances, ranges, retracts and per-tool breakdowns — directly in your browser."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench G-code Toolpath Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description: "Analyze a G-code file's extrusion, travel, tool and feed-rate statistics locally in the browser.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your G-code file stays on this device. MeshWrench reads and renders it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker id="gcode-file-input" label="Select a G-code file" accept=".gcode,text/plain" helpText="Up to 400 MB. Targets common FDM slicer output from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio." />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="gcode-toolpath-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="gcode-toolpath-viewer-viewport" description="Interactive toolpath preview colored by movement type. Drag to rotate, scroll to zoom." />
+    <GCodeDisplayControls id="gcode-toolpath-viewer-display-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden><span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.</p>
+    <GCodeStatistics id="gcode-toolpath-viewer-statistics" />
+    <GCodeModelInfo id="gcode-toolpath-viewer-model-info" />
+    <GCodeLayerControls id="gcode-toolpath-viewer-layer-controls" />
+    <GCodePlaybackControls id="gcode-toolpath-viewer-playback-controls" />
+    <GCodeWarnings id="gcode-toolpath-viewer-warnings" />
+    <div class="download-actions">
+      <button type="button" class="control-button" data-action="download-gcode-report" disabled>Download JSON report</button>
+    </div>
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+    <ToolError id="gcode-toolpath-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>What's measured</h2>
+    <ul>
+      <li>Extrusion and travel move counts, and their own total distances</li>
+      <li>Retracts, and total Z travel</li>
+      <li>Feed rate range across the whole file</li>
+      <li>Per-tool raw E delta, and each tool's own temperature setpoints</li>
+      <li>Bed temperature setpoints and fan state changes</li>
+    </ul>
+
+    <h2>Extrusion, measured honestly</h2>
+    <p>
+      Every move is classified from its <strong>actual computed E delta</strong>, never merely whether an E token
+      appeared on the line — a positive delta is extrusion, a negative delta is retraction, and an unchanged E
+      during a move is travel. Filament mass is never calculated without a verified diameter and density; when a
+      file's E represents a volumetric value (set via <code>M200</code>), that's disclosed rather than reported as
+      a millimeter length.
+    </p>
+
+    <h2>What this isn't</h2>
+    <p>This is an analysis viewer for a G-code file that already exists — never a slicer, never a firmware emulator, never a printer connection.</p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) =>
+          related!.status === "ready" ? (
+            <li><a class="related-tool-name" href={related!.path}>{related!.name}</a><span class="related-tool-status">Available</span></li>
+          ) : (
+            <li><span class="related-tool-name">{related!.name}</span><span class="related-tool-status">Planned</span></li>
+          ),
+        )}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../gcode-viewer/_client";
+</script>
+
+<style>
+  .faq-section-tool, .related-tools-section { margin-top: 20px; }
+  .faq-list-tool { border-top: 1px solid var(--line); }
+  .faq-list-tool details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .faq-list-tool summary { cursor: pointer; font-weight: 700; }
+  .faq-list-tool p { margin: 10px 0 0; color: var(--muted); }
+  .related-tools-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .related-tools-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .related-tool-name { font-weight: 700; }
+  .related-tool-status { padding: 3px 10px; border-radius: 999px; background: #f3f1fb; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>

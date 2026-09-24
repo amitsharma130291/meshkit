@@ -1,0 +1,154 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GCodeDisplayControls from "../../components/tools/GCodeDisplayControls.astro";
+import GCodeLayerControls from "../../components/tools/GCodeLayerControls.astro";
+import GCodePlaybackControls from "../../components/tools/GCodePlaybackControls.astro";
+import GCodeModelInfo from "../../components/tools/GCodeModelInfo.astro";
+import GCodeStatistics from "../../components/tools/GCodeStatistics.astro";
+import GCodeWarnings from "../../components/tools/GCodeWarnings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("gcode-layer-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "G-code Layer Viewer", path: "/gcode-layer-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "How are layers detected?",
+    answer: "MeshWrench prefers a file's own explicit layer markers (Cura's ;LAYER:n, PrusaSlicer/OrcaSlicer's ;LAYER_CHANGE, Bambu Studio's ;CHANGE_LAYER). When none are present, layers are inferred from extrusion height changes — a Z-hop never creates a false layer, and small floating-point Z noise is tolerated.",
+  },
+  {
+    question: "What if the file uses spiral/vase mode?",
+    answer: "When Z rises continuously on nearly every extrusion move (consistent with spiral/vase printing), MeshWrench recognizes this as non-planar and doesn't claim conventional discrete layers for it, rather than guessing at a layer count that wouldn't be meaningful.",
+  },
+  {
+    question: "Is my file uploaded?",
+    answer: "No. Everything happens locally in your browser, in a background Web Worker.",
+  },
+];
+---
+
+<ToolLayout
+  title="G-code Layer Viewer — Inspect Layers and Ranges Online | MeshWrench"
+  description="Inspect a G-code file layer by layer — single-layer, cumulative or full-model views — locally in your browser."
+  path="/gcode-layer-viewer/"
+  h1="G-code Layer Viewer"
+  intro="Inspect a G-code file layer by layer — step through a single layer, build up a cumulative view, or see the full model — directly in your browser."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench G-code Layer Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description: "Inspect a G-code file layer by layer locally in the browser, with single-layer, cumulative and full-model views.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your G-code file stays on this device. MeshWrench reads and renders it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker id="gcode-file-input" label="Select a G-code file" accept=".gcode,text/plain" helpText="Up to 400 MB. Targets common FDM slicer output from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio." />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="gcode-layer-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="gcode-layer-viewer-viewport" description="Interactive, layer-filtered toolpath preview. Drag to rotate, scroll to zoom." />
+    <GCodeDisplayControls id="gcode-layer-viewer-display-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden><span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.</p>
+    <GCodeLayerControls id="gcode-layer-viewer-layer-controls" />
+    <GCodeModelInfo id="gcode-layer-viewer-model-info" />
+    <GCodePlaybackControls id="gcode-layer-viewer-playback-controls" />
+    <GCodeStatistics id="gcode-layer-viewer-statistics" />
+    <GCodeWarnings id="gcode-layer-viewer-warnings" />
+    <div class="download-actions">
+      <button type="button" class="control-button" data-action="download-gcode-report" disabled>Download JSON report</button>
+    </div>
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+    <ToolError id="gcode-layer-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Three layer views</h2>
+    <ul>
+      <li><strong>Single layer</strong> — shows exactly one layer's own toolpath in isolation.</li>
+      <li><strong>Cumulative</strong> — shows every layer from the first up to the selected one, the way a print builds up.</li>
+      <li><strong>All layers</strong> — the complete model at once.</li>
+    </ul>
+
+    <h2>How layer detection works</h2>
+    <p>
+      MeshWrench prefers a file's own <strong>explicit layer markers</strong> when present — Cura's <code>;LAYER:n</code>,
+      PrusaSlicer/OrcaSlicer's <code>;LAYER_CHANGE</code> (with its own following <code>;Z:</code>/<code>;HEIGHT:</code>
+      comments), and Bambu Studio's <code>;CHANGE_LAYER</code>. When a file declares none of these, layers are
+      <strong>inferred</strong> from extrusion height changes: a Z-hop (lift, travel, return to the same height)
+      never creates a false layer, small floating-point Z noise is tolerated, and variable layer heights are
+      supported. When Z changes almost continuously on nearly every extrusion move — consistent with spiral/vase
+      printing — MeshWrench recognizes this as non-planar and doesn't claim conventional discrete layers for it.
+    </p>
+
+    <h2>What this isn't</h2>
+    <p>This is a viewer for a G-code file that already exists — never a slicer, never a firmware emulator, never a printer connection.</p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) =>
+          related!.status === "ready" ? (
+            <li><a class="related-tool-name" href={related!.path}>{related!.name}</a><span class="related-tool-status">Available</span></li>
+          ) : (
+            <li><span class="related-tool-name">{related!.name}</span><span class="related-tool-status">Planned</span></li>
+          ),
+        )}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../gcode-viewer/_client";
+</script>
+
+<style>
+  .faq-section-tool, .related-tools-section { margin-top: 20px; }
+  .faq-list-tool { border-top: 1px solid var(--line); }
+  .faq-list-tool details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .faq-list-tool summary { cursor: pointer; font-weight: 700; }
+  .faq-list-tool p { margin: 10px 0 0; color: var(--muted); }
+  .related-tools-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .related-tools-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .related-tool-name { font-weight: 700; }
+  .related-tool-status { padding: 3px 10px; border-radius: 999px; background: #f3f1fb; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>

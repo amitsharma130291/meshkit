@@ -1,0 +1,239 @@
+---
+/**
+ * Secondary SEO route for the same repair engine `/stl-repair/` uses.
+ * Canonical strategy (documented, matching the Phase 5 precedent): this
+ * page self-canonicalizes rather than pointing at `/stl-repair/` — its
+ * copy is framed entirely around non-manifold-edge/duplicate-geometry
+ * intent, with its own FAQ set and section ordering, not a mechanical
+ * duplicate. The interactive tool is never duplicated: this page's
+ * The script tag imports the exact same ../stl-repair/_client module, and
+ * every settings/plan/result/comparison/controls component below is the
+ * same shared component `/stl-repair/` renders.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLRepairSettings from "../../components/tools/STLRepairSettings.astro";
+import STLRepairPlan from "../../components/tools/STLRepairPlan.astro";
+import STLRepairResult from "../../components/tools/STLRepairResult.astro";
+import STLRepairComparison from "../../components/tools/STLRepairComparison.astro";
+import STLRepairControls from "../../components/tools/STLRepairControls.astro";
+import BatchPlanWorkspace from "../../components/tools/BatchPlanWorkspace.astro";
+import BatchRepairSettings from "../../components/tools/BatchRepairSettings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("repair-non-manifold-stl")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Repair Non-Manifold STL", path: "/repair-non-manifold-stl/" },
+];
+
+const faqs = [
+  {
+    question: "What is a non-manifold edge?",
+    answer:
+      "An edge shared by more than two triangles. A real, physical surface never has this — every edge should border exactly two faces (or one, at a boundary). Non-manifold edges usually come from duplicate/overlapping geometry or a genuine modeling error.",
+  },
+  {
+    question: "Can every non-manifold edge be fixed automatically?",
+    answer:
+      "No — and this tool is explicit about that. Only DETERMINISTIC causes (duplicate or degenerate triangles already covered by this tool's own cleanup) are resolved. A genuinely ambiguous non-manifold edge is preserved and reported as unresolved, never fixed by arbitrarily deleting a triangle to force the count back to two.",
+  },
+  {
+    question: "Why not just delete extra triangles at a non-manifold edge?",
+    answer:
+      "Because which triangle is \"extra\" is often not determinable without guessing — and a wrong guess can silently remove real geometry. This tool only removes triangles it can identify precisely as duplicates or degenerates; anything else is left for you to inspect.",
+  },
+  {
+    question: "Does removing duplicate faces fix non-manifold edges?",
+    answer:
+      "Often, yes — a common cause of a >2-triangle edge is an exact or reverse-winding duplicate face sharing that edge. Duplicate-face removal runs as part of this tool's cleanup and frequently resolves the non-manifold count on its own.",
+  },
+  {
+    question: "Is my file uploaded to check for non-manifold edges?",
+    answer: "No. Detection, repair and verification all run locally in your browser, in a background Web Worker.",
+  },
+];
+---
+
+<ToolLayout
+  title="Repair Non-Manifold STL — Fix Non-Manifold Edges Online | MeshWrench"
+  description="Detect and safely resolve non-manifold edges and duplicate geometry in an STL file — local, verified, free. Ambiguous cases are disclosed, never guessed at."
+  path="/repair-non-manifold-stl/"
+  h1="Repair Non-Manifold STL"
+  intro="Detect non-manifold edges and duplicate geometry in an STL file and safely resolve the deterministic cases — ambiguous topology is preserved and reported, never fixed by deleting triangles arbitrarily."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench Repair Non-Manifold STL",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Detect and safely resolve non-manifold edges and duplicate geometry in an STL file, locally in the browser, with the result verified against a strict, disclosed watertightness policy. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench repairs it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to check for non-manifold edges"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-repair-viewport" description="Interactive 3D preview of the original and repaired model, with issue overlays. Drag to rotate, scroll to zoom." />
+    <STLRepairControls id="stl-repair-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <STLRepairSettings id="stl-repair-settings" />
+    <STLRepairPlan id="stl-repair-plan" />
+    <STLRepairResult id="stl-repair-result" />
+    <STLRepairComparison id="stl-repair-comparison" />
+    <ToolError id="stl-repair-error" />
+
+    <BatchPlanWorkspace id="repair-non-manifold-stl-batch-workspace" acceptHint="STL files only, same limits as single-file repair.">
+      <BatchRepairSettings slot="settings" />
+    </BatchPlanWorkspace>
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How non-manifold repair works here</h2>
+    <ol>
+      <li>MeshWrench analyzes your file and reports the exact non-manifold edge count.</li>
+      <li>Duplicate-face and degenerate-triangle cleanup run — the deterministic causes of most non-manifold edges.</li>
+      <li>MeshWrench re-checks edge incidence on the cleaned result and reports what's still unresolved, if anything.</li>
+      <li>You get an honest before/after count — never a claim that every non-manifold edge was fixed unless it verifiably was.</li>
+    </ol>
+
+    <h2>Deterministic vs. ambiguous non-manifold cases</h2>
+    <p>
+      <strong>Deterministic:</strong> a non-manifold edge caused by a duplicate or degenerate triangle that this
+      tool's own cleanup can identify precisely and remove. Resolving the duplicate/degenerate naturally resolves
+      the excess edge incidence too.
+    </p>
+    <p>
+      <strong>Ambiguous:</strong> an edge genuinely shared by three or more otherwise-valid triangles, with no
+      identifiable "extra" one. This tool preserves the geometry exactly and reports the edge as unresolved — it
+      never deletes an arbitrary triangle just to force the incidence count down to two, since a wrong guess would
+      silently remove real geometry.
+    </p>
+
+    <h2>A realistic outcome</h2>
+    <p>
+      A repair result of "improved" or "partially repaired" — non-manifold count reduced but not zero — is a
+      legitimate, honest outcome, not a failure of the tool. The before/after comparison always shows the exact
+      count on both sides.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>Vertex/edge fan-splitting for ambiguous non-manifold cases is not implemented in this phase — a disclosed scope decision, not an oversight.</li>
+      <li>Self-intersecting geometry is detected, never resolved.</li>
+      <li>Fixing non-manifold topology doesn't by itself guarantee a model will print successfully.</li>
+    </ul>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) => (
+          <li>
+            <a href={related!.path}>{related!.name}</a>
+            <span class="related-tool-status">{related!.status === "ready" ? "Available" : "Coming soon"}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="pro-transition-note">Repairing many files? Try the Batch tab above — batch repair is a Pro capability; Pro activation is coming in the payment phase.</p>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../stl-repair/_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+/**
+ * Presentation only — src/pages/obj-viewer/_client.ts fills every
+ * `data-info-*` node and toggles `hidden`. Unlike ModelInfoPanel.astro
+ * (STL, which offers an mm/cm/in relabel since 3D-printing STLs
+ * conventionally use millimeters), OBJ has no equivalent unit convention
+ * at all — dimensions are always shown in plain model units, with no unit
+ * selector.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "obj-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>Vertex declarations</dt><dd data-info-vertices></dd></div>
+    <div><dt>Normal declarations</dt><dd data-info-normals></dd></div>
+    <div><dt>Texture coordinates</dt><dd data-info-texcoords></dd></div>
+    <div><dt>Source faces</dt><dd data-info-source-faces></dd></div>
+    <div><dt>Rendered triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Objects</dt><dd data-info-objects></dd></div>
+    <div><dt>Groups</dt><dd data-info-groups></dd></div>
+    <div><dt>Referenced MTL libraries</dt><dd data-info-mtllibs></dd></div>
+    <div><dt>Referenced materials</dt><dd data-info-materials></dd></div>
+    <div><dt>Line primitives</dt><dd data-info-lines></dd></div>
+    <div><dt>Point primitives</dt><dd data-info-points></dd></div>
+    <div><dt>Width</dt><dd data-info-width></dd></div>
+    <div><dt>Height</dt><dd data-info-height></dd></div>
+    <div><dt>Depth</dt><dd data-info-depth></dd></div>
+    <div><dt>Bounding min</dt><dd data-info-bbox-min></dd></div>
+    <div><dt>Bounding max</dt><dd data-info-bbox-max></dd></div>
+    <div><dt>Source normals</dt><dd data-info-source-normals></dd></div>
+  </dl>
+
+  <p class="model-info-unit-note">
+    OBJ does not define a universal measurement unit. Dimensions are shown in model units.
+  </p>
+
+  <p class="model-info-materials-note" data-info-materials-note hidden></p>
+
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

@@ -7,6 +7,7 @@ import ToolViewport from "../../components/tools/ToolViewport.astro";
 import ToolError from "../../components/tools/ToolError.astro";
 import ViewerControls from "../../components/tools/ViewerControls.astro";
 import ModelInfoPanel from "../../components/tools/ModelInfoPanel.astro";
+import RelatedTools from "../../components/tools/RelatedTools.astro";
 import { getToolById } from "../../config/tools";
 
 const tool = getToolById("stl-viewer")!;
@@ -51,7 +52,7 @@ const faqs = [
 ---
 
 <ToolLayout
-  title="STL Viewer — Open and Inspect STL Files Online | MeshKit"
+  title="STL Viewer — Open and Inspect STL Files Online | MeshWrench"
   description="Open and inspect STL files directly in your browser. Rotate, zoom, view dimensions and check triangle count without uploading your model."
   path="/stl-viewer/"
   h1="STL Viewer"
@@ -59,7 +60,7 @@ const faqs = [
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   webApplication={{
-    name: "MeshKit STL Viewer",
+    name: "MeshWrench STL Viewer",
     applicationCategory: "UtilitiesApplication",
     description:
       "View and inspect STL files locally in the browser — rotate, zoom, and check dimensions, bounding box and triangle count. No upload, no account required.",
@@ -68,7 +69,7 @@ const faqs = [
 >
   <PrivacyNotice
     slot="privacy-notice"
-    message="Your STL stays on this device. MeshKit reads and renders it locally in your browser."
+    message="Your STL stays on this device. MeshWrench reads and renders it locally in your browser."
   />
 
   <div slot="file-input">
@@ -105,7 +106,7 @@ const faqs = [
     <h2>How to view an STL file</h2>
     <ol>
       <li>Select an STL file using the picker above (or drag one in once you're on the page).</li>
-      <li>MeshKit reads the file locally and parses it in a background worker — nothing leaves your device.</li>
+      <li>MeshWrench reads the file locally and parses it in a background worker — nothing leaves your device.</li>
       <li>Once parsing finishes, drag to rotate, scroll to zoom, and use the controls to fit the view or toggle wireframe.</li>
     </ol>
 
@@ -135,7 +136,7 @@ const faqs = [
 
     <h2>Is the STL file uploaded?</h2>
     <p>
-      No. There is no server-side file-processing route in MeshKit at all. Your browser reads the file with the
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file with the
       standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
       WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the
       network tab, and load a file. No request containing your file will appear.
@@ -155,7 +156,7 @@ const faqs = [
       STL stores only raw triangle geometry — no color, no units, no metadata, and often duplicated vertices between
       adjacent triangles. 3MF is a newer, XML-based format that can store color, materials, units and other
       metadata alongside the mesh. STL remains the most widely supported format across slicers and CAD tools, which
-      is why it's MeshKit's first viewer.
+      is why it's MeshWrench's first viewer.
     </p>
   </Fragment>
 
@@ -175,31 +176,14 @@ const faqs = [
     </section>
   </Fragment>
 
-  <Fragment slot="related-tools">
-    <section class="related-tools-section">
-      <h2>Related planned tools</h2>
-      <p>These tools aren't built yet — MeshKit is being developed in phases.</p>
-      <ul class="related-tools-list">
-        {
-          relatedTools.map((related) => (
-            <li>
-              <span class="related-tool-name">{related!.name}</span>
-              <span class="related-tool-status">Planned</span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-  </Fragment>
-</ToolLayout>
+  <RelatedTools slot="related-tools" relatedTools={relatedTools} /></ToolLayout>
 
 <script>
   import "./_client";
 </script>
 
 <style>
-  .faq-section-tool,
-  .related-tools-section {
+  .faq-section-tool {
     margin-top: 20px;
   }
   .faq-list-tool {
@@ -216,34 +200,5 @@ const faqs = [
   .faq-list-tool p {
     margin: 10px 0 0;
     color: var(--muted);
-  }
-  .related-tools-list {
-    margin: 12px 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 8px;
-  }
-  .related-tools-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--panel);
-  }
-  .related-tool-name {
-    font-weight: 700;
-  }
-  .related-tool-status {
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: #f3f1fb;
-    color: var(--muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 </style>

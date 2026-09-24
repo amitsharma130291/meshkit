@@ -1,0 +1,20 @@
+---
+/**
+ * Presentation shell only. Every entry is rendered with `.textContent`,
+ * never `innerHTML` — see _client.ts — so a metadata value containing
+ * markup is always shown as plain text, never parsed as HTML. Metadata is
+ * display-only: it is never written into page SEO tags or browser
+ * history.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "threemf-metadata" } = Astro.props;
+---
+
+<section class="threemf-metadata-panel" id={id} data-metadata-panel hidden aria-label="Package metadata">
+  <h2>Package metadata</h2>
+  <dl class="threemf-metadata-list" data-metadata-list></dl>
+  <p class="threemf-metadata-empty" data-metadata-empty hidden>This file doesn't declare any metadata.</p>
+</section>

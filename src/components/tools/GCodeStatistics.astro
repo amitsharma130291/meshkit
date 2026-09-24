@@ -1,0 +1,35 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-statistics" } = Astro.props;
+---
+
+<section class="gcode-statistics" id={id} aria-label="Movement and print statistics">
+  <h2>Movement</h2>
+  <dl class="model-info-grid">
+    <div><dt>Extrusion moves</dt><dd data-extrusion-moves></dd></div>
+    <div><dt>Travel moves</dt><dd data-travel-moves></dd></div>
+    <div><dt>Retracts</dt><dd data-retracts></dd></div>
+    <div><dt>Extrusion distance</dt><dd data-extrusion-distance></dd></div>
+    <div><dt>Travel distance</dt><dd data-travel-distance></dd></div>
+    <div><dt>Total Z travel</dt><dd data-z-travel></dd></div>
+    <div><dt>Feed rate range</dt><dd data-feed-rate-range></dd></div>
+  </dl>
+
+  <h2>Time estimates</h2>
+  <dl class="model-info-grid">
+    <div><dt>Slicer-provided estimate</dt><dd data-slicer-time></dd></div>
+    <div><dt>Feed-rate-only estimate</dt><dd data-feedrate-time></dd></div>
+  </dl>
+  <p class="timing-disclosure">The feed-rate-only estimate divides path distance by commanded feed rate — it never models acceleration, jerk, pressure advance or firmware queues, and is never the same as actual print time.</p>
+
+  <h2>Tools and temperatures</h2>
+  <dl class="model-info-grid">
+    <div><dt>Tools used</dt><dd data-tools-used></dd></div>
+    <div><dt>Bed temperature setpoints</dt><dd data-bed-temps></dd></div>
+    <div><dt>Fan state changes</dt><dd data-fan-changes></dd></div>
+  </dl>
+  <div class="tool-temperature-list" data-tool-temperatures></div>
+</section>

@@ -1,0 +1,285 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import PLYDisplayControls from "../../components/tools/PLYDisplayControls.astro";
+import PLYModelInfo from "../../components/tools/PLYModelInfo.astro";
+import PLYGeometryPanel from "../../components/tools/PLYGeometryPanel.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("ply-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "PLY Viewer", path: "/ply-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my PLY file uploaded?",
+    answer:
+      "No. The file is read and resolved entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Can this viewer open a point cloud with no faces?",
+    answer:
+      "Yes. A point-cloud-only PLY file — a vertex element with no face element at all — is a valid, first-class input here, unlike MeshWrench's PLY to STL converter, which requires a face element since STL can't represent points.",
+  },
+  {
+    question: "Does it render explicit edges?",
+    answer:
+      "Yes, when the file declares a conventional edge element with vertex1/vertex2 integer properties. An edge element in any other, unrecognized layout is skipped with a warning rather than guessed at.",
+  },
+  {
+    question: "What units are the dimensions shown in?",
+    answer:
+      "PLY doesn't define a measurement unit at all, so dimensions are always shown in model units, unscaled from the file's own coordinate values.",
+  },
+  {
+    question: "Does this tool use the same parser as the PLY to STL converter?",
+    answer:
+      "Yes. Header parsing, ASCII/binary body reading and face triangulation all reuse the exact same underlying code as MeshWrench's PLY to STL converter. This viewer only adds a second, additive pass for vertex colors, normals, UV metadata and edges — things the converter intentionally discards.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="PLY Viewer — Open and Inspect PLY Files Online | MeshWrench"
+  description="Open and inspect PLY meshes and point clouds in your browser. See surfaces, points, vertex colors and normals — nothing uploaded."
+  path="/ply-viewer/"
+  h1="PLY Viewer"
+  intro="Open and inspect PLY meshes and point clouds directly in your browser. Explore surfaces, explicit edges and points, with vertex colors and normals, without uploading your file."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench PLY Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect PLY files locally in the browser — rotate, zoom, and explore polygon surfaces, explicit edges and point clouds, with vertex colors and normals. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your PLY stays on this device. MeshWrench reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="ply-file-input"
+      label="Select a PLY file"
+      accept=".ply,model/ply,application/octet-stream"
+      helpText="Up to 150 MB. ASCII, and little- or big-endian binary PLY are all supported."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="ply-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="ply-viewer-viewport"
+      description="Interactive 3D preview of your PLY model. Drag to rotate, scroll to zoom. Surface, edges and points can be shown or hidden using the panel below."
+    />
+    <PLYDisplayControls id="ply-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <PLYModelInfo id="ply-viewer-model-info" />
+    <PLYGeometryPanel id="ply-viewer-geometry-panel" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="ply-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view a PLY file</h2>
+    <ol>
+      <li>Select a PLY file using the picker above.</li>
+      <li>MeshWrench resolves it locally, in a background worker — nothing leaves your device.</li>
+      <li>
+        Once resolution finishes, drag to rotate, scroll to zoom, and use the panel below the viewport to fit the
+        view, toggle wireframe, switch shading or color mode, or show and hide the surface, edges and points
+        independently.
+      </li>
+    </ol>
+
+    <h2>What the PLY Viewer displays</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, encoding (ASCII, little-endian binary or
+      big-endian binary), vertex count, source face count, rendered triangle count, explicit edge count, rendered
+      point count, vertex/face property counts, comment and <code>obj_info</code> line counts, unknown element and
+      property counts, and whether source normals, vertex colors, an alpha channel and texture-coordinate metadata
+      are present. A geometry panel lists which of surface, explicit edges and points your file actually contains,
+      each with its own visibility toggle.
+    </p>
+
+    <h2>Meshes, point clouds and explicit edges</h2>
+    <p>
+      A PLY file has no fixed scene graph the way OBJ, 3MF or GLB do — it's a flat list of elements, most commonly a
+      <code>vertex</code> element and an optional <code>face</code> element. This viewer treats every one of the
+      three possible render categories as first-class: a polygon <strong>surface</strong> from a
+      <code>face</code> element, <strong>explicit edges</strong> from a conventional <code>edge</code> element (only
+      the standard <code>vertex1</code>/<code>vertex2</code> integer layout is recognized — anything else is skipped
+      with a warning, never guessed at), and <strong>points</strong> — every vertex is always renderable as a point,
+      regardless of whether it's also used by a face or edge. A file with only a vertex element and no faces at all
+      is a valid point cloud, not an error.
+    </p>
+
+    <h2>Vertex colors, normals and UVs</h2>
+    <p>
+      Conventional vertex properties are read directly: <code>red</code>/<code>green</code>/<code>blue</code>/
+      <code>alpha</code> (or their <code>r</code>/<code>g</code>/<code>b</code>/<code>a</code> aliases) become vertex
+      colors, normalized from their declared scalar type — an 8-bit channel divides by 255, a 16-bit channel divides
+      by 65535, and a float channel is used as-is. <code>nx</code>/<code>ny</code>/<code>nz</code> become source
+      normals, used per-vertex where they're valid and falling back to a computed, averaged normal only for the
+      vertices that need it. A <code>u</code>/<code>v</code>, <code>s</code>/<code>t</code> or
+      <code>texture_u</code>/<code>texture_v</code> pair is read as texture-coordinate metadata — PLY has no texture
+      image, so this viewer never samples it against anything.
+    </p>
+
+    <h2>How dimensions are shown</h2>
+    <p>
+      PLY does not define a universal measurement unit. Dimensions are shown in model units, unscaled from the
+      file's own coordinate values — this viewer never assumes millimeters, meters or any other real-world scale.
+    </p>
+
+    <h2>PLY versus STL</h2>
+    <p>
+      PLY can describe polygon faces, explicit edges, a standalone point cloud, per-vertex colors, normals and
+      texture-coordinate metadata, all in one file. STL stores only raw triangle geometry with no metadata at all.
+      This viewer can show PLY's richer structure — point clouds, explicit edges, vertex colors — that MeshWrench's PLY
+      to STL converter's flat triangle output can't carry over.
+    </p>
+
+    <h2>Why a PLY may not open</h2>
+    <ul>
+      <li>The header is missing a required field, or declares a property type MeshWrench doesn't recognize.</li>
+      <li>A face or edge element references a vertex index that doesn't exist.</li>
+      <li>The file has neither a face nor an edge element, and its vertex element has zero rows to show as points.</li>
+      <li>A vertex coordinate is missing, non-finite, or the binary body ends before the header's declared counts are satisfied.</li>
+      <li>The file is more complex (vertices, faces, edges or points) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the PLY uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the file with the
+      standard File API, hands its bytes to a Web Worker running on your device, and renders the result with
+      WebGL — also on your device. You can verify this yourself: open your browser's developer tools, watch the
+      network tab, and load a file. No request containing your file, or any value found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

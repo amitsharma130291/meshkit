@@ -33,7 +33,7 @@ export interface OBJSerializeResult {
   outputByteLength: number;
 }
 
-const OBJECT_NAME = "MeshKit_Converted";
+const OBJECT_NAME = "MeshWrench_Converted";
 const DEFAULT_YIELD_EVERY = 100_000;
 /** Defensive ceiling well beyond any realistic `maxUniqueVertices`/`maxFaces` — guards the one-based `+1` index arithmetic against overflow. */
 const MAX_OBJ_INDEX = 2 ** 31 - 1;
@@ -42,8 +42,8 @@ const MAX_OBJ_INDEX = 2 ** 31 - 1;
  * Serializes already-deduplicated geometry plus one geometric normal per
  * triangle into a complete, valid UTF-8 OBJ document:
  *
- *   # Generated locally by MeshKit
- *   o MeshKit_Converted
+ *   # Generated locally by MeshWrench
+ *   o MeshWrench_Converted
  *   s off
  *   v ...                  (one per unique vertex)
  *   vn ...                 (one per triangle)
@@ -74,7 +74,7 @@ export async function serializeOBJ(
   }
 
   const yieldEvery = options.yieldEvery ?? DEFAULT_YIELD_EVERY;
-  const lines: string[] = ["# Generated locally by MeshKit", `o ${OBJECT_NAME}`, "s off"];
+  const lines: string[] = ["# Generated locally by MeshWrench", `o ${OBJECT_NAME}`, "s off"];
   let estimatedBytes = lines.reduce((sum, line) => sum + line.length + 1, 0);
 
   const addLine = (line: string): void => {

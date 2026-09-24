@@ -1,0 +1,38 @@
+---
+/**
+ * The ONLY thing a Free (i.e. every production) user sees in the Batch
+ * tab. Per Phase 10's own explicit constraint: no working Buy, Upgrade,
+ * Activate or Restore button — purchasing genuinely isn't available
+ * yet, so nothing here may look like it is.
+ */
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+---
+
+<div id={id} class="pro-locked-notice" data-pro-locked-notice role="status">
+  <p class="pro-locked-headline">Batch processing is a Pro capability.</p>
+  <p>Pro batch tools are being prepared. Purchasing is not available yet.</p>
+</div>
+
+<style>
+  .pro-locked-notice {
+    padding: 18px 20px;
+    border-radius: 12px;
+    border: 1px dashed var(--line);
+    background: var(--panel);
+    color: var(--muted);
+  }
+  .pro-locked-headline {
+    margin: 0 0 6px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .pro-locked-notice p {
+    margin: 0;
+  }
+  .pro-locked-notice p + p {
+    margin-top: 6px;
+  }
+</style>

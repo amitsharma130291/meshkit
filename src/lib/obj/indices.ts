@@ -25,7 +25,7 @@ export interface FaceVertexRef {
   normalIndex: number | null;
 }
 
-function parseIndexInt(text: string): number {
+export function parseIndexInt(text: string): number {
   if (!/^[+-]?\d+$/.test(text)) throw objError("OBJ_FACE_INVALID");
   const n = Number(text);
   if (!Number.isSafeInteger(n)) throw objError("OBJ_FACE_INVALID");

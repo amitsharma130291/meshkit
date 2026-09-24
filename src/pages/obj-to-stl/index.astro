@@ -5,6 +5,7 @@ import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
 import ToolStatus from "../../components/tools/ToolStatus.astro";
 import ToolViewport from "../../components/tools/ToolViewport.astro";
 import ToolError from "../../components/tools/ToolError.astro";
+import BatchWorkspace from "../../components/tools/BatchWorkspace.astro";
 import { getToolById } from "../../config/tools";
 
 const tool = getToolById("obj-to-stl")!;
@@ -24,12 +25,12 @@ const faqs = [
   {
     question: "Are materials and textures preserved?",
     answer:
-      "No. STL stores surface geometry only — no material, texture or color information exists in the format. If your OBJ references a .mtl file or texture coordinates, MeshKit shows a warning before you download, but the STL itself never contains them. MeshKit also never fetches the .mtl file itself.",
+      "No. STL stores surface geometry only — no material, texture or color information exists in the format. If your OBJ references a .mtl file or texture coordinates, MeshWrench shows a warning before you download, but the STL itself never contains them. MeshWrench also never fetches the .mtl file itself.",
   },
   {
     question: "What units does the downloaded STL use?",
     answer:
-      "Neither OBJ nor STL define a measurement unit. MeshKit preserves your file's numeric coordinates exactly — it never multiplies them by 10, 25.4 or any other value. Your slicer or CAD application decides how to interpret the numbers.",
+      "Neither OBJ nor STL define a measurement unit. MeshWrench preserves your file's numeric coordinates exactly — it never multiplies them by 10, 25.4 or any other value. Your slicer or CAD application decides how to interpret the numbers.",
   },
   {
     question: "How are non-triangular faces handled?",
@@ -39,13 +40,13 @@ const faqs = [
   {
     question: "Why did my conversion fail?",
     answer:
-      "Usually because a face references a vertex that doesn't exist, a face has an invalid or self-intersecting shape, or the file doesn't contain any triangle/polygon geometry at all — see \"Why an OBJ may fail to convert\" below for the full list MeshKit checks for.",
+      "Usually because a face references a vertex that doesn't exist, a face has an invalid or self-intersecting shape, or the file doesn't contain any triangle/polygon geometry at all — see \"Why an OBJ may fail to convert\" below for the full list MeshWrench checks for.",
   },
 ];
 ---
 
 <ToolLayout
-  title="OBJ to STL Converter — Convert OBJ Files Online | MeshKit"
+  title="OBJ to STL Converter — Convert OBJ Files Online | MeshWrench"
   description="Convert OBJ files to STL directly in your browser. Your model is processed locally and never uploaded."
   path="/obj-to-stl/"
   h1="OBJ to STL Converter"
@@ -53,7 +54,7 @@ const faqs = [
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   webApplication={{
-    name: "MeshKit OBJ to STL Converter",
+    name: "MeshWrench OBJ to STL Converter",
     applicationCategory: "UtilitiesApplication",
     description:
       "Convert OBJ files to binary STL locally in the browser, triangulating polygon faces and recalculating geometric normals. No upload, no account required.",
@@ -62,7 +63,7 @@ const faqs = [
 >
   <PrivacyNotice
     slot="privacy-notice"
-    message="Your OBJ stays on this device. MeshKit converts it to STL locally in your browser."
+    message="Your OBJ stays on this device. MeshWrench converts it to STL locally in your browser."
   />
 
   <div slot="file-input">
@@ -124,13 +125,15 @@ const faqs = [
     </div>
 
     <ToolError id="obj-error" />
+
+    <BatchWorkspace id="obj-batch-workspace" acceptHint="OBJ files only, same limits as single-file conversion." />
   </div>
 
   <Fragment slot="seo-content">
     <h2>How to convert OBJ to STL</h2>
     <ol>
       <li>Select an OBJ file using the picker above.</li>
-      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
       <li>Review the preview, dimensions and any warnings, then download the converted STL file.</li>
     </ol>
 
@@ -146,7 +149,7 @@ const faqs = [
     <p>
       STL stores surface geometry only. Materials referenced with <code>mtllib</code>/<code>usemtl</code>, texture
       coordinates, and vertex colors are not included in the download — this is a limitation of the STL format
-      itself, not something MeshKit chooses to drop. MeshKit never fetches a referenced <code>.mtl</code> file or any
+      itself, not something MeshWrench chooses to drop. MeshWrench never fetches a referenced <code>.mtl</code> file or any
       other external path. If your file includes any of these, a warning appears before you download.
     </p>
 
@@ -155,14 +158,14 @@ const faqs = [
       A triangular face is used as-is. A convex polygon face (a quad or larger n-gon with no inward-pointing corners)
       is fanned from its first vertex. A concave polygon face is triangulated with an ear-clipping algorithm that
       projects the face onto its dominant plane and preserves its actual outline — naive fan triangulation would
-      corrupt a concave shape, so MeshKit doesn't use it for those faces. A face that's severely non-planar or
+      corrupt a concave shape, so MeshWrench doesn't use it for those faces. A face that's severely non-planar or
       self-intersecting can't be triangulated safely and is rejected with a clear error instead of producing
       corrupted geometry.
     </p>
 
     <h2>How units are handled</h2>
     <p>
-      Neither OBJ nor STL define a universal measurement unit. MeshKit preserves your file's numeric coordinates
+      Neither OBJ nor STL define a universal measurement unit. MeshWrench preserves your file's numeric coordinates
       exactly — it never multiplies them by 10, 25.4 or any other conversion factor, and dimensions are shown as
       model units rather than being labeled millimeters. Your slicer or CAD application decides how to interpret the
       numbers.
@@ -181,14 +184,14 @@ const faqs = [
       <li>A face references a vertex, texture-coordinate or normal index that doesn't exist.</li>
       <li>A face has fewer than three (usable) vertices after removing a repeated closing reference.</li>
       <li>A face's edges cross themselves, or the face is severely non-planar.</li>
-      <li>A vertex or face line uses a value MeshKit can't parse as a number, or an ambiguous field count.</li>
+      <li>A vertex or face line uses a value MeshWrench can't parse as a number, or an ambiguous field count.</li>
       <li>The file only contains line or point primitives, which STL can't represent.</li>
       <li>The file is more complex (vertices, triangles, or vertices on a single face) than this tool's safety limits currently allow.</li>
     </ul>
 
     <h2>Is the file uploaded?</h2>
     <p>
-      No. There is no server-side conversion route in MeshKit. Your browser reads the OBJ file, parses it, and builds
+      No. There is no server-side conversion route in MeshWrench. Your browser reads the OBJ file, parses it, and builds
       the STL file, all on your device. You can verify this yourself: open your browser's developer tools, watch the
       network tab, and convert a file. No request containing your file will appear.
     </p>

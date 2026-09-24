@@ -1,0 +1,46 @@
+---
+/**
+ * Presentation only — the detailed numeric breakdown behind the summary/
+ * checks views, plus the JSON report download control. Every `data-*`
+ * node is filled by `_client.ts` from the worker's own
+ * `STLDiagnosticsReport`.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-diagnostics-details" } = Astro.props;
+---
+
+<section class="diagnostics-details" id={id} data-diagnostics-details hidden aria-label="Detailed results">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-detail-file-size></dd></div>
+    <div><dt>Triangles</dt><dd data-detail-triangle-count></dd></div>
+    <div><dt>Valid triangles</dt><dd data-detail-valid-triangle-count></dd></div>
+    <div><dt>Degenerate triangles</dt><dd data-detail-degenerate-count></dd></div>
+    <div><dt>Source vertex slots</dt><dd data-detail-source-vertex-count></dd></div>
+    <div><dt>Unique vertex positions</dt><dd data-detail-unique-vertex-count></dd></div>
+    <div><dt>Duplicate coordinate references</dt><dd data-detail-duplicate-coordinate-count></dd></div>
+    <div><dt>Surface area</dt><dd data-detail-surface-area></dd></div>
+    <div><dt>Enclosed volume</dt><dd data-detail-enclosed-volume></dd></div>
+  </dl>
+
+  <h2>Boundary breakdown</h2>
+  <dl class="model-info-grid">
+    <div><dt>Total boundary edges</dt><dd data-detail-boundary-edge-count></dd></div>
+    <div><dt>Closed loops</dt><dd data-detail-closed-loop-count></dd></div>
+    <div><dt>Open chains</dt><dd data-detail-open-chain-count></dd></div>
+    <div><dt>Branched components</dt><dd data-detail-branched-count></dd></div>
+    <div><dt>Non-simple components</dt><dd data-detail-non-simple-count></dd></div>
+  </dl>
+
+  <h2>Shells</h2>
+  <ul class="shell-list" data-shell-list></ul>
+
+  <h2>Analysis timing</h2>
+  <dl class="model-info-grid" data-stage-timing-list></dl>
+
+  <div class="diagnostics-warnings" data-diagnostics-warnings hidden></div>
+
+  <button type="button" class="control-button" data-action="download-report">Download JSON report</button>
+</section>

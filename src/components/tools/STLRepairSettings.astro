@@ -1,0 +1,94 @@
+---
+/**
+ * Presentation only. Three real radio buttons choose the preset; the
+ * Custom fieldset's individual controls start disabled and are enabled
+ * by `_client.ts` only when "Custom" is selected — Safe/Standard apply
+ * their own fixed settings (`src/lib/stl-repair/types.ts`'s
+ * `safePreset()`/`standardPreset()`) and never let these controls drift
+ * out of sync with what will actually run.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-repair-settings" } = Astro.props;
+---
+
+<section class="repair-settings" id={id} aria-label="Repair settings">
+  <fieldset class="preset-choice">
+    <legend>Repair mode</legend>
+    <label class="preset-option">
+      <input type="radio" name="repair-preset" value="safe" checked data-action="select-preset" />
+      <span class="preset-label">Safe <span class="preset-badge">Default</span></span>
+      <span class="preset-desc">Exact cleanup, consistent winding, outward orientation, simple hole filling. No welding, no speculative deletions.</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="repair-preset" value="standard" data-action="select-preset" />
+      <span class="preset-label">Standard</span>
+      <span class="preset-desc">Everything in Safe, plus tolerance-based vertex welding and near-zero-area cleanup.</span>
+    </label>
+    <label class="preset-option">
+      <input type="radio" name="repair-preset" value="custom" data-action="select-preset" />
+      <span class="preset-label">Custom</span>
+      <span class="preset-desc">Choose each operation individually.</span>
+    </label>
+  </fieldset>
+
+  <fieldset class="custom-controls" data-custom-controls disabled>
+    <legend>Custom operations</legend>
+
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-weld-enabled" disabled />
+      Weld nearby vertices within a tolerance
+    </label>
+    <label class="control-field weld-tolerance-field">
+      <span>Weld tolerance (model units)</span>
+      <input type="number" step="any" min="0" data-action="custom-weld-tolerance" disabled />
+    </label>
+    <p class="control-note" data-weld-tolerance-note></p>
+
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-remove-exact-degenerates" checked disabled />
+      Remove exact degenerate triangles
+    </label>
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-remove-near-zero-degenerates" disabled />
+      Remove near-zero-area triangles
+    </label>
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-remove-duplicate-faces" checked disabled />
+      Remove duplicate faces
+    </label>
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-correct-winding" checked disabled />
+      Correct inconsistent winding
+    </label>
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-orient-outward" checked disabled />
+      Orient eligible closed shells outward
+    </label>
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-fill-holes" checked disabled />
+      Fill eligible boundary loops
+    </label>
+
+    <label class="control-checkbox">
+      <input type="checkbox" data-action="custom-remove-small-shells" disabled />
+      Remove small disconnected shells
+    </label>
+    <label class="control-field">
+      <span>Small-shell criterion</span>
+      <select data-action="custom-small-shell-criterion" disabled>
+        <option value="triangle-count">Triangle count ≤</option>
+        <option value="relative-area">Surface area vs. largest shell ≤</option>
+        <option value="absolute-diagonal">Bounding-box diagonal (model units) ≤</option>
+      </select>
+    </label>
+    <label class="control-field">
+      <span>Threshold</span>
+      <input type="number" step="any" min="0" data-action="custom-small-shell-threshold" disabled />
+    </label>
+  </fieldset>
+
+  <button type="button" class="control-button" data-action="analyze-repair-plan">Show repair plan</button>
+</section>

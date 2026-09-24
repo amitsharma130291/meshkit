@@ -1,0 +1,62 @@
+---
+/**
+ * Presentation only — `_client.ts` fills every `data-*` node. Visibility
+ * toggles use both a text label and (where relevant) a color swatch,
+ * never color alone.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-display-controls" } = Astro.props;
+
+const COLOR_MODES = [
+  { value: "feature", label: "Feature type" },
+  { value: "movement", label: "Movement type" },
+  { value: "feed-rate", label: "Feed rate" },
+  { value: "tool", label: "Tool" },
+  { value: "layer", label: "Layer" },
+  { value: "temperature", label: "Temperature" },
+] as const;
+---
+
+<div class="viewer-controls gcode-display-controls" id={id} role="group" aria-label="G-code display controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-model">Fit visible paths</button>
+
+  <label class="control-field">
+    <span>Color by</span>
+    <select data-action="color-mode">
+      {COLOR_MODES.map((mode) => <option value={mode.value} data-color-mode-option={mode.value}>{mode.label}</option>)}
+    </select>
+  </label>
+  <p class="color-legend" data-color-legend hidden></p>
+
+  <fieldset class="visibility-toggles">
+    <legend>Show</legend>
+    <button type="button" class="control-button" data-action="toggle-extrusion" aria-pressed="true">Extrusion</button>
+    <button type="button" class="control-button" data-action="toggle-travel" aria-pressed="true">Travel</button>
+    <button type="button" class="control-button" data-action="toggle-retract-markers" aria-pressed="false">Retract markers</button>
+  </fieldset>
+
+  <div class="tool-visibility" data-tool-visibility role="group" aria-label="Tool visibility"></div>
+
+  <label class="control-field">
+    <span>Line opacity</span>
+    <input type="range" data-action="opacity" min="0.1" max="1" step="0.05" value="1" />
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

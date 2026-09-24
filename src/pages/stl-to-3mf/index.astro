@@ -5,6 +5,7 @@ import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
 import ToolStatus from "../../components/tools/ToolStatus.astro";
 import ToolViewport from "../../components/tools/ToolViewport.astro";
 import ToolError from "../../components/tools/ToolError.astro";
+import BatchWorkspace from "../../components/tools/BatchWorkspace.astro";
 import { getToolById } from "../../config/tools";
 
 const tool = getToolById("stl-to-3mf")!;
@@ -29,7 +30,7 @@ const faqs = [
   {
     question: "Why does the 3MF declare millimetres if STL doesn't store units?",
     answer:
-      "3MF requires every package to declare a measurement unit — unlike STL, which has no unit field at all. MeshKit preserves your file's numeric coordinates exactly and declares millimetres as a fixed output convention, not because it detected your STL's real-world scale. Your STL's original units remain unknown to MeshKit.",
+      "3MF requires every package to declare a measurement unit — unlike STL, which has no unit field at all. MeshWrench preserves your file's numeric coordinates exactly and declares millimetres as a fixed output convention, not because it detected your STL's real-world scale. Your STL's original units remain unknown to MeshWrench.",
   },
   {
     question: "How are duplicate STL vertices handled?",
@@ -39,13 +40,13 @@ const faqs = [
   {
     question: "Why did my conversion fail?",
     answer:
-      "Usually because the file isn't a valid STL, or every triangle in it has zero area (a degenerate mesh with nothing to export) — see \"Why an STL may fail to convert\" below for the full list MeshKit checks for.",
+      "Usually because the file isn't a valid STL, or every triangle in it has zero area (a degenerate mesh with nothing to export) — see \"Why an STL may fail to convert\" below for the full list MeshWrench checks for.",
   },
 ];
 ---
 
 <ToolLayout
-  title="STL to 3MF Converter — Convert STL Files Online | MeshKit"
+  title="STL to 3MF Converter — Convert STL Files Online | MeshWrench"
   description="Convert STL files to 3MF directly in your browser. Your model is processed locally and never uploaded."
   path="/stl-to-3mf/"
   h1="STL to 3MF Converter"
@@ -53,7 +54,7 @@ const faqs = [
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   webApplication={{
-    name: "MeshKit STL to 3MF Converter",
+    name: "MeshWrench STL to 3MF Converter",
     applicationCategory: "UtilitiesApplication",
     description:
       "Convert binary or ASCII STL files to a valid 3MF package locally in the browser, deduplicating exactly identical vertices and declaring millimetre output units. No upload, no account required.",
@@ -62,7 +63,7 @@ const faqs = [
 >
   <PrivacyNotice
     slot="privacy-notice"
-    message="Your STL stays on this device. MeshKit converts it to 3MF locally in your browser."
+    message="Your STL stays on this device. MeshWrench converts it to 3MF locally in your browser."
   />
 
   <div slot="file-input">
@@ -70,7 +71,7 @@ const faqs = [
       id="stl-file-input"
       label="Select an STL file"
       accept=".stl,model/stl,application/sla,application/octet-stream"
-      helpText="Binary or ASCII STL, up to 100 MB. STL files don't store units — MeshKit preserves the numeric coordinates and declares them as millimetres in the 3MF output. The 3MF won't include colors, materials or textures."
+      helpText="Binary or ASCII STL, up to 100 MB. STL files don't store units — MeshWrench preserves the numeric coordinates and declares them as millimetres in the 3MF output. The 3MF won't include colors, materials or textures."
     />
   </div>
 
@@ -119,7 +120,7 @@ const faqs = [
         <div><dt>Depth</dt><dd data-info-depth></dd></div>
       </dl>
       <p class="unitless-note">
-        STL files don't store units. MeshKit preserves the numeric coordinates and declares them as millimetres in
+        STL files don't store units. MeshWrench preserves the numeric coordinates and declares them as millimetres in
         the 3MF output — this is a declared output convention, not a detected fact about your file.
       </p>
     </section>
@@ -130,19 +131,21 @@ const faqs = [
     </div>
 
     <ToolError id="stl-to-3mf-error" />
+
+    <BatchWorkspace id="stl-to-3mf-batch-workspace" acceptHint="STL files only, same limits as single-file conversion." />
   </div>
 
   <Fragment slot="seo-content">
     <h2>How to convert STL to 3MF</h2>
     <ol>
       <li>Select an STL file using the picker above — binary or ASCII both work.</li>
-      <li>MeshKit parses it locally, in a background worker — nothing leaves your device.</li>
+      <li>MeshWrench parses it locally, in a background worker — nothing leaves your device.</li>
       <li>Review the preview, dimensions and any warnings, then download the converted 3MF file.</li>
     </ol>
 
     <h2>What geometry is preserved</h2>
     <p>
-      The converter reuses MeshKit's existing STL parser (the same one <a href="/stl-viewer/">STL Viewer</a> uses) to
+      The converter reuses MeshWrench's existing STL parser (the same one <a href="/stl-viewer/">STL Viewer</a> uses) to
       read your file's triangle geometry exactly as written — numeric coordinates are never changed, and triangle
       winding is preserved. The output is a valid 3MF package containing one indexed mesh object with one build
       item referencing it.
@@ -151,23 +154,23 @@ const faqs = [
     <h2>How repeated STL vertices are indexed</h2>
     <p>
       STL stores every triangle's three vertices independently, so the same position commonly repeats many times
-      across a mesh. 3MF supports indexed vertices, so MeshKit merges vertices whose coordinates are exactly,
+      across a mesh. 3MF supports indexed vertices, so MeshWrench merges vertices whose coordinates are exactly,
       bit-for-bit identical into a single vertex record. This is not mesh repair: vertices that are close but not
       identical are always kept distinct, with no distance tolerance and no seam welding.
     </p>
 
     <h2>How units are handled</h2>
     <p>
-      STL has no field for measurement units at all — MeshKit genuinely doesn't know whether your file's numbers
+      STL has no field for measurement units at all — MeshWrench genuinely doesn't know whether your file's numbers
       represent millimetres, inches or something else entirely. 3MF, unlike STL, requires every package to declare
-      a unit. MeshKit preserves your coordinates exactly and declares the output as millimetres as a fixed
+      a unit. MeshWrench preserves your coordinates exactly and declares the output as millimetres as a fixed
       convention, stated plainly in the results panel — never as a claim that it detected your STL's original scale.
     </p>
 
     <h2>Why the output declares millimetres</h2>
     <p>
       A 3MF package cannot omit its unit declaration, so a converter that reads unitless STL data has to pick
-      something. MeshKit declares millimetres because it's the broadly compatible convention most slicers and CAD
+      something. MeshWrench declares millimetres because it's the broadly compatible convention most slicers and CAD
       tools expect, while leaving your numeric coordinates completely untouched — the declaration changes how other
       software interprets the numbers, not the numbers themselves.
     </p>
@@ -182,7 +185,7 @@ const faqs = [
 
     <h2>Does the output contain colors or materials?</h2>
     <p>
-      No. STL has no field for color, material or texture data, so there is nothing for MeshKit to carry over. The
+      No. STL has no field for color, material or texture data, so there is nothing for MeshWrench to carry over. The
       generated 3MF package contains only geometry — no base materials, color groups, textures or thumbnails.
     </p>
 
@@ -195,7 +198,7 @@ const faqs = [
 
     <h2>Is the file uploaded?</h2>
     <p>
-      No. There is no server-side conversion route in MeshKit. Your browser reads the STL file, parses it, and
+      No. There is no server-side conversion route in MeshWrench. Your browser reads the STL file, parses it, and
       builds the 3MF package, all on your device. You can verify this yourself: open your browser's developer
       tools, watch the network tab, and convert a file. No request containing your file will appear.
     </p>

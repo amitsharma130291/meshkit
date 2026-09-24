@@ -72,7 +72,7 @@ export function serializeBinarySTL(input: BinarySTLInput): ArrayBuffer {
 }
 
 function writeHeader(buffer: ArrayBuffer, header: string | undefined): void {
-  const safe = (header ?? "MeshKit STL export").replace(/[^\x20-\x7e]/g, " ").slice(0, HEADER_BYTES);
+  const safe = (header ?? "MeshWrench STL export").replace(/[^\x20-\x7e]/g, " ").slice(0, HEADER_BYTES);
   const bytes = new TextEncoder().encode(safe).slice(0, HEADER_BYTES);
   new Uint8Array(buffer, 0, HEADER_BYTES).set(bytes);
 }

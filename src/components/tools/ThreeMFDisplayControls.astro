@@ -1,0 +1,57 @@
+---
+/**
+ * Presentation only, following ViewerControls.astro/ViewerDisplayControls.astro's
+ * contract (real labelled buttons/selects, `aria-pressed` kept in sync by
+ * the client script). The "Embedded colors" option is only enabled by the
+ * client when the loaded file actually has resolvable color data — see
+ * "Only show embedded-color mode when supported colors exist" in the
+ * Phase 4B spec.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "threemf-viewer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls threemf-viewer-controls" id={id} role="group" aria-label="Viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-all">Fit all</button>
+  <button type="button" class="control-button" data-action="fit-visible">Fit visible</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">Wireframe</button>
+
+  <label class="control-field" data-control="color-mode">
+    <span>Color mode</span>
+    <select data-action="color-mode">
+      <option value="embedded">Embedded colors</option>
+      <option value="neutral">Neutral material</option>
+      <option value="object">Color by object</option>
+    </select>
+  </label>
+  <p class="control-note" data-color-mode-note hidden></p>
+
+  <label class="control-field">
+    <span>Model color</span>
+    <select data-action="model-color">
+      <option value="#c7c2de">Neutral</option>
+      <option value="#6d42f5">Violet</option>
+      <option value="#24b8d8">Cyan</option>
+      <option value="#ed4b93">Pink</option>
+    </select>
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

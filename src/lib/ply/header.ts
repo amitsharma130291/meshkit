@@ -102,13 +102,21 @@ function parsePropertyLine(parts: string[], element: PLYElement, limits: PLYLimi
   return property;
 }
 
-function parseHeaderLines(lines: string[], limits: PLYLimits): PLYHeader {
+export interface ParsedPLYHeaderLines {
+  header: PLYHeader;
+  commentCount: number;
+  objInfoCount: number;
+}
+
+function parseHeaderLines(lines: string[], limits: PLYLimits): ParsedPLYHeaderLines {
   if (lines.length === 0 || lines[0].trim() !== "ply") throw plyError("PLY_MAGIC_INVALID");
 
   let format: PLYFormat | null = null;
   const elements: PLYElement[] = [];
   const elementNames = new Set<string>();
   let currentElement: PLYElement | null = null;
+  let commentCount = 0;
+  let objInfoCount = 0;
 
   for (let i = 1; i < lines.length; i++) {
     const trimmed = lines[i].trim();
@@ -117,7 +125,10 @@ function parseHeaderLines(lines: string[], limits: PLYLimits): PLYHeader {
     const parts = trimmed.split(/\s+/);
     switch (parts[0]) {
       case "comment":
+        commentCount++;
+        break;
       case "obj_info":
+        objInfoCount++;
         break;
 
       case "format":
@@ -144,11 +155,15 @@ function parseHeaderLines(lines: string[], limits: PLYLimits): PLYHeader {
   if (format === null) throw plyError("PLY_FORMAT_MISSING");
   if (elements.length === 0) throw plyError("PLY_EMPTY_GEOMETRY");
 
-  return { format, elements };
+  return { header: { format, elements }, commentCount, objInfoCount };
 }
 
-export function parsePLYHeader(buffer: ArrayBuffer, limits: PLYLimits): { header: PLYHeader; bodyOffset: number } {
+export function parsePLYHeader(
+  buffer: ArrayBuffer,
+  limits: PLYLimits,
+): { header: PLYHeader; bodyOffset: number; commentCount: number; objInfoCount: number } {
   const bytes = new Uint8Array(buffer);
   const { lines, bodyOffset } = readHeaderLines(bytes, limits);
-  return { header: parseHeaderLines(lines, limits), bodyOffset };
+  const { header, commentCount, objInfoCount } = parseHeaderLines(lines, limits);
+  return { header, bodyOffset, commentCount, objInfoCount };
 }

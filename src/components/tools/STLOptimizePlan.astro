@@ -1,0 +1,22 @@
+---
+/**
+ * Presentation only — shows eligibility and the resolved target BEFORE
+ * any geometry is touched. `_client.ts` only enables
+ * `data-action="run-optimize"` once a plan has actually been shown, so
+ * optimization can never run automatically before the user sees it.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-optimize-plan" } = Astro.props;
+---
+
+<section class="optimize-plan" id={id} data-optimize-plan hidden aria-label="Optimization plan">
+  <h2>Optimization plan</h2>
+  <p class="eligibility-badge" data-eligibility-badge data-eligibility=""></p>
+  <ul class="plan-reasons-list" data-plan-reasons></ul>
+  <p class="plan-target-summary" data-plan-target-summary></p>
+  <p class="plan-thresholds-note" data-plan-thresholds-note></p>
+  <button type="button" class="control-button primary" data-action="run-optimize" disabled>Run optimization</button>
+</section>

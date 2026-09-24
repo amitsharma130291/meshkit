@@ -1,0 +1,29 @@
+---
+/**
+ * Presentation shell only. Segment rows are built entirely by
+ * src/pages/obj-viewer/_client.ts, since the object/group/material list is
+ * only known after a file is parsed — an Astro component can't render
+ * markup for data that doesn't exist at build time. Capped at a rendered
+ * row limit by the client script (see MAX_RENDERED_SEGMENT_ROWS there);
+ * "Show all"/"Hide all" always act on every segment, even ones with no
+ * rendered row, so a file with more groups than the render cap is still
+ * fully controllable.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "obj-scene-tree" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-scene-tree hidden aria-label="Objects and groups">
+  <div class="scene-tree-header">
+    <h2>Objects &amp; groups</h2>
+    <div class="scene-tree-actions">
+      <button type="button" class="control-button" data-action="show-all-segments">Show all</button>
+      <button type="button" class="control-button" data-action="hide-all-segments">Hide all</button>
+    </div>
+  </div>
+  <p class="scene-tree-note" data-scene-tree-note></p>
+  <div class="scene-tree-list" data-scene-tree-list role="group" aria-label="Segment visibility"></div>
+</section>

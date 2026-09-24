@@ -12,7 +12,7 @@ import type { OBJLimits } from "./types";
  * buffer once (a single `TextDecoder.decode()` call) — no extra
  * whole-buffer copies beyond what decoding itself requires.
  *
- * MeshKit intentionally does not guess at legacy 8-bit encodings (Latin-1,
+ * MeshWrench intentionally does not guess at legacy 8-bit encodings (Latin-1,
  * Windows-1252, etc.) — UTF-8 (the OBJ ecosystem's de facto default) is the
  * only supported encoding, and a file that isn't valid UTF-8 is rejected
  * with OBJ_TEXT_DECODE_FAILED rather than silently mis-decoded.

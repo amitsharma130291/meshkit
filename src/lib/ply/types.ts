@@ -40,7 +40,7 @@ export interface PLYHeader {
 
 /**
  * PLY has no notion of a measurement unit — like OBJ, a coordinate is just
- * a number. MeshKit preserves coordinates exactly rather than guessing a
+ * a number. MeshWrench preserves coordinates exactly rather than guessing a
  * unit, so there is deliberately no unit field anywhere in this module's
  * types.
  */

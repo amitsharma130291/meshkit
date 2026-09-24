@@ -3,20 +3,46 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SiteHeader from "../components/site/SiteHeader.astro";
 import SiteFooter from "../components/site/SiteFooter.astro";
 import { siteConfig } from "../config/site";
+import { getToolById, toolRegistry } from "../config/tools";
 
-const tools = [
-  { icon: "view", title: "STL Viewer", copy: "Inspect geometry, dimensions and triangle count.", tag: "Most popular", tone: "cyan" },
-  { icon: "swap", title: "3MF to STL", copy: "Convert clean geometry without uploading your model.", tag: "Fast convert", tone: "peach" },
-  { icon: "repair", title: "STL Repair", copy: "Find holes, bad normals and non-manifold edges.", tag: "Print-ready", tone: "violet" },
-  { icon: "layers", title: "G-code Viewer", copy: "Preview layers, toolpaths and estimated moves.", tag: "Visual check", tone: "pink" }
-];
+/**
+ * Every fact on this page that could drift from reality (tool names,
+ * counts, which tools are shipped vs. planned, supported formats) is
+ * pulled from `toolRegistry` rather than hand-typed — this is the fix for
+ * the Phase 7 homepage-staleness audit finding (a fabricated "G-code
+ * Viewer" card and an outdated "also planned" list that had actually
+ * shipped). The featured four tool IDs below are still an editorial
+ * choice (which four to spotlight), not a fabrication — every fact
+ * *about* each chosen tool comes from the registry.
+ */
+const readyTools = toolRegistry.filter((tool) => tool.status === "ready");
+const plannedTools = toolRegistry.filter((tool) => tool.status === "planned");
+
+const featuredToolIds = ["stl-viewer", "3mf-to-stl", "stl-repair", "stl-checker"];
+const featuredMeta: Record<string, { icon: string; copy: string; tag: string; tone: string }> = {
+  "stl-viewer": { icon: "view", copy: "Inspect geometry, dimensions and triangle count.", tag: "Most popular", tone: "cyan" },
+  "3mf-to-stl": { icon: "swap", copy: "Convert clean geometry without uploading your model.", tag: "Fast convert", tone: "peach" },
+  "stl-repair": { icon: "repair", copy: "Find and fix holes, bad normals and non-manifold edges.", tag: "Print-ready", tone: "violet" },
+  "stl-checker": { icon: "layers", copy: "Detect holes, non-manifold edges and self-intersections.", tag: "Diagnose first", tone: "pink" },
+};
+const tools = featuredToolIds.map((id) => {
+  const tool = getToolById(id)!;
+  return { title: tool.name, path: tool.path, ...featuredMeta[id] };
+});
+
+const supportedFormats = [...new Set(readyTools.flatMap((tool) => tool.inputFormats))]
+  .map((format) => format.toUpperCase())
+  .join(", ");
 
 const faqs = [
   ["Are my 3D files uploaded?", "No. Processing happens locally in your browser. Your files never need to leave your computer."],
   ["Do I need an account?", "No account, email address or sign-in is required to use the free single-file tools."],
   ["What is included in Pro?", "Pro is designed for repeat work: batch folders, reusable presets, larger queues, offline use and an ad-free experience."],
   ["Is Pro a subscription?", "No. The planned price is $39 once for lifetime access to the Pro workflow."],
-  ["Which formats are supported?", "The focused launch set is STL, 3MF, OBJ, GLB and G-code, with more formats added only when they can be handled reliably in-browser."]
+  [
+    "Which formats are supported?",
+    `MeshWrench currently reads and writes ${supportedFormats}, across ${readyTools.length} free browser tools, with more formats added only when they can be handled reliably in-browser.`,
+  ],
 ];
 ---
 
@@ -24,16 +50,19 @@ const faqs = [
   title={siteConfig.defaultTitle}
   description={siteConfig.defaultDescription}
   path="/"
-  ogTitle="MeshKit — Private browser-based 3D file tools"
-  ogDescription="View, convert and repair STL, 3MF, OBJ, GLB and G-code files. Your files never leave your device."
+  ogTitle="MeshWrench — Private 3D File Tools"
+  ogDescription={`View, convert, repair, and optimize ${supportedFormats} files locally in your browser. Your files never leave your device.`}
   webApplication={{
     name: siteConfig.productName,
     applicationCategory: "UtilitiesApplication",
-    description: "Private browser-based tools to view, convert, repair and optimize 3D files.",
-    offers: [
-      { price: "0", priceCurrency: "USD", category: "Free browser tools" },
-      { price: String(siteConfig.proPriceUsd), priceCurrency: "USD", category: "Lifetime Pro license" },
-    ],
+    description: `Private browser-based tools to view, convert, diagnose and repair 3D files — ${readyTools.length} free tools shipped today.`,
+    // Only the real, usable $0 offer — never a priced "Pro" Offer. No
+    // checkout, license product or payment implementation exists yet, so a
+    // priced Offer would be misleading structured data even though the
+    // visible Pro copy on this page is honestly hedged as "planned." See
+    // docs/PRODUCT-READINESS-AUDIT.md section 4 and
+    // scripts/seo-audit/checks.mjs's own regression check for this.
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tools" }],
   }}
 >
   <SiteHeader />
@@ -41,9 +70,9 @@ const faqs = [
   <main id="main">
     <section id="top" class="hero section-shell">
       <div class="hero-copy" data-reveal>
-        <div class="eyebrow"><span>Private browser tools</span><span class="eyebrow-line"></span></div>
+        <div class="eyebrow"><span>Private 3D File Tools</span><span class="eyebrow-line"></span></div>
         <h1>Your 3D files,<br /><span>fixed in your browser.</span></h1>
-        <p class="hero-lede">Open, inspect, convert and repair STL, 3MF, OBJ, GLB and G-code files—without uploading a single byte.</p>
+        <p class="hero-lede">View, convert, repair, and optimize {supportedFormats} files locally in your browser. Your files never leave your device.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#popular-tools">Choose a free tool <span>→</span></a>
           <a class="button button-secondary" href="#privacy"><span class="lock-icon" aria-hidden="true">⌁</span> See how privacy works</a>
@@ -64,7 +93,7 @@ const faqs = [
             <span>bracket-final.stl</span>
             <span class="local-badge">● Local</span>
           </div>
-          <img src="/mesh-hero.png" width="1280" height="1280" alt="Colorful polygonal 3D mesh model with visible facets and repair nodes" />
+          <img src="/mesh-hero.png" width="1254" height="1254" alt="Colorful polygonal 3D mesh model with visible facets and repair nodes" />
           <div class="model-floor"></div>
           <div class="model-status">
             <div><span>Mesh health</span><strong>98%</strong></div>
@@ -81,7 +110,7 @@ const faqs = [
       <i></i>
       <div><strong>0</strong><span>files uploaded</span></div>
       <i></i>
-      <div><strong>7+</strong><span>focused file tools</span></div>
+      <div><strong>{readyTools.length}</strong><span>focused file tools</span></div>
       <i></i>
       <div><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once for Pro</span></div>
     </section>
@@ -96,11 +125,24 @@ const faqs = [
           <article class={`tool-card tone-${tool.tone}`} data-reveal style={`--delay:${index * 70}ms`}>
             <div class="tool-card-top"><span class={`tool-icon icon-${tool.icon}`} aria-hidden="true"><i></i><i></i><i></i></span><span class="tool-tag">{tool.tag}</span></div>
             <div><h3>{tool.title}</h3><p>{tool.copy}</p></div>
-            <a href="#conversion-path" aria-label={`Learn how ${tool.title} fits the workflow`}>See the workflow <span>↗</span></a>
+            <a href={tool.path}>Open {tool.title} <span>↗</span></a>
           </article>
         ))}
       </div>
-      <p class="tools-note">Also planned: OBJ to STL · GLB to STL · STL to OBJ · FBX Viewer · PLY Viewer</p>
+      <p class="tools-note">
+        Also live:{" "}
+        {readyTools
+          .filter((t) => !featuredToolIds.includes(t.id))
+          .map((t, i, arr) => (
+            <>
+              <a href={t.path}>{t.name}</a>
+              {i < arr.length - 1 ? " · " : ""}
+            </>
+          ))}
+      </p>
+      {plannedTools.length > 0 && (
+        <p class="tools-note">Planned next: {plannedTools.map((t) => t.name).join(" · ")}</p>
+      )}
     </section>
 
     <section id="privacy" class="privacy-section section-space">
@@ -108,7 +150,7 @@ const faqs = [
         <div class="privacy-copy" data-reveal>
           <span class="kicker kicker-light">Private by architecture</span>
           <h2>Your design stays<br />your design.</h2>
-          <p>Most converters send your model to a remote server. MeshKit processes it with JavaScript, WebAssembly and your own device instead.</p>
+          <p>Most converters send your model to a remote server. MeshWrench processes it with JavaScript, WebAssembly and your own device instead.</p>
           <ul class="privacy-list">
             <li><span>01</span><div><strong>Select a file</strong><small>Your browser reads it directly from your device.</small></div></li>
             <li><span>02</span><div><strong>Process locally</strong><small>Viewing, conversion and repair happen on-device.</small></div></li>
@@ -181,7 +223,7 @@ const faqs = [
     <section id="final-cta" class="final-cta section-shell section-space" data-reveal>
       <div class="final-aura"></div>
       <div class="final-copy"><span class="kicker kicker-light">Your file. Your browser. Your call.</span><h2>Start with the problem<br />you need solved today.</h2><p>No signup. No upload. No waiting.</p><a class="button button-light" href="#popular-tools">Choose a free tool <span>→</span></a></div>
-      <img src="/mesh-hero.png" width="1280" height="1280" alt="" aria-hidden="true" loading="lazy" />
+      <img src="/mesh-hero.png" width="1254" height="1254" alt="" aria-hidden="true" loading="lazy" />
     </section>
   </main>
 

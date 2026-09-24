@@ -19,6 +19,14 @@ export interface XMLAttributes {
 export interface XMLHandler {
   onStartElement(localName: string, attributes: XMLAttributes): void;
   onEndElement(localName: string): void;
+  /**
+   * Optional: called with each run of text between two tags (entity-decoded).
+   * Every existing caller (model-parser.ts, relationships.ts) omits this —
+   * their behavior is unchanged, since text runs were already skipped
+   * entirely before this was added. Only a handler that opts in (e.g. the
+   * 3MF viewer's `<metadata>` reader) receives text at all.
+   */
+  onText?(text: string): void;
 }
 
 const TAG_PATTERN =
@@ -38,6 +46,10 @@ export function parseXML(text: string, handler: XMLHandler): void {
   while (pos < length) {
     const lt = text.indexOf("<", pos);
     if (lt === -1) break; // trailing text after the last element — nothing left to read
+
+    if (lt > pos && handler.onText) {
+      handler.onText(decodeEntities(text.slice(pos, lt)));
+    }
 
     if (text.startsWith("<!--", lt)) {
       const end = text.indexOf("-->", lt + 4);

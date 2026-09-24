@@ -1,0 +1,22 @@
+---
+/**
+ * Presentation shell only — rows are built by src/pages/ply-viewer/_client.ts.
+ * PLY has no scene graph, so unlike GLBSceneTree.astro/ThreeMFSceneTree.astro
+ * (per-instance rows), this is a fixed, at-most-3-row panel: one row per
+ * render category (surface / explicit edges / points), each shown only when
+ * the loaded file actually has that category.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "ply-geometry-panel" } = Astro.props;
+---
+
+<section class="scene-tree" id={id} data-geometry-panel hidden aria-label="Surface, edges and points">
+  <div class="scene-tree-header">
+    <h2>Geometry</h2>
+  </div>
+  <p class="scene-tree-note" data-geometry-note></p>
+  <div class="scene-tree-list" data-geometry-list role="group" aria-label="Category visibility"></div>
+</section>

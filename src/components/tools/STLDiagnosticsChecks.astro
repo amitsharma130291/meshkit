@@ -1,0 +1,95 @@
+---
+/**
+ * Presentation only. Each `<li data-check="...">` is a fixed, always-
+ * rendered row for one check category — `_client.ts` fills in
+ * `data-check-status` ("passed"/"warning"/"failed"/"not-checked"),
+ * `data-check-count`, and reveals the row's own highlight button once a
+ * result exists. Plain-language "what this means"/"likely effect" text
+ * is static per row (baked in here, not generated), since it doesn't
+ * depend on the specific file — only whether the row applies at all.
+ *
+ * The "Repair" column is deliberately always a disabled, honestly-labeled
+ * "Coming in STL Repair" note, never a working button — Phase 6 doesn't
+ * exist yet, and this phase must never imply automatic repair happened.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "stl-diagnostics-checks" } = Astro.props;
+
+const CHECKS = [
+  {
+    key: "degenerate-triangles",
+    label: "Degenerate triangles",
+    meaning: "Triangles with a repeated vertex, or zero/near-zero area.",
+    effect: "Excluded from every topology check below; can cause rendering or slicing artifacts.",
+  },
+  {
+    key: "duplicate-faces",
+    label: "Duplicate faces",
+    meaning: "Two or more triangles sharing the exact same 3 vertices, same or reversed winding.",
+    effect: "Can cause flickering (z-fighting) in some renderers and slicers.",
+  },
+  {
+    key: "boundary-edges",
+    label: "Boundary / open edges",
+    meaning: "Edges used by only one triangle — an opening in the surface.",
+    effect: "The model isn't a closed solid; most slicers will warn or auto-repair.",
+  },
+  {
+    key: "non-manifold-edges",
+    label: "Non-manifold edges",
+    meaning: "Edges shared by more than two triangles.",
+    effect: "Ambiguous \"inside vs. outside\" at that edge — unpredictable slicing behavior.",
+  },
+  {
+    key: "winding-conflicts",
+    label: "Inconsistent winding",
+    meaning: "Adjacent triangles that disagree on winding direction across a shared edge.",
+    effect: "Can cause inside-out shading and confuse a slicer's surface-direction test.",
+  },
+  {
+    key: "inward-shells",
+    label: "Inward-oriented shells",
+    meaning: "A closed, consistently-wound shell whose normals point inward.",
+    effect: "Still topologically watertight, but may render or slice as if inverted.",
+  },
+  {
+    key: "disconnected-shells",
+    label: "Disconnected shells",
+    meaning: "The model is made of more than one separate, unconnected piece.",
+    effect: "Often intentional (multi-part models) — verify it matches your expectation.",
+  },
+  {
+    key: "self-intersections",
+    label: "Self-intersections",
+    meaning: "Triangles that geometrically cross through each other.",
+    effect: "Can cause unpredictable slicing behavior at the overlapping region.",
+  },
+] as const;
+---
+
+<section class="diagnostics-checks" id={id} data-diagnostics-checks hidden aria-label="Individual checks">
+  <ul class="checks-list">
+    {
+      CHECKS.map((check) => (
+        <li class="check-row" data-check={check.key}>
+          <div class="check-row-main">
+            <span class="check-status-badge" data-check-status="not-checked">Not checked</span>
+            <span class="check-label">{check.label}</span>
+            <span class="check-count" data-check-count></span>
+          </div>
+          <p class="check-meaning">{check.meaning}</p>
+          <p class="check-effect">{check.effect}</p>
+          <div class="check-actions">
+            <button type="button" class="control-button small" data-action="highlight-check" data-check-target={check.key} disabled>
+              Highlight
+            </button>
+            <span class="repair-note" aria-label="Repair availability">Repair: coming in STL Repair</span>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,0 +1,66 @@
+---
+/**
+ * Presentation only, following GLBDisplayControls.astro's contract (real
+ * labelled buttons/selects, `aria-pressed` kept in sync by the client
+ * script). FBX renders static triangle-mesh geometry only in this
+ * phase — no lines/points render categories the way GLB has, so this
+ * panel is simpler: per-mesh-instance visibility lives in
+ * FBXSceneTree.astro instead of a coarse category toggle here.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "fbx-viewer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls fbx-viewer-controls" id={id} role="group" aria-label="Viewer controls">
+  <button type="button" class="control-button" data-action="reset-camera">Reset camera</button>
+  <button type="button" class="control-button" data-action="fit-all">Fit all</button>
+  <button type="button" class="control-button" data-action="fit-visible">Fit visible</button>
+  <button type="button" class="control-button" data-action="toggle-wireframe" aria-pressed="false">Wireframe</button>
+
+  <label class="control-field" data-control="color-mode">
+    <span>Material display</span>
+    <select data-action="color-mode">
+      <option value="original">Original materials</option>
+      <option value="neutral">Neutral material</option>
+      <option value="vertex-colors">Vertex colors</option>
+    </select>
+  </label>
+  <p class="control-note" data-color-mode-note hidden></p>
+
+  <label class="control-field" data-control="shading">
+    <span>Shading</span>
+    <select data-action="shading-mode">
+      <option value="source">Source normals</option>
+      <option value="flat">Flat normals</option>
+    </select>
+  </label>
+  <p class="control-note" data-shading-note hidden></p>
+
+  <label class="control-field">
+    <span>Model color</span>
+    <select data-action="model-color">
+      <option value="#c7c2de">Neutral</option>
+      <option value="#6d42f5">Violet</option>
+      <option value="#24b8d8">Cyan</option>
+      <option value="#ed4b93">Pink</option>
+    </select>
+  </label>
+
+  <label class="control-field">
+    <span>Background</span>
+    <select data-action="background">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="grid">Grid</option>
+    </select>
+  </label>
+
+  <button type="button" class="control-button" data-action="toggle-scene-grid" aria-pressed="false">Show grid</button>
+  <button type="button" class="control-button" data-action="toggle-axes" aria-pressed="false">Show axes</button>
+
+  <button type="button" class="control-button" data-action="screenshot">Save screenshot</button>
+  <button type="button" class="control-button" data-action="clear-file">Start over</button>
+</div>

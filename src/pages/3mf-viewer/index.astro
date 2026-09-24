@@ -1,0 +1,291 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import ThreeMFDisplayControls from "../../components/tools/ThreeMFDisplayControls.astro";
+import ThreeMFModelInfo from "../../components/tools/ThreeMFModelInfo.astro";
+import ThreeMFSceneTree from "../../components/tools/ThreeMFSceneTree.astro";
+import ThreeMFMetadata from "../../components/tools/ThreeMFMetadata.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("3mf-viewer")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "3MF Viewer", path: "/3mf-viewer/" },
+];
+
+const faqs = [
+  {
+    question: "Is my 3MF file uploaded?",
+    answer:
+      "No. The file is read and resolved entirely in your browser, inside a background Web Worker. It's never sent to a server — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Does this viewer show the file's real colors?",
+    answer:
+      "When a file uses 3MF's own base-material or color-group resources, yes — \"Embedded colors\" mode reads them directly from the package, with no image or material file fetched from anywhere. Textures (image-based coloring) are detected and reported, but not decoded or rendered in this phase.",
+  },
+  {
+    question: "What unit are the dimensions shown in?",
+    answer:
+      "3MF files declare a real measurement unit (micron, millimeter, centimeter, inch, foot or meter). This viewer shows dimensions in that declared unit and converts them to millimeters for reference — the conversion is applied once, using the file's own declared unit, never guessed.",
+  },
+  {
+    question: "Does this tool repair or validate my 3MF file?",
+    answer:
+      "No. This is a viewer only — it doesn't check for holes, non-manifold edges or flipped normals, and it doesn't modify your geometry in any way.",
+  },
+  {
+    question: "Does it render beam lattices, slice stacks or textures?",
+    answer:
+      "No. Those and other 3MF extensions (production, volumetric, secure-content) are detected and disclosed with a warning, but this phase doesn't decode or render them. Core mesh geometry still displays normally when a file also uses one of these extensions.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support.",
+  },
+];
+---
+
+<ToolLayout
+  title="3MF Viewer — Open and Inspect 3MF Files Online | MeshWrench"
+  description="Open and inspect 3MF files directly in your browser. Explore objects, components, colors, dimensions and declared units without uploading your model."
+  path="/3mf-viewer/"
+  h1="3MF Viewer"
+  intro="Open and inspect 3MF files directly in your browser. Explore objects, components, colors, dimensions and declared units without uploading your model."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench 3MF Viewer",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "View and inspect 3MF files locally in the browser — rotate, zoom, explore objects, components and build items, and see embedded colors and declared units. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice
+    slot="privacy-notice"
+    message="Your 3MF stays on this device. MeshWrench reads and renders it locally in your browser."
+  />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="threemf-file-input"
+      label="Select a 3MF file"
+      accept=".3mf,model/3mf,application/vnd.ms-package.3dmanufacturing-3dmodel+xml,application/octet-stream"
+      helpText="Up to 150 MB. Base-material and color-group colors are shown directly from the package; textures and other extensions are detected but not rendered."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="threemf-viewer-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport
+      id="threemf-viewer-viewport"
+      description="Interactive 3D preview of your 3MF model. Drag to rotate, scroll to zoom. Build items and instances can be shown or hidden using the panel below."
+    />
+    <ThreeMFDisplayControls id="threemf-viewer-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+
+    <ThreeMFModelInfo id="threemf-viewer-model-info" />
+    <ThreeMFSceneTree id="threemf-viewer-scene-tree" />
+    <ThreeMFMetadata id="threemf-viewer-metadata" />
+
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+
+    <ToolError id="threemf-viewer-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to view a 3MF file</h2>
+    <ol>
+      <li>Select a 3MF file using the picker above.</li>
+      <li>MeshWrench opens the package locally, in a background worker — nothing leaves your device.</li>
+      <li>
+        Once resolution finishes, drag to rotate, scroll to zoom, and use the panel below the viewport to fit the
+        view, toggle wireframe, switch color mode, or show and hide individual build items and instances.
+      </li>
+    </ol>
+
+    <h2>What the 3MF Viewer displays</h2>
+    <p>
+      After a file loads, the panel below the viewport shows file size, package-entry count, declared unit and its
+      millimeter conversion factor, model dimensions in both the declared unit and millimeters, mesh/component
+      object counts, build-item and resolved-instance counts, source vertex and rendered triangle counts, and
+      base-material, color-group and texture-resource counts. A build tree lists every build item and resolved
+      instance so you can inspect — and individually show or hide — the pieces of a multi-object model.
+    </p>
+
+    <h2>Objects, components and build items in 3MF</h2>
+    <p>
+      3MF organizes geometry differently from other formats this viewer supports: a mesh object holds real
+      geometry, a component object references other objects (optionally nested, each with its own transform), and
+      the build list places one or more instances of an object into the final scene. This viewer walks that real
+      structure — build item → component instance → ...nested component instance → mesh object — rather than
+      inventing object/group boundaries the way OBJ's viewer has to. A single mesh object referenced by several
+      build items or components renders as several separate, independently visible instances.
+    </p>
+
+    <h2>How 3MF units are displayed</h2>
+    <p>
+      Unlike STL and OBJ, 3MF declares a real measurement unit — micron, millimeter, centimeter, inch, foot or
+      meter. This viewer reads that declaration, shows dimensions in it directly, and also converts them to
+      millimeters for reference. The conversion is applied exactly once, using the file's own declared unit — never
+      guessed, and never applied twice.
+    </p>
+
+    <h2>How embedded colors are handled</h2>
+    <p>
+      3MF can declare colors through base-material resources and color-group resources, referenced by objects and
+      individual triangles (including per-corner colors on a single triangle). "Embedded colors" mode reads and
+      renders these directly from the package — no material or image file is ever fetched. "Neutral material" mode
+      ignores color data on purpose, and "Color by object" mode uses a deterministic internal palette purely as a
+      visualization aid, never presented as the file's real appearance. A file with no supported color data
+      disables embedded-color mode automatically.
+    </p>
+
+    <h2>Why textures or extensions may not appear</h2>
+    <p>
+      Texture-based coloring, beam lattices, slice stacks and other 3MF extensions (production, volumetric,
+      secure-content) are detected and disclosed with a clear warning, but this phase doesn't decode or render
+      them — MeshWrench never fetches an external or cross-part resource to do so. Core mesh geometry still displays
+      normally even when a file also uses one of these extensions.
+    </p>
+
+    <h2>3MF versus STL</h2>
+    <p>
+      3MF is a ZIP-based, XML-described format that can carry real units, colors, materials, named objects and a
+      build structure with multiple placed instances. STL stores only raw triangle geometry, with no units and no
+      metadata at all. This viewer can show 3MF's richer structure that a converter's flat STL output can't carry
+      over.
+    </p>
+
+    <h2>Why a 3MF file may not open</h2>
+    <ul>
+      <li>The package isn't a valid ZIP archive, or its internal relationships don't point to a model part.</li>
+      <li>The model XML is malformed, or references an object, material or color index that doesn't exist.</li>
+      <li>A component reference forms a cycle, or nests deeper than this tool's safety limit allows.</li>
+      <li>The build list is empty, or resolves to no renderable geometry at all.</li>
+      <li>The file is more complex (vertices, triangles, objects or instances) than this tool's safety limits currently allow.</li>
+    </ul>
+
+    <h2>Is the 3MF uploaded?</h2>
+    <p>
+      No. There is no server-side file-processing route in MeshWrench at all. Your browser reads the package, resolves
+      its ZIP entries, parses its XML, and renders the result with WebGL — all on your device. You can verify this
+      yourself: open your browser's developer tools, watch the network tab, and load a file. No request containing
+      your file, or any path or metadata found inside it, will appear.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {
+          relatedTools.map((related) =>
+            related!.status === "ready" ? (
+              <li>
+                <a class="related-tool-name" href={related!.path}>
+                  {related!.name}
+                </a>
+                <span class="related-tool-status">Available</span>
+              </li>
+            ) : (
+              <li>
+                <span class="related-tool-name">{related!.name}</span>
+                <span class="related-tool-status">Planned</span>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 700;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

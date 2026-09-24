@@ -1,0 +1,49 @@
+---
+/**
+ * Presentation only — src/pages/fbx-viewer/_client.ts fills every
+ * `data-info-*` node and toggles `hidden`. FBX declares its own unit
+ * scale and axis system (unlike OBJ/PLY, which have neither), so this
+ * panel shows both the source declaration and — only when the file's own
+ * metadata was complete and consistent — the normalized meter dimensions
+ * derived from it, mirroring GLBModelInfo.astro's meter/millimeter dual
+ * display but sourced from a per-file value instead of a fixed constant.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "fbx-model-info" } = Astro.props;
+---
+
+<section class="model-info-panel" id={id} data-model-info hidden aria-label="Model information">
+  <dl class="model-info-grid">
+    <div><dt>File size</dt><dd data-info-filesize></dd></div>
+    <div><dt>FBX version</dt><dd data-info-version></dd></div>
+    <div><dt>Encoding</dt><dd data-info-encoding></dd></div>
+    <div><dt>Creator</dt><dd data-info-creator></dd></div>
+    <div><dt>Models</dt><dd data-info-models></dd></div>
+    <div><dt>Geometries</dt><dd data-info-geometries></dd></div>
+    <div><dt>Mesh instances</dt><dd data-info-mesh-instances></dd></div>
+    <div><dt>Materials</dt><dd data-info-materials></dd></div>
+    <div><dt>Embedded textures</dt><dd data-info-embedded-textures></dd></div>
+    <div><dt>External texture references</dt><dd data-info-external-textures></dd></div>
+    <div><dt>Control points</dt><dd data-info-control-points></dd></div>
+    <div><dt>Polygons</dt><dd data-info-polygons></dd></div>
+    <div><dt>Rendered triangles</dt><dd data-info-triangles></dd></div>
+    <div><dt>Skipped polygons</dt><dd data-info-skipped-polygons></dd></div>
+    <div><dt>Source normals</dt><dd data-info-source-normals></dd></div>
+    <div><dt>UV coordinates</dt><dd data-info-uvs></dd></div>
+    <div><dt>Vertex colors</dt><dd data-info-vertex-colors></dd></div>
+    <div><dt>Source unit scale</dt><dd data-info-unit-scale></dd></div>
+    <div><dt>Axis system</dt><dd data-info-axis-system></dd></div>
+    <div><dt>Width</dt><dd data-info-width></dd></div>
+    <div><dt>Height</dt><dd data-info-height></dd></div>
+    <div><dt>Depth</dt><dd data-info-depth></dd></div>
+  </dl>
+
+  <p class="model-info-unit-note" data-info-unit-note></p>
+
+  <p class="model-info-materials-note" data-info-unsupported-features hidden></p>
+
+  <div class="model-info-warnings" data-info-warnings hidden></div>
+</section>

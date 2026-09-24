@@ -44,7 +44,7 @@ describe("convertOBJText — geometry", () => {
   });
 
   it("recalculates geometric face normals rather than trusting declared vn values", () => {
-    // Declared normal points the "wrong" way (into the page); MeshKit must
+    // Declared normal points the "wrong" way (into the page); MeshWrench must
     // still emit the geometrically-correct outward normal for this winding.
     const text = buildOBJText(["v 0 0 0", "v 1 0 0", "v 0 1 0", "vn 0 0 -1", "f 1//1 2//1 3//1"]);
     const result = convertOBJText(text);

@@ -2,7 +2,7 @@ import type { STLBounds } from "../stl/types";
 
 /**
  * OBJ has no notion of a measurement unit — a coordinate is just a number.
- * MeshKit preserves coordinates exactly rather than guessing a unit, so
+ * MeshWrench preserves coordinates exactly rather than guessing a unit, so
  * there is deliberately no unit field anywhere in this module's types.
  */
 export type ConversionWarningCode =

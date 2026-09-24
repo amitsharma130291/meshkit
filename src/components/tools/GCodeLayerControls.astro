@@ -1,0 +1,28 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "gcode-layer-controls" } = Astro.props;
+---
+
+<div class="viewer-controls gcode-layer-controls" id={id} role="group" aria-label="Layer controls">
+  <p class="layer-detection-note" data-layer-detection-note></p>
+
+  <div class="layer-mode-toggle" role="group" aria-label="Layer display mode">
+    <button type="button" class="control-button" data-action="layer-mode-single" aria-pressed="true">Single layer</button>
+    <button type="button" class="control-button" data-action="layer-mode-cumulative" aria-pressed="false">Cumulative</button>
+    <button type="button" class="control-button" data-action="layer-mode-all" aria-pressed="false">All layers</button>
+  </div>
+
+  <label class="control-field">
+    <span>Layer <span data-current-layer>0</span> of <span data-max-layer>0</span></span>
+    <input type="range" data-action="layer-scrub" min="0" max="0" step="1" value="0" />
+  </label>
+
+  <label class="control-field">
+    <span>Layer range</span>
+    <input type="range" data-action="layer-range-start" min="0" max="0" step="1" value="0" aria-label="Layer range start" />
+    <input type="range" data-action="layer-range-end" min="0" max="0" step="1" value="0" aria-label="Layer range end" />
+  </label>
+</div>

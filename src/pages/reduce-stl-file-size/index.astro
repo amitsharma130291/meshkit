@@ -1,0 +1,214 @@
+---
+/**
+ * Primary route for STL Optimization. Shares one optimization engine
+ * with `/simplify-stl/` and `/stl-triangle-reducer/` — see
+ * `docs/ARCHITECTURE.md`'s "STL Optimization (Phase 8)" section for the
+ * canonical strategy and why a fourth candidate route was not built.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLOptimizeSettings from "../../components/tools/STLOptimizeSettings.astro";
+import STLOptimizePlan from "../../components/tools/STLOptimizePlan.astro";
+import STLOptimizeResult from "../../components/tools/STLOptimizeResult.astro";
+import STLOptimizeComparison from "../../components/tools/STLOptimizeComparison.astro";
+import STLOptimizeControls from "../../components/tools/STLOptimizeControls.astro";
+import BatchPlanWorkspace from "../../components/tools/BatchPlanWorkspace.astro";
+import BatchOptimizeSettings from "../../components/tools/BatchOptimizeSettings.astro";
+import RelatedTools from "../../components/tools/RelatedTools.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("reduce-stl-size")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id));
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Reduce STL File Size", path: "/reduce-stl-file-size/" },
+];
+
+const faqs = [
+  {
+    question: "How does reducing triangle count reduce file size?",
+    answer:
+      "A binary STL file is essentially 84 bytes plus 50 bytes per triangle. There's no other significant overhead to trim — meaningfully smaller STL output requires fewer triangles, which is exactly what this tool's edge-collapse simplification does.",
+  },
+  {
+    question: "Will simplifying change how my model looks?",
+    answer:
+      "Some detail loss is unavoidable at any real reduction — that's the whole trade-off. This tool never rounds away genuinely sharp edges under the \"Preserve details\" preset, always preserves your file's shell count and boundary topology, and reports a measured (sampled) geometric deviation so you can see exactly how much the surface moved.",
+  },
+  {
+    question: "What if my requested target isn't achievable?",
+    answer:
+      "You'll get the best SAFELY achievable reduction instead, reported honestly — this tool never forces an unsafe collapse just to hit an exact number, and never silently reports success when the real target wasn't reached.",
+  },
+  {
+    question: "Is my file uploaded to simplify it?",
+    answer:
+      "No. Every step — analysis, the collapse loop, serialization, and verification — runs locally in a Web Worker in your browser. Check your network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "How is a successful reduction verified?",
+    answer:
+      "The simplified geometry is serialized to a real binary STL, that exact output is re-parsed with the production STL parser, and the full diagnostics pipeline runs on it again — \"target achieved\" is only ever reported when that verification pass confirms every safety invariant held.",
+  },
+  {
+    question: "Does this repair a broken mesh first?",
+    answer:
+      "No — a non-manifold or duplicate/degenerate mesh is detected and you're directed to STL Repair first. This tool never silently cleans up geometry as a side effect of simplifying it.",
+  },
+];
+---
+
+<ToolLayout
+  title="Reduce STL File Size — Simplify STL Triangles Online | MeshWrench"
+  description="Reduce an STL file's triangle count and file size with verified, topology-safe mesh simplification — free, local, no upload."
+  path="/reduce-stl-file-size/"
+  h1="Reduce STL File Size"
+  intro="Shrink an STL file by reducing its triangle count with deterministic, topology-safe edge-collapse simplification — locally in your browser, with every reduction verified against its own output."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench Reduce STL File Size",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Reduce an STL file's triangle count and file size locally in the browser using quadric-error-metric edge-collapse simplification, with boundary, shell, and manifold topology preserved and every reduction re-verified against its own serialized output. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench simplifies it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to reduce"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-optimize-viewport" description="Interactive 3D preview of the original and optimized model. Drag to rotate, scroll to zoom." />
+    <STLOptimizeControls id="stl-optimize-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <STLOptimizeSettings id="stl-optimize-settings" />
+    <STLOptimizePlan id="stl-optimize-plan" />
+    <STLOptimizeResult id="stl-optimize-result" />
+    <STLOptimizeComparison id="stl-optimize-comparison" />
+    <ToolError id="stl-optimize-error" />
+
+    <BatchPlanWorkspace id="reduce-stl-file-size-batch-workspace" acceptHint="STL files only, same limits as single-file optimization.">
+      <BatchOptimizeSettings slot="settings" />
+    </BatchPlanWorkspace>
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to reduce an STL file's size</h2>
+    <ol>
+      <li>Select an STL file — MeshWrench analyzes it locally and shows whether it's eligible for automatic simplification.</li>
+      <li>Choose a target reduction (25/50/75%, or an explicit triangle count) and a quality preset.</li>
+      <li>Review the optimization plan, then run it. MeshWrench re-parses and re-verifies its own output before showing a result.</li>
+      <li>Compare original and optimized triangle counts, file sizes and measured deviation, then download the optimized STL and/or a JSON report.</li>
+    </ol>
+
+    <h2>Why fewer triangles means a smaller file</h2>
+    <p>
+      A binary STL file is essentially <code>84 + triangleCount × 50</code> bytes — three full vertex positions plus
+      a normal per triangle, with no shared/indexed vertex table the format could otherwise compress. There's no
+      other meaningful place for a binary STL to shrink; a real reduction in file size requires a real reduction in
+      triangle count, which is exactly what this tool measures and reports (actual generated output bytes, never an
+      estimate from in-memory geometry).
+    </p>
+
+    <h2>How simplification works</h2>
+    <dl class="check-explanation-list">
+      <div><dt>Quadric error metrics</dt><dd>Each candidate edge collapse is scored by the combined squared-distance error to every plane the two merged vertices touched — the standard, well-understood approach (Garland &amp; Heckbert), not a cruder heuristic like removing every Nth triangle.</dd></div>
+      <div><dt>Safety-checked collapses</dt><dd>Every candidate collapse is checked against the manifold link condition, boundary-loop adjacency, shell membership, normal-flip angle, and degenerate/duplicate-triangle guards before it's ever applied.</dd></div>
+      <div><dt>Preserved boundaries and shells</dt><dd>An open mesh's boundary loops and a multi-shell model's shell count are never altered by default — only genuinely safe interior and loop-adjacent boundary collapses are used.</dd></div>
+      <div><dt>Sampled deviation measurement</dt><dd>After simplifying, a bounded sample of both meshes' vertices and triangle centroids is checked against the other surface's nearest point — reported honestly as "sampled geometric deviation," never Hausdorff distance.</dd></div>
+    </dl>
+
+    <h2>What automatic simplification cannot safely do</h2>
+    <ul>
+      <li>It never simplifies non-manifold topology by default — you're directed to STL Repair first.</li>
+      <li>It never forces an exact requested target when that would require an unsafe collapse — it reports the best safely-achieved reduction instead.</li>
+      <li>It cannot guarantee printability, wall thickness, physical scale or fitness for any specific printer.</li>
+      <li>It never claims a self-intersection-free result unless the verification check actually completed.</li>
+    </ul>
+
+    <h2>Related tools</h2>
+    <p>
+      Already know your file has a topology problem? <a href="/stl-checker/">STL Checker</a> and{" "}
+      <a href="/stl-repair/">STL Repair</a> run before simplification makes sense. <a href="/stl-viewer/">STL Viewer</a>
+      lets you inspect the optimized result with no analysis at all.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <RelatedTools slot="related-tools" relatedTools={relatedTools} note="Optimizing many files? Try the Batch tab above — batch optimization is a Pro capability; Pro activation is coming in the payment phase." />
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .check-explanation-list dt {
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .check-explanation-list dd {
+    margin: 4px 0 0;
+    color: var(--muted);
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+</style>

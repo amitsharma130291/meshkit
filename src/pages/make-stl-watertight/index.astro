@@ -1,0 +1,237 @@
+---
+/**
+ * Secondary SEO route for the same repair engine `/stl-repair/` uses.
+ * Canonical strategy (documented, matching the Phase 5 precedent): this
+ * page self-canonicalizes rather than pointing at `/stl-repair/`, since
+ * its copy below is genuinely distinct — framed entirely around
+ * watertightness/hole-closing intent, with its own FAQ set and section
+ * ordering, not a mechanical duplicate. The interactive tool is never
+ * duplicated: this page's script tag imports the exact same
+ * `../stl-repair/_client` module, and every settings/plan/result/
+ * comparison/controls component below is the same shared component
+ * `/stl-repair/` renders.
+ */
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLRepairSettings from "../../components/tools/STLRepairSettings.astro";
+import STLRepairPlan from "../../components/tools/STLRepairPlan.astro";
+import STLRepairResult from "../../components/tools/STLRepairResult.astro";
+import STLRepairComparison from "../../components/tools/STLRepairComparison.astro";
+import STLRepairControls from "../../components/tools/STLRepairControls.astro";
+import BatchPlanWorkspace from "../../components/tools/BatchPlanWorkspace.astro";
+import BatchRepairSettings from "../../components/tools/BatchRepairSettings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("make-stl-watertight")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Make STL Watertight", path: "/make-stl-watertight/" },
+];
+
+const faqs = [
+  {
+    question: "What does \"watertight\" actually require?",
+    answer:
+      "Zero boundary (open) edges, zero non-manifold edges, zero winding conflicts, zero duplicate faces, and a completed self-intersection check that finds none — the same strict, disclosed policy MeshWrench's STL Checker uses to verify the result.",
+  },
+  {
+    question: "Will this close every hole in my file?",
+    answer:
+      "Only simple, closed boundary loops that pass size, flatness and self-intersection safety checks are filled automatically. A hole with a genuinely non-simple or branched boundary is reported, not forced closed — closing it incorrectly could distort your model.",
+  },
+  {
+    question: "Do I need to upload my file to make it watertight?",
+    answer:
+      "No. Every step — analysis, hole detection, triangulation, and verification — happens locally in a Web Worker in your browser. Nothing is ever sent anywhere.",
+  },
+  {
+    question: "How is the result verified as actually watertight?",
+    answer:
+      "The repaired geometry is serialized to a real binary STL, that exact file is re-parsed with MeshWrench's own STL parser, and the full diagnostics pipeline runs on it again. \"Fully repaired\" only appears when that verification pass itself comes back clean.",
+  },
+  {
+    question: "What if my file has small gaps rather than a real hole?",
+    answer:
+      "That's usually a seam — two edges that should meet but are a tiny distance apart. Standard mode's tolerance-based vertex welding (with the exact tolerance always shown in model units) closes these before hole-filling runs.",
+  },
+];
+---
+
+<ToolLayout
+  title="Make STL Watertight — Close Holes in STL Files Online | MeshWrench"
+  description="Close holes and fix boundary gaps to make an STL file watertight — verified, local, free. No upload required."
+  path="/make-stl-watertight/"
+  h1="Make STL Watertight"
+  intro="Close holes, fix boundary gaps, and turn an STL file into a strictly watertight mesh — verified by re-parsing the actual repaired output, not just assumed from the repair steps."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench Make STL Watertight",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Close holes and fix boundary gaps to make an STL file watertight, locally in the browser, with the result verified against a strict, disclosed watertightness policy. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench repairs it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to make watertight"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-repair-viewport" description="Interactive 3D preview of the original and repaired model, with issue overlays. Drag to rotate, scroll to zoom." />
+    <STLRepairControls id="stl-repair-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <STLRepairSettings id="stl-repair-settings" />
+    <STLRepairPlan id="stl-repair-plan" />
+    <STLRepairResult id="stl-repair-result" />
+    <STLRepairComparison id="stl-repair-comparison" />
+    <ToolError id="stl-repair-error" />
+
+    <BatchPlanWorkspace id="make-stl-watertight-batch-workspace" acceptHint="STL files only, same limits as single-file repair.">
+      <BatchRepairSettings slot="settings" />
+    </BatchPlanWorkspace>
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Steps to a watertight STL</h2>
+    <ol>
+      <li>Select your STL file — MeshWrench analyzes it locally and shows every open edge and boundary loop it finds.</li>
+      <li>Review the plan: which loops are eligible for automatic filling, and why any aren't.</li>
+      <li>Run the repair, then check the before/after comparison — boundary edges should read zero.</li>
+      <li>Download the watertight STL, plus a JSON report documenting exactly what closed.</li>
+    </ol>
+
+    <h2>Why STL files aren't watertight</h2>
+    <ul>
+      <li><strong>Missing faces</strong> from an incomplete CAD export or a scan with a shadowed region.</li>
+      <li><strong>Seams</strong> — two edges meant to meet, separated by a tiny gap (a welding candidate, not a hole).</li>
+      <li><strong>Branched or non-simple boundaries</strong> — usually a sign of a deeper topology problem, not a simple hole; these are reported, not force-filled.</li>
+    </ul>
+
+    <h2>How boundary loops are classified</h2>
+    <p>
+      Every boundary edge is grouped into a connected component and classified precisely: a closed simple loop (a
+      genuine, fillable hole candidate), an open chain, a branched junction, or a non-simple shape. Only closed
+      simple loops that also pass explicit size, perimeter, area, planarity and self-intersection checks are
+      triangulated and patched in — using the same proven polygon triangulator MeshWrench's OBJ and PLY converters
+      already rely on, never unconditional fan triangulation that can corrupt a concave hole's shape.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>A hole whose boundary self-intersects, or deviates too far from a flat plane, is skipped and reported — never guessed at.</li>
+      <li>Branched and non-simple boundary components are never treated as simple holes.</li>
+      <li>Making a file watertight doesn't guarantee it will print successfully — wall thickness, scale and your printer's own limits are outside this tool's scope.</li>
+    </ul>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) => (
+          <li>
+            <a href={related!.path}>{related!.name}</a>
+            <span class="related-tool-status">{related!.status === "ready" ? "Available" : "Coming soon"}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="pro-transition-note">Repairing many files? Try the Batch tab above — batch repair is a Pro capability; Pro activation is coming in the payment phase.</p>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../stl-repair/_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+</style>

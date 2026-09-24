@@ -1,0 +1,19 @@
+---
+/**
+ * Presentation shell only. Every value is rendered with `.textContent`,
+ * never `innerHTML`. Lists the file's declared materials — factors,
+ * texture presence, alpha mode — as information, independent of which
+ * color/material display mode is currently active in the viewport.
+ */
+interface Props {
+  id?: string;
+}
+
+const { id = "glb-material-info" } = Astro.props;
+---
+
+<section class="glb-material-panel" id={id} data-material-panel hidden aria-label="Materials">
+  <h2>Materials</h2>
+  <div class="glb-material-list" data-material-list></div>
+  <p class="glb-material-empty" data-material-empty hidden>This file doesn't declare any materials.</p>
+</section>

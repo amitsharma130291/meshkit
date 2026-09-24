@@ -1,0 +1,157 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import GCodeDisplayControls from "../../components/tools/GCodeDisplayControls.astro";
+import GCodeLayerControls from "../../components/tools/GCodeLayerControls.astro";
+import GCodePlaybackControls from "../../components/tools/GCodePlaybackControls.astro";
+import GCodeModelInfo from "../../components/tools/GCodeModelInfo.astro";
+import GCodeStatistics from "../../components/tools/GCodeStatistics.astro";
+import GCodeWarnings from "../../components/tools/GCodeWarnings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("gcode-simulator")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "G-code Simulator", path: "/gcode-simulator/" },
+];
+
+const faqs = [
+  {
+    question: "Is this a real printer simulator?",
+    answer: "No. This is VISUAL playback of the parsed toolpath only — it never models acceleration, jerk, pressure advance, firmware queues, or any other physical printer behavior, and never claims to exactly reproduce real motion.",
+  },
+  {
+    question: "Does it connect to my printer or send any commands?",
+    answer: "No, never. No WebSerial, no printer connection, no command execution — this tool only reads a file and plays back a visual reconstruction of it, entirely in your browser.",
+  },
+  {
+    question: "What does the elapsed time during playback mean?",
+    answer: "It's MeshWrench's own feed-rate-only estimate (distance divided by commanded feed rate) at the current point in the file — never the same as your slicer's own estimate or actual print time.",
+  },
+];
+---
+
+<ToolLayout
+  title="G-code Simulator — Visual Toolpath Playback Online | MeshWrench"
+  description="Play back a G-code file's parsed tool movement visually in your browser — a visual simulator, never a firmware or printer connection."
+  path="/gcode-simulator/"
+  h1="G-code Simulator"
+  intro="Play back a G-code file's parsed tool movement visually — play, pause, scrub, and step move by move — directly in your browser."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench G-code Simulator",
+    applicationCategory: "UtilitiesApplication",
+    description: "Play back a G-code file's parsed tool movement visually, locally in the browser. Never a firmware emulator or printer connection.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your G-code file stays on this device. MeshWrench reads and renders it locally in your browser — it never connects to a printer." />
+
+  <div slot="file-input">
+    <LocalFilePicker id="gcode-file-input" label="Select a G-code file" accept=".gcode,text/plain" helpText="Up to 400 MB. Targets common FDM slicer output from Cura, PrusaSlicer, OrcaSlicer and Bambu Studio." />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="gcode-simulator-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="gcode-simulator-viewport" description="Interactive toolpath playback. Drag to rotate, scroll to zoom." />
+    <GCodeDisplayControls id="gcode-simulator-display-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden><span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.</p>
+    <GCodePlaybackControls id="gcode-simulator-playback-controls" />
+    <GCodeModelInfo id="gcode-simulator-model-info" />
+    <GCodeLayerControls id="gcode-simulator-layer-controls" />
+    <GCodeStatistics id="gcode-simulator-statistics" />
+    <GCodeWarnings id="gcode-simulator-warnings" />
+    <div class="download-actions">
+      <button type="button" class="control-button" data-action="download-gcode-report" disabled>Download JSON report</button>
+    </div>
+    <div class="tool-actions">
+      <button type="button" class="control-button" data-action="clear-file">Open another file</button>
+    </div>
+    <ToolError id="gcode-simulator-error" />
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>Visual playback, not firmware simulation</h2>
+    <p>
+      This is <strong>visual playback</strong> of a G-code file's parsed tool movement — never a firmware
+      emulator, a machine controller, or a collision simulator. It never uses WebSerial, never connects to a
+      printer, and never executes a single command. Playback never claims to exactly reproduce physical printer
+      motion.
+    </p>
+
+    <h2>Playback controls</h2>
+    <ul>
+      <li>Play, pause and restart</li>
+      <li>A progress scrubber across the whole file, and a separate layer scrubber</li>
+      <li>Step forward or backward one move at a time</li>
+      <li>Playback speed from 0.25× to 10×</li>
+      <li>The active toolhead position, current command number, current X/Y/Z/E/feed-rate state, and elapsed feed-rate-only estimate</li>
+    </ul>
+
+    <h2>Time during playback</h2>
+    <p>
+      The elapsed time shown during playback is MeshWrench's own <strong>feed-rate-only estimate</strong> — distance
+      divided by commanded feed rate — never a model of acceleration, jerk, pressure advance, or firmware queues,
+      and never the same as your slicer's own estimate or actual print time.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) =>
+          related!.status === "ready" ? (
+            <li><a class="related-tool-name" href={related!.path}>{related!.name}</a><span class="related-tool-status">Available</span></li>
+          ) : (
+            <li><span class="related-tool-name">{related!.name}</span><span class="related-tool-status">Planned</span></li>
+          ),
+        )}
+      </ul>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "../gcode-viewer/_client";
+</script>
+
+<style>
+  .faq-section-tool, .related-tools-section { margin-top: 20px; }
+  .faq-list-tool { border-top: 1px solid var(--line); }
+  .faq-list-tool details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .faq-list-tool summary { cursor: pointer; font-weight: 700; }
+  .faq-list-tool p { margin: 10px 0 0; color: var(--muted); }
+  .related-tools-list { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .related-tools-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .related-tool-name { font-weight: 700; }
+  .related-tool-status { padding: 3px 10px; border-radius: 999px; background: #f3f1fb; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>

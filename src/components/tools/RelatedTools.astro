@@ -1,0 +1,87 @@
+---
+/**
+ * Shared "Related tools" block for every tool page — built for Phase 7's
+ * SEO audit after finding `/stl-viewer/`'s own hand-rolled version had
+ * drifted (it hardcoded every related tool as unlinked "Planned" text,
+ * even after several of them shipped in later phases). Centralizing this
+ * here means a tool's real crawlable link only ever appears when the
+ * registry says `status === "ready"` — a `"planned"` tool (no page
+ * exists yet) is always rendered as plain text, never a broken `<a href>`,
+ * without every page having to re-implement that guard correctly itself.
+ */
+import { type ToolDefinition } from "../../config/tools";
+
+interface Props {
+  relatedTools: (ToolDefinition | undefined)[];
+  /** Optional short note below the list, e.g. a Pro-transition line. */
+  note?: string;
+}
+
+const { relatedTools, note } = Astro.props;
+const tools = relatedTools.filter((tool): tool is ToolDefinition => tool !== undefined);
+---
+
+<section class="related-tools-section">
+  <h2>Related tools</h2>
+  <ul class="related-tools-list">
+    {
+      tools.map((tool) =>
+        tool.status === "ready" ? (
+          <li>
+            <a class="related-tool-name" href={tool.path}>
+              {tool.name}
+            </a>
+            <span class="related-tool-status">Available</span>
+          </li>
+        ) : (
+          <li>
+            <span class="related-tool-name">{tool.name}</span>
+            <span class="related-tool-status">Planned</span>
+          </li>
+        ),
+      )
+    }
+  </ul>
+  {note && <p class="pro-transition-note">{note}</p>}
+</section>
+
+<style>
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-name {
+    font-weight: 600;
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+</style>

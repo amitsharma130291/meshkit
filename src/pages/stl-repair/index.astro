@@ -1,0 +1,259 @@
+---
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import PrivacyNotice from "../../components/tools/PrivacyNotice.astro";
+import LocalFilePicker from "../../components/tools/LocalFilePicker.astro";
+import ToolStatus from "../../components/tools/ToolStatus.astro";
+import ToolViewport from "../../components/tools/ToolViewport.astro";
+import ToolError from "../../components/tools/ToolError.astro";
+import STLRepairSettings from "../../components/tools/STLRepairSettings.astro";
+import STLRepairPlan from "../../components/tools/STLRepairPlan.astro";
+import STLRepairResult from "../../components/tools/STLRepairResult.astro";
+import STLRepairComparison from "../../components/tools/STLRepairComparison.astro";
+import STLRepairControls from "../../components/tools/STLRepairControls.astro";
+import BatchPlanWorkspace from "../../components/tools/BatchPlanWorkspace.astro";
+import BatchRepairSettings from "../../components/tools/BatchRepairSettings.astro";
+import { getToolById } from "../../config/tools";
+
+const tool = getToolById("stl-repair")!;
+const relatedTools = (tool.relatedToolIds ?? []).map((id) => getToolById(id)).filter((t) => t !== undefined);
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "STL Repair", path: "/stl-repair/" },
+];
+
+const faqs = [
+  {
+    question: "Is my STL file uploaded when I repair it here?",
+    answer:
+      "No. Repair runs entirely inside your browser, in a background Web Worker. Your file's bytes never cross the network — check your browser's network tab while a file loads to confirm this yourself.",
+  },
+  {
+    question: "Can every STL file be repaired automatically?",
+    answer:
+      "No, and this tool never claims otherwise. Some problems — like a genuinely non-manifold edge with no safe deterministic fix, or an existing self-intersection — are detected and reported honestly, never forced closed by deleting geometry arbitrarily.",
+  },
+  {
+    question: "What's the difference between Safe and Standard mode?",
+    answer:
+      "Safe mode never changes vertex positions — it only removes exact degenerates/duplicates, corrects winding, orients closed shells outward, and fills simple holes. Standard mode adds tolerance-based vertex welding (with a clearly displayed tolerance) to close small seams and gaps.",
+  },
+  {
+    question: "How do I know a repair actually worked?",
+    answer:
+      "Every repair re-parses its own output file with the same production STL parser and re-runs the full diagnostics pipeline on it — a \"fully repaired\" result is never claimed from the repair operations alone, only from verifying the actual output bytes.",
+  },
+  {
+    question: "Does this tool weld vertices by default?",
+    answer:
+      "No. Exact vertex matching (never a distance tolerance) is always used in Safe mode. Tolerance-based welding is opt-in — part of Standard mode, or a Custom-mode toggle — and the exact tolerance in model units is always shown before you run it.",
+  },
+  {
+    question: "What happens to problems this tool can't fix?",
+    answer:
+      "They're listed explicitly as unresolved, with a reason. The repaired file may legitimately still have some issues — this is disclosed in both the on-page result and the downloadable JSON report.",
+  },
+];
+---
+
+<ToolLayout
+  title="STL Repair — Fix Holes, Normals & Non-Manifold STL Files | MeshWrench"
+  description="Repair an STL file's holes, inverted normals, duplicate faces and non-manifold edges locally in your browser. Free, transparent, verified before-and-after."
+  path="/stl-repair/"
+  h1="STL Repair"
+  intro="Repair an STL file's holes, inconsistent winding, inverted normals, duplicate faces and safely-fixable non-manifold edges — locally in your browser, with every repair verified against its own output."
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  webApplication={{
+    name: "MeshWrench STL Repair",
+    applicationCategory: "UtilitiesApplication",
+    description:
+      "Repair an STL file's mesh topology locally in the browser — hole filling, winding correction, outward orientation, duplicate-face removal and optional vertex welding. Every repair is verified by re-parsing and re-diagnosing its own output. No upload, no account required.",
+    offers: [{ price: "0", priceCurrency: "USD", category: "Free browser tool" }],
+  }}
+>
+  <PrivacyNotice slot="privacy-notice" message="Your STL stays on this device. MeshWrench repairs it locally in your browser." />
+
+  <div slot="file-input">
+    <LocalFilePicker
+      id="stl-file-input"
+      label="Select an STL file to repair"
+      accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl,application/octet-stream"
+      helpText="Binary or ASCII STL, up to 150 MB. This limit protects your browser from freezing — it isn't a Pro restriction."
+    />
+  </div>
+
+  <div slot="status" class="stl-status-row">
+    <ToolStatus id="stl-status" />
+    <button type="button" class="control-button" data-action="cancel" hidden>Cancel</button>
+  </div>
+
+  <div slot="workspace" class="stl-workspace-grid">
+    <ToolViewport id="stl-repair-viewport" description="Interactive 3D preview of the original and repaired model, with issue overlays. Drag to rotate, scroll to zoom." />
+    <STLRepairControls id="stl-repair-controls" />
+  </div>
+
+  <div slot="results">
+    <p class="success-confirmation" data-success-confirmation hidden>
+      <span aria-hidden="true">✓</span> Processed locally — nothing was uploaded.
+    </p>
+    <STLRepairSettings id="stl-repair-settings" />
+    <STLRepairPlan id="stl-repair-plan" />
+    <STLRepairResult id="stl-repair-result" />
+    <STLRepairComparison id="stl-repair-comparison" />
+    <ToolError id="stl-repair-error" />
+
+    <BatchPlanWorkspace id="stl-repair-batch-workspace" acceptHint="STL files only, same limits as single-file repair.">
+      <BatchRepairSettings slot="settings" />
+    </BatchPlanWorkspace>
+  </div>
+
+  <Fragment slot="seo-content">
+    <h2>How to repair an STL file</h2>
+    <ol>
+      <li>Select an STL file using the picker above (or drag one in once you're on the page).</li>
+      <li>MeshWrench analyzes the file locally and shows the detected problems.</li>
+      <li>Choose a repair mode — Safe (default), Standard, or Custom — and review the exact planned operations.</li>
+      <li>Run the repair. MeshWrench re-parses and re-verifies its own output before showing a result.</li>
+      <li>Compare before and after, then download the repaired STL and/or a JSON repair report.</li>
+    </ol>
+
+    <h2>Repair operations explained</h2>
+    <dl class="check-explanation-list">
+      <div><dt>Exact vertex canonicalization</dt><dd>Always applied — identical vertex positions (bit-exact float32) are treated as one vertex, consistent with how every MeshWrench tool reads topology.</dd></div>
+      <div><dt>Tolerance-based welding (opt-in)</dt><dd>Merges vertices within an explicit, displayed distance in model units. Never labelled millimeters — STL has no declared unit.</dd></div>
+      <div><dt>Degenerate/duplicate removal</dt><dd>Removes triangles with a repeated vertex, zero/near-zero area, or exact duplicate geometry.</dd></div>
+      <div><dt>Winding correction</dt><dd>Flips only the specific triangles a shell's own orientation analysis says are inconsistent — never a guess.</dd></div>
+      <div><dt>Outward orientation</dt><dd>Reverses a closed, consistently-wound shell whose signed volume says it's inward-facing.</dd></div>
+      <div><dt>Hole filling</dt><dd>Triangulates only simple closed boundary loops that pass size, planarity and self-intersection safety checks.</dd></div>
+      <div><dt>Small-shell removal (opt-in)</dt><dd>Never on by default — you choose the threshold, and MeshWrench never assumes the largest shell is the "real" one.</dd></div>
+    </dl>
+
+    <h2>What "watertight" means here</h2>
+    <p>
+      This tool uses the exact same strict watertight policy as MeshWrench's own STL Checker: zero boundary edges, zero
+      non-manifold edges, zero winding conflicts, zero duplicate faces, and a completed self-intersection check that
+      finds none. "Fully repaired" is only ever reported when the ACTUAL repaired output file, re-parsed with the
+      production STL parser, verifies clean against this exact policy.
+    </p>
+
+    <h2>Common slicer errors this tool can fix</h2>
+    <ul>
+      <li><strong>"Mesh is not manifold" / "not watertight":</strong> hole filling and winding correction target exactly this.</li>
+      <li><strong>Inverted normals / model renders inside-out:</strong> outward orientation and winding correction.</li>
+      <li><strong>Duplicate or overlapping faces:</strong> duplicate-face removal.</li>
+      <li><strong>Small gaps or seams:</strong> Standard mode's tolerance-based welding.</li>
+      <li><strong>Stray tiny fragments:</strong> optional small-shell removal.</li>
+    </ul>
+
+    <h2>What automatic repair cannot safely do</h2>
+    <ul>
+      <li>It cannot resolve arbitrary non-manifold topology — only the deterministic cases already covered by duplicate/degenerate cleanup elsewhere in the pipeline. Genuinely ambiguous non-manifold edges are reported, never forced closed by deleting geometry.</li>
+      <li>It cannot resolve self-intersecting geometry — self-intersections are detected and disclosed, never claimed as fixed.</li>
+      <li>It cannot guarantee printability, wall thickness, physical scale or fitness for any specific printer.</li>
+      <li>It never promises every STL can be repaired — some files are honestly reported "improved" or "unable to repair safely," never force-labelled as fixed.</li>
+    </ul>
+
+    <h2>Related tools</h2>
+    <p>
+      Already know what's wrong? <a href="/stl-checker/">STL Checker</a> and <a href="/stl-validator/">STL Validator</a>
+      run the exact same diagnostics this repair tool starts from, without modifying anything. <a href="/stl-viewer/">STL Viewer</a>
+      lets you inspect a file with no analysis at all.
+    </p>
+  </Fragment>
+
+  <Fragment slot="faqs">
+    <section class="faq-section-tool">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {faqs.map((faq) => (
+          <details>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </Fragment>
+
+  <Fragment slot="related-tools">
+    <section class="related-tools-section">
+      <h2>Related tools</h2>
+      <ul class="related-tools-list">
+        {relatedTools.map((related) => (
+          <li>
+            <a href={related!.path}>{related!.name}</a>
+            <span class="related-tool-status">{related!.status === "ready" ? "Available" : "Coming soon"}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="pro-transition-note">Repairing many files? Try the Batch tab above — batch repair is a Pro capability; Pro activation is coming in the payment phase.</p>
+    </section>
+  </Fragment>
+</ToolLayout>
+
+<script>
+  import "./_client";
+</script>
+
+<style>
+  .faq-section-tool,
+  .related-tools-section {
+    margin-top: 20px;
+  }
+  .faq-list-tool {
+    border-top: 1px solid var(--line);
+  }
+  .faq-list-tool details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq-list-tool summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq-list-tool p {
+    margin: 10px 0 0;
+    color: var(--muted);
+  }
+  .related-tools-list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  .related-tools-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .related-tool-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f3f1fb;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pro-transition-note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+  .check-explanation-list dt {
+    font-weight: 700;
+    margin-top: 12px;
+  }
+  .check-explanation-list dd {
+    margin: 4px 0 0;
+    color: var(--muted);
+  }
+</style>

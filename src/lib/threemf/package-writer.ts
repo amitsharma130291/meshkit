@@ -6,7 +6,7 @@
  * `package.ts` (the ZIP *reader*, hand-rolled specifically so it can
  * inspect encryption flags fflate's high-level read API hides), there's
  * no equivalent safety reason to avoid a well-tested writer here —
- * MeshKit controls every byte being written, so there's no untrusted
+ * MeshWrench controls every byte being written, so there's no untrusted
  * input to validate around. A fixed `mtime` is applied to every entry so
  * identical geometry produces byte-identical package output.
  */

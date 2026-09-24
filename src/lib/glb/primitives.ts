@@ -9,13 +9,13 @@ import { glbError } from "./errors";
 import { readIndexAccessor, readPositionAccessor } from "./accessors";
 import type { DecodedMesh, DecodedPrimitive, GLBLimits, GLTFDocument, GLTFPrimitive } from "./types";
 
-const MODE_POINTS = 0;
-const MODE_LINES = 1;
-const MODE_LINE_LOOP = 2;
-const MODE_LINE_STRIP = 3;
-const MODE_TRIANGLES = 4;
-const MODE_TRIANGLE_STRIP = 5;
-const MODE_TRIANGLE_FAN = 6;
+export const MODE_POINTS = 0;
+export const MODE_LINES = 1;
+export const MODE_LINE_LOOP = 2;
+export const MODE_LINE_STRIP = 3;
+export const MODE_TRIANGLES = 4;
+export const MODE_TRIANGLE_STRIP = 5;
+export const MODE_TRIANGLE_FAN = 6;
 
 const UNSUPPORTED_LINE_POINT_MODES: ReadonlySet<number> = new Set([MODE_POINTS, MODE_LINES, MODE_LINE_LOOP, MODE_LINE_STRIP]);
 const SUPPORTED_TRIANGLE_MODES: ReadonlySet<number> = new Set([MODE_TRIANGLES, MODE_TRIANGLE_STRIP, MODE_TRIANGLE_FAN]);
@@ -93,7 +93,7 @@ function decodePrimitive(doc: GLTFDocument, primitive: GLTFPrimitive, bin: Uint8
   };
 }
 
-function buildTriangleIndices(mode: number, elementCount: number, getIndex: (i: number) => number, limits: GLBLimits): Uint32Array {
+export function buildTriangleIndices(mode: number, elementCount: number, getIndex: (i: number) => number, limits: GLBLimits): Uint32Array {
   const triangles: number[] = [];
   const pushTriangle = (a: number, b: number, c: number): void => {
     if (triangles.length / 3 >= limits.maxTriangles) throw glbError("GLB_COMPLEXITY_LIMIT");
