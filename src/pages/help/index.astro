@@ -1,0 +1,312 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/site/SiteHeader.astro";
+import SiteFooter from "../../components/site/SiteFooter.astro";
+import { siteConfig } from "../../config/site";
+
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Help", path: "/help/" },
+];
+
+const faqs = [
+  {
+    question: "Are my files uploaded anywhere?",
+    answer:
+      "No. Every tool reads your file with the browser's local File API and processes it in a background Web Worker on your own device. Nothing is sent to a server — you can confirm this yourself by opening your browser's network tab while a file loads.",
+  },
+  {
+    question: "Do I need to create an account?",
+    answer: "No. Every free, single-file tool works with no signup, no login and no email address required.",
+  },
+  {
+    question: "My file won't load — what should I check first?",
+    answer:
+      "Confirm the file actually matches its extension (a renamed file will fail), that it isn't corrupted or truncated, and that it's under the tool's size limit. Each tool's own page explains its specific format requirements in the sections above.",
+  },
+  {
+    question: "Is there a file size limit?",
+    answer:
+      "Yes, a safety ceiling protects your browser from freezing on extremely large files — it's a browser-stability limit, not a paid-tier restriction. Every file under the limit gets the complete tool for free.",
+  },
+  {
+    question: "Which browsers are supported?",
+    answer: "Any recent version of Chrome, Firefox, Safari or Edge with WebGL and Web Worker support — the same requirement every tool page lists individually.",
+  },
+  {
+    question: "What's the difference between the free tools and Pro?",
+    answer:
+      "Free tools handle one file at a time, fully, at full quality, forever. Pro adds batch processing of whole folders, reusable repair/optimization presets, larger queues and an ad-free workflow — see the Pro section above.",
+  },
+  {
+    question: "I lost my Pro license key — what now?",
+    answer: `Go to the pricing page and use "Forgot your license key?" — enter the email you purchased with and we'll send it to you.`,
+  },
+  {
+    question: "Something still isn't working — what do I do?",
+    answer: "Send us a message on the Contact page with what you tried and what happened. We read every message.",
+  },
+];
+---
+
+<BaseLayout
+  title={`Help & How-To Guide — ${siteConfig.productName}`}
+  description={`Step-by-step guides for every ${siteConfig.productName} workflow: viewing, converting, repairing and optimizing 3D files, plus Pro and license activation.`}
+  path="/help/"
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+>
+  <SiteHeader />
+
+  <main id="main">
+    <section class="help-hero section-shell">
+      <span class="kicker">Help &amp; how-to guide</span>
+      <h1>Everything you need to get the most out of {siteConfig.productName}.</h1>
+      <p>
+        Real screenshots, real steps. Every workflow below was captured directly from the live tools — nothing here is a mockup.
+      </p>
+      <nav class="help-jump" aria-label="Jump to a section">
+        <a href="#choose-a-tool">Choose a tool</a>
+        <a href="#view">View a file</a>
+        <a href="#convert">Convert a file</a>
+        <a href="#repair">Repair a file</a>
+        <a href="#pro">Go Pro</a>
+        <a href="#license">License &amp; billing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </section>
+
+    <section id="choose-a-tool" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Getting started</span>
+        <h2>Choose the right tool for the job</h2>
+        <p>
+          Every free tool opens immediately from the homepage's tool grid, solves one clear job, and keeps your file on your device the entire time. There's no
+          dashboard to navigate — pick the exact task you need and go straight to a working tool.
+        </p>
+        <ol class="help-steps">
+          <li>Go to the <a href="/">homepage</a> and scroll to "The right tool, without the detour."</li>
+          <li>Pick the tool matching your task — a viewer to inspect a file, a converter to change formats, or Repair/Checker to fix or diagnose problems.</li>
+          <li>Every tool page also lists its close relatives ("Also live: ...") if the first one you land on isn't quite the right fit.</li>
+        </ol>
+      </div>
+      <figure class="help-figure">
+        <img src="/help/tool-grid.png" width="1000" height="898" alt="The MeshWrench homepage tool grid, showing the STL Viewer, 3MF to STL, STL Repair and STL Checker cards plus the full list of every other live tool" loading="lazy" />
+        <figcaption>The homepage's tool grid — every tool is one click away, no account required.</figcaption>
+      </figure>
+    </section>
+
+    <section id="view" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Viewing</span>
+        <h2>View a 3D file</h2>
+        <p>Every viewer (STL, OBJ, 3MF, GLB, PLY, FBX, or the format-detecting Universal Viewer) follows the same pattern:</p>
+        <ol class="help-steps">
+          <li>Open the matching viewer and select your file — or drag one onto the page.</li>
+          <li>{siteConfig.productName} reads and parses it locally in a background worker. Nothing leaves your device.</li>
+          <li>Once parsing finishes, drag to rotate, scroll to zoom, and use the side controls to toggle wireframe, change the background, or save a screenshot.</li>
+          <li>The panel below the viewport shows real file details — size, encoding, triangle count, dimensions and bounding box.</li>
+        </ol>
+      </div>
+      <figure class="help-figure">
+        <img src="/help/viewer-loaded.png" width="1000" height="898" alt="STL Viewer showing a loaded cube model in the 3D viewport, with a model information panel below listing file size, encoding, triangle count and dimensions" loading="lazy" />
+        <figcaption>STL Viewer after loading a file — the info panel's numbers come straight from the parsed geometry.</figcaption>
+      </figure>
+    </section>
+
+    <section id="convert" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Converting</span>
+        <h2>Convert between formats</h2>
+        <p>
+          Converters (3MF/OBJ/GLB/PLY → STL, and STL → OBJ/3MF) all work the same way, with no separate "Convert" button — selecting a valid file starts
+          conversion automatically:
+        </p>
+        <ol class="help-steps">
+          <li>Open the converter for your source and target format, then select your file.</li>
+          <li>The file is parsed and converted locally in a worker — you'll see a live preview of the result.</li>
+          <li>Review the conversion summary (input/output triangle counts, unique vertices, any skipped or degenerate geometry) before downloading.</li>
+          <li>Click Download to save the converted file. Nothing was ever sent anywhere to produce it.</li>
+        </ol>
+      </div>
+      <figure class="help-figure">
+        <img src="/help/convert-loaded.png" width="1000" height="898" alt="STL to OBJ converter showing a converted cube model, with a results panel listing file name, triangle and vertex counts, and a Download OBJ button" loading="lazy" />
+        <figcaption>A completed STL → OBJ conversion, ready to download.</figcaption>
+      </figure>
+    </section>
+
+    <section id="repair" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Repairing</span>
+        <h2>Repair a broken STL</h2>
+        <p>STL Repair uses a plan-then-run workflow so you always see exactly what will change before anything does:</p>
+        <ol class="help-steps">
+          <li>Open STL Repair and select your file. It's analyzed locally and the detected problems are listed.</li>
+          <li>Choose a repair mode — Safe (default), Standard, or Custom — and review the exact planned operations for each.</li>
+          <li>Click "Run repair." The output is re-parsed and re-verified before it's ever shown to you as a result.</li>
+          <li>Compare the before/after table, then download the repaired STL and/or a JSON repair report.</li>
+        </ol>
+      </div>
+      <div class="help-figure-pair">
+        <figure class="help-figure">
+          <img src="/help/repair-plan.png" width="1000" height="898" alt="STL Repair's planned-operations panel, listing each repair step and what was detected — in this example, one closed boundary loop eligible for hole filling" loading="lazy" />
+          <figcaption>The repair plan — every planned operation, and exactly what triggered it.</figcaption>
+        </figure>
+        <figure class="help-figure">
+          <img src="/help/repair-result.png" width="1000" height="898" alt="STL Repair's before/after comparison table, showing the watertight verdict changing from not-watertight to watertight and boundary edges dropping from 4 to 0" loading="lazy" />
+          <figcaption>The real result: this file's watertight verdict flipped from "not-watertight" to "watertight."</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="pro" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Working faster</span>
+        <h2>Go Pro when one file becomes a folder</h2>
+        <p>
+          Every free tool above already handles a single file at full quality, forever, with no account. {siteConfig.productName} Pro is for when that same job
+          needs doing across a whole folder:
+        </p>
+        <ul class="help-list">
+          <li><strong>Batch entire folders</strong> through the same conversion, repair or optimization pipeline, one queue instead of one file at a time.</li>
+          <li><strong>Reusable presets</strong> for repair and optimization settings, so you set them up once.</li>
+          <li><strong>Larger, offline-friendlier queues</strong> for bigger jobs.</li>
+          <li><strong>No ads</strong>, on top of the same local-only privacy every free tool already has.</li>
+        </ul>
+        <p>Pro appears as a "Batch" tab right on the tool pages you already use — no separate app to learn. See <a href="/pricing/">Pricing</a> for the full details.</p>
+      </div>
+    </section>
+
+    <section id="license" class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Billing</span>
+        <h2>Buy, activate, or recover your Pro license</h2>
+        <ol class="help-steps">
+          <li>Go to <a href="/pricing/">the pricing page</a> and enter your email to buy Pro — a one-time $39 payment, no subscription.</li>
+          <li>After payment, you're automatically redirected back and Pro activates on that device. You'll also get a welcome email with your license key.</li>
+          <li>
+            On a new device, or if your browser storage was cleared: go back to the pricing page, enter your license key under "Have a license key?" and click
+            Activate.
+          </li>
+          <li>Lost the key itself? Use "Forgot your license key?" — enter the email you purchased with and we'll send it to you.</li>
+        </ol>
+      </div>
+      <figure class="help-figure">
+        <img src="/help/pricing-page.png" width="1000" height="898" alt="The MeshWrench pricing page, showing the $39 Buy Pro form on the left and the Have a license key / Forgot your license key forms on the right" loading="lazy" />
+        <figcaption>The pricing page — buy, activate, or recover a license key, all in one place.</figcaption>
+      </figure>
+    </section>
+
+    <section class="help-section section-shell">
+      <div class="help-section-text">
+        <span class="kicker">Privacy</span>
+        <h2>Why nothing here ever touches a server</h2>
+        <p>
+          There is no file-processing backend anywhere in {siteConfig.productName} — not for free tools, not for Pro. Every viewer, converter, repair and
+          optimization tool reads your file with the browser's own File API, hands its bytes to a Web Worker running on your device, and does everything else —
+          parsing, processing, rendering, and generating the download — locally. You can verify this yourself: open your browser's developer tools, watch the
+          network tab, and process a file. No request containing your file will ever appear.
+        </p>
+      </div>
+    </section>
+
+    <section id="faq" class="faq-section-tool help-section section-shell">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+      <p class="help-still-stuck">
+        Still stuck? <a href="/contact/">Send us a message</a> — we read every one.
+      </p>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .help-hero {
+    padding-top: 48px;
+    padding-bottom: 40px;
+    max-width: 760px;
+  }
+  .help-hero h1 {
+    margin: 14px 0;
+    font-size: clamp(2.4rem, 5vw, 3.4rem);
+  }
+  .help-jump {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+  }
+  .help-jump a {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--violet);
+  }
+  .help-section {
+    padding-block: 56px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 32px;
+  }
+  .help-section-text h2 {
+    margin: 10px 0 16px;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+  }
+  .help-section-text p {
+    color: var(--muted);
+    max-width: 680px;
+  }
+  .help-steps,
+  .help-list {
+    margin: 18px 0 0;
+    padding-left: 22px;
+    display: grid;
+    gap: 10px;
+    max-width: 680px;
+    color: var(--ink);
+  }
+  .help-steps li,
+  .help-list li {
+    line-height: 1.5;
+  }
+  .help-figure {
+    margin: 0;
+  }
+  .help-figure img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 50px rgba(37, 27, 68, 0.08);
+    display: block;
+  }
+  .help-figure figcaption {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .help-figure-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .help-still-stuck {
+    margin-top: 28px;
+    color: var(--muted);
+  }
+  @media (max-width: 860px) {
+    .help-figure-pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

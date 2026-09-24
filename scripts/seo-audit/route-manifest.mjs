@@ -217,6 +217,12 @@ export const routeManifest = [
     toolId: null,
     primaryIntent: "send a message to the team — questions, feedback, or support requests",
   },
+  {
+    pathname: "/help/",
+    classification: "indexable-primary",
+    toolId: null,
+    primaryIntent: "step-by-step how-to guide for every workflow — viewing, converting, repairing, Pro and license activation",
+  },
 ];
 
 export function getRouteEntry(pathname) {

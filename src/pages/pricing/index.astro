@@ -74,6 +74,21 @@ import { siteConfig } from "../../config/site";
           </form>
         </article>
       </div>
+
+      <div class="pricing-screenshot">
+        <h2>What Pro looks like</h2>
+        <p>Real screenshot, not a mockup — the "Batch" tab that appears right on the tool pages you already use, once Pro is active.</p>
+        <figure>
+          <img
+            src="/pricing/pro-batch-screenshot.png"
+            width="1000"
+            height="440"
+            alt="STL Repair's Batch tab with Pro unlocked, showing three queued files (pro-demo-1.stl, pro-demo-2.stl, pro-demo-3.stl) with their sizes, a saved-preset dropdown, and concurrency settings"
+            loading="lazy"
+          />
+          <figcaption>Pro's Batch tab on STL Repair — queue a folder's worth of files, reuse a saved preset, and pick how many run at once.</figcaption>
+        </figure>
+      </div>
     </section>
   </main>
 
@@ -185,5 +200,33 @@ import { siteConfig } from "../../config/site";
     .pricing-grid {
       grid-template-columns: 1fr;
     }
+  }
+  .pricing-screenshot {
+    margin-top: 64px;
+    max-width: 760px;
+  }
+  .pricing-screenshot h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
+  }
+  .pricing-screenshot > p {
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+  .pricing-screenshot figure {
+    margin: 0;
+  }
+  .pricing-screenshot img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 50px rgba(37, 27, 68, 0.08);
+    display: block;
+  }
+  .pricing-screenshot figcaption {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
   }
 </style>
