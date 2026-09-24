@@ -38,7 +38,7 @@ const faqs = [
   {
     question: "Does this tool fix the problems it finds?",
     answer:
-      "Not yet. This is a diagnostic tool only — it never modifies, repairs, welds, reorients or exports a changed mesh. STL Repair, a separate tool, will handle fixing what this checker finds.",
+      "No — this is a diagnostic tool only. It never modifies, repairs, welds, reorients or exports a changed mesh. STL Repair is the separate tool that fixes what this checker finds.",
   },
   {
     question: "Why does vertex matching use exact positions instead of a tolerance?",
@@ -106,7 +106,7 @@ const faqs = [
       <li>Select an STL file using the picker above (or drag one in once you're on the page).</li>
       <li>MeshWrench reads and analyzes the file locally in a background worker — nothing leaves your device.</li>
       <li>Review the watertightness verdict, the individual check results, and the 3D preview with issue overlays.</li>
-      <li>Download a JSON report, or continue to STL Repair once it's available.</li>
+      <li>Download a JSON report, or continue to <a href="/stl-repair/">STL Repair</a> to fix what this checker found.</li>
     </ol>
 
     <h2>What each check means</h2>
@@ -190,9 +190,9 @@ const faqs = [
 
     <h2>What's next: STL Repair</h2>
     <p>
-      Problems found? STL Repair — a separate MeshWrench tool — will fix holes, flip inverted normals, weld gaps and
-      resolve non-manifold geometry, locally in your browser. It isn't built yet; this checker never claims to
-      repair anything, and never links to a route that doesn't exist.
+      Problems found? <a href="/stl-repair/">STL Repair</a> fixes holes, flips inverted normals, welds gaps and
+      resolves non-manifold geometry, locally in your browser. This checker itself never modifies or repairs
+      anything — it's a diagnostic-only report, and STL Repair is the tool that acts on it.
     </p>
   </Fragment>
 

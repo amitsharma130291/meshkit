@@ -522,7 +522,7 @@ const SAFE_MESSAGES: Record<ErrorCode, string> = {
   STLOPT_VERIFICATION_FAILED: "MeshWrench couldn't verify the optimization results. No file was produced.",
   GCODE_EMPTY_FILE: "That G-code file appears to be empty.",
   GCODE_FILE_READ_FAILED: "The file couldn't be read from your device.",
-  BATCH_ENTITLEMENT_REQUIRED: "Batch processing is a Pro capability. Pro activation is coming in the payment phase.",
+  BATCH_ENTITLEMENT_REQUIRED: "Batch processing is a Pro capability. Upgrade at /pricing/ to unlock it.",
   BATCH_QUEUE_FULL: "This batch already has the maximum number of files it can hold.",
   BATCH_FILE_TOO_LARGE: "One of these files is larger than this batch tool currently supports.",
   BATCH_TOTAL_SIZE_EXCEEDED: "Adding this file would put the batch over its total size limit.",

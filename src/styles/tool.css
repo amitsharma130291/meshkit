@@ -961,11 +961,15 @@
   border: 1px solid var(--line);
   background: var(--panel);
 }
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 10px;
+}
 .comparison-table {
   width: 100%;
+  min-width: 420px;
   border-collapse: collapse;
   font-size: 0.85rem;
-  margin-top: 10px;
 }
 .comparison-table th,
 .comparison-table td {

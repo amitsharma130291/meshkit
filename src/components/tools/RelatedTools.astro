@@ -13,7 +13,11 @@ import { type ToolDefinition } from "../../config/tools";
 
 interface Props {
   relatedTools: (ToolDefinition | undefined)[];
-  /** Optional short note below the list, e.g. a Pro-transition line. */
+  /**
+   * Optional short note below the list, e.g. a Pro-transition line.
+   * Rendered with `set:html` — always a page-author-supplied literal
+   * (e.g. a link to /pricing/), never user input, so this is safe.
+   */
   note?: string;
 }
 
@@ -42,7 +46,7 @@ const tools = relatedTools.filter((tool): tool is ToolDefinition => tool !== und
       )
     }
   </ul>
-  {note && <p class="pro-transition-note">{note}</p>}
+  {note && <p class="pro-transition-note" set:html={note} />}
 </section>
 
 <style>

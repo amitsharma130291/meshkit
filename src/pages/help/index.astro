@@ -100,7 +100,11 @@ const faqs = [
       <div class="help-section-text">
         <span class="kicker">Viewing</span>
         <h2>View a 3D file</h2>
-        <p>Every viewer (STL, OBJ, 3MF, GLB, PLY, FBX, or the format-detecting Universal Viewer) follows the same pattern:</p>
+        <p>
+          Every viewer — <a href="/stl-viewer/">STL</a>, <a href="/obj-viewer/">OBJ</a>, <a href="/3mf-viewer/">3MF</a>, <a href="/glb-viewer/">GLB</a>,
+          <a href="/ply-viewer/">PLY</a>, <a href="/fbx-viewer/">FBX</a>, or the format-detecting <a href="/viewer/">Universal Viewer</a> — follows the same
+          pattern:
+        </p>
         <ol class="help-steps">
           <li>Open the matching viewer and select your file — or drag one onto the page.</li>
           <li>{siteConfig.productName} reads and parses it locally in a background worker. Nothing leaves your device.</li>
@@ -110,7 +114,7 @@ const faqs = [
       </div>
       <figure class="help-figure">
         <img src="/help/viewer-loaded.png" width="1000" height="898" alt="STL Viewer showing a loaded cube model in the 3D viewport, with a model information panel below listing file size, encoding, triangle count and dimensions" loading="lazy" />
-        <figcaption>STL Viewer after loading a file — the info panel's numbers come straight from the parsed geometry.</figcaption>
+        <figcaption><a href="/stl-viewer/">STL Viewer</a> after loading a file — the info panel's numbers come straight from the parsed geometry.</figcaption>
       </figure>
     </section>
 
@@ -119,8 +123,9 @@ const faqs = [
         <span class="kicker">Converting</span>
         <h2>Convert between formats</h2>
         <p>
-          Converters (3MF/OBJ/GLB/PLY → STL, and STL → OBJ/3MF) all work the same way, with no separate "Convert" button — selecting a valid file starts
-          conversion automatically:
+          Converters — <a href="/3mf-to-stl/">3MF</a>, <a href="/obj-to-stl/">OBJ</a>, <a href="/glb-to-stl/">GLB</a> or <a href="/ply-to-stl/">PLY</a> to STL,
+          and STL to <a href="/stl-to-obj/">OBJ</a> or <a href="/stl-to-3mf/">3MF</a> — all work the same way, with no separate "Convert" button — selecting a
+          valid file starts conversion automatically:
         </p>
         <ol class="help-steps">
           <li>Open the converter for your source and target format, then select your file.</li>
@@ -131,7 +136,7 @@ const faqs = [
       </div>
       <figure class="help-figure">
         <img src="/help/convert-loaded.png" width="1000" height="898" alt="STL to OBJ converter showing a converted cube model, with a results panel listing file name, triangle and vertex counts, and a Download OBJ button" loading="lazy" />
-        <figcaption>A completed STL → OBJ conversion, ready to download.</figcaption>
+        <figcaption>A completed <a href="/stl-to-obj/">STL → OBJ</a> conversion, ready to download.</figcaption>
       </figure>
     </section>
 
@@ -139,9 +144,9 @@ const faqs = [
       <div class="help-section-text">
         <span class="kicker">Repairing</span>
         <h2>Repair a broken STL</h2>
-        <p>STL Repair uses a plan-then-run workflow so you always see exactly what will change before anything does:</p>
+        <p><a href="/stl-repair/">STL Repair</a> uses a plan-then-run workflow so you always see exactly what will change before anything does:</p>
         <ol class="help-steps">
-          <li>Open STL Repair and select your file. It's analyzed locally and the detected problems are listed.</li>
+          <li>Open <a href="/stl-repair/">STL Repair</a> and select your file. It's analyzed locally and the detected problems are listed.</li>
           <li>Choose a repair mode — Safe (default), Standard, or Custom — and review the exact planned operations for each.</li>
           <li>Click "Run repair." The output is re-parsed and re-verified before it's ever shown to you as a result.</li>
           <li>Compare the before/after table, then download the repaired STL and/or a JSON repair report.</li>

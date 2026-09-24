@@ -3,30 +3,177 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import SiteHeader from "../../components/site/SiteHeader.astro";
 import SiteFooter from "../../components/site/SiteFooter.astro";
 import { siteConfig } from "../../config/site";
+
+const compareRows = [
+  { feature: "View, convert, repair and optimize files", free: true, pro: true },
+  { feature: "Full-quality output, every time", free: true, pro: true },
+  { feature: "100% local processing — nothing ever uploaded", free: true, pro: true },
+  { feature: "Process one file at a time", free: true, pro: true },
+  { feature: "Batch an entire folder at once", free: false, pro: true },
+  { feature: "Reusable repair & optimization presets", free: false, pro: true },
+  { feature: "Choose 1 or 2 files processed concurrently", free: false, pro: true },
+  { feature: "Download all results as one ZIP", free: false, pro: true },
+  { feature: "Downloadable JSON batch report", free: false, pro: true },
+  { feature: "Ad-free", free: false, pro: true },
+];
+
+const faqs = [
+  {
+    question: "Is this really a one-time payment, not a subscription?",
+    answer: `Yes. $${siteConfig.proPriceUsd} once. No recurring charge, no trial that auto-converts, nothing to cancel later.`,
+  },
+  {
+    question: "What exactly does Pro unlock?",
+    answer:
+      "Batch processing (queue a whole folder instead of one file), reusable presets for repair and optimization settings, adjustable concurrency, ZIP + JSON report downloads, and an ad-free experience — across every batch-capable tool.",
+  },
+  {
+    question: "Which tools support batch mode?",
+    answer:
+      "All 6 converters (3MF/OBJ/GLB/PLY → STL, and STL → OBJ/3MF), STL Repair, and all 3 optimization tools (Reduce File Size, Simplify STL, Triangle Reducer) — 12 tools in total, with more added as new tools ship.",
+  },
+  {
+    question: "Do my files get uploaded once I'm on Pro?",
+    answer:
+      "No — this never changes. Every Pro capability runs with the exact same local-only processing as the free tools. There is no file-processing backend anywhere in this product, Free or Pro.",
+  },
+  {
+    question: "What if it's not for me?",
+    answer: `Email us within 7 days of purchase and we'll refund you — no questions asked. See the guarantee above.`,
+  },
+  {
+    question: "I lost my license key — what now?",
+    answer: `Use "Forgot your license key?" below — enter the email you purchased with and we'll send it to you.`,
+  },
+  {
+    question: "Can I use Pro on more than one device?",
+    answer: "Yes — activate the same license key on each device from the \"Have a license key?\" section below.",
+  },
+];
 ---
 
 <BaseLayout
-  title={`Pricing — ${siteConfig.productName} Pro`}
-  description={`Upgrade to ${siteConfig.productName} Pro for $${siteConfig.proPriceUsd} once: batch entire folders, reusable presets, and an ad-free workflow.`}
+  title={`${siteConfig.productName} Pro — Batch Process Your Whole Folder for $${siteConfig.proPriceUsd}`}
+  description={`Batch entire folders, save reusable presets, stay 100% local — a single $${siteConfig.proPriceUsd} payment, no subscription. 7-day money-back guarantee.`}
   path="/pricing/"
 >
   <SiteHeader />
 
   <main id="main">
-    <section class="pricing-hero section-shell">
-      <div id="payment-failed-banner" class="payment-banner payment-banner-error" role="alert" hidden>
-        <strong>Your payment didn't go through.</strong>
-        <span>No charge was made. You can try again below, or use "Forgot your license key?" if you already purchased Pro under a different session.</span>
-      </div>
+    <div id="payment-failed-banner" class="payment-banner payment-banner-error section-shell" role="alert" hidden>
+      <strong>Your payment didn't go through.</strong>
+      <span>No charge was made. You can try again below, or use "Forgot your license key?" if you already purchased Pro under a different session.</span>
+    </div>
 
-      <div class="pricing-heading">
+    <!-- HERO -->
+    <section class="pro-hero section-shell">
+      <div class="pro-hero-copy">
         <span class="kicker">{siteConfig.productName} Pro</span>
-        <h1>One price. Every batch tool. Forever.</h1>
-        <p>Free tools stay free, one file at a time. Pro unlocks batch folders, reusable presets and an ad-free workflow — a single ${siteConfig.proPriceUsd} payment, no subscription.</p>
+        <h1>Stop converting files <span>one at a time.</span></h1>
+        <p class="pro-hero-lede">
+          Batch an entire folder through the same conversion, repair or optimization pipeline you already trust — reuse your settings, and get back to the work that
+          actually needs you.
+        </p>
+        <div class="pro-hero-actions">
+          <a href="#buy" class="button button-pro">Get Pro — ${siteConfig.proPriceUsd} once <span>→</span></a>
+          <a href="#compare" class="pro-hero-secondary-link">See what's included ↓</a>
+        </div>
+        <ul class="pro-hero-trust">
+          <li><b>✓</b> One-time payment, never a subscription</li>
+          <li><b>✓</b> 7-day money-back guarantee</li>
+          <li><b>✓</b> Still 100% local — nothing you process is ever uploaded</li>
+        </ul>
       </div>
+      <figure class="pro-hero-figure">
+        <img
+          src="/pricing/pro-batch-screenshot.png"
+          width="1000"
+          height="440"
+          alt="STL Repair's Batch tab with Pro unlocked, showing three queued files with their sizes, a saved-preset dropdown, and concurrency settings"
+          loading="eager"
+        />
+        <figcaption>Real screenshot — Pro's Batch tab, right on the tool pages you already use.</figcaption>
+      </figure>
+    </section>
 
-      <div class="pricing-grid">
-        <article class="pricing-card pricing-card-buy">
+    <!-- PROBLEM -->
+    <section class="pro-problem section-shell">
+      <p class="pro-problem-kicker">“Need to convert 37 more?”</p>
+      <h2>The free tools handle file #1 perfectly. It's files #2 through #40 that cost you the afternoon.</h2>
+      <p class="pro-problem-body">
+        Every {siteConfig.productName} free tool already does its one job at full quality, with no account and no upload — and it always will. Pro exists for the exact
+        moment that job stops being "a file" and becomes "a folder": the same settings, the same fixes, repeated dozens of times.
+      </p>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="pro-features section-shell">
+      <div class="section-heading">
+        <span class="kicker">What you get</span>
+        <h2>Everything in Free, plus the parts that don't scale to a folder.</h2>
+      </div>
+      <div class="pro-feature-grid">
+        <article class="pro-feature-card">
+          <h3>Batch entire folders</h3>
+          <p>Queue every file at once across 12 batch-capable tools — 6 converters, <a href="/stl-repair/">STL Repair</a>, and 3 optimization tools.</p>
+        </article>
+        <article class="pro-feature-card">
+          <h3>Reusable presets</h3>
+          <p>Save your repair or optimization settings once and apply them to every batch from then on — no re-configuring per job.</p>
+        </article>
+        <article class="pro-feature-card">
+          <h3>Adjustable concurrency</h3>
+          <p>Run 1 or 2 files at once, tuned to your device — large batches stay responsive instead of freezing your tab.</p>
+        </article>
+        <article class="pro-feature-card">
+          <h3>ZIP + JSON report downloads</h3>
+          <p>Every result, packaged as one ZIP, plus a machine-readable JSON report of exactly what changed in each file.</p>
+        </article>
+        <article class="pro-feature-card">
+          <h3>Ad-free</h3>
+          <p>No ads anywhere, on top of the same local-only privacy every free tool already gives you.</p>
+        </article>
+        <article class="pro-feature-card">
+          <h3>Still zero uploads</h3>
+          <p>Batch mode runs through the exact same on-device Web Worker pipeline as the free tools. Nothing new ever leaves your browser.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- COMPARISON TABLE -->
+    <section id="compare" class="pro-compare section-shell">
+      <div class="section-heading">
+        <span class="kicker">Free vs. Pro</span>
+        <h2>No fine print — here's exactly what changes.</h2>
+      </div>
+      <div class="pro-compare-table-wrap">
+        <table class="pro-compare-table">
+          <thead>
+            <tr>
+              <th scope="col">Feature</th>
+              <th scope="col">Free</th>
+              <th scope="col">Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              compareRows.map((row) => (
+                <tr>
+                  <th scope="row">{row.feature}</th>
+                  <td class={row.free ? "pro-yes" : "pro-no"}>{row.free ? "✓" : "—"}</td>
+                  <td class={row.pro ? "pro-yes" : "pro-no"}>{row.pro ? "✓" : "—"}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BUY CARD -->
+    <section id="buy" class="pro-buy section-shell">
+      <div class="pro-buy-card">
+        <div class="pro-buy-left">
           <div class="price-line"><strong>{`$${siteConfig.proPriceUsd}`}</strong><span>once<br />yours forever</span></div>
           <ul>
             <li>Batch entire folders</li>
@@ -34,19 +181,60 @@ import { siteConfig } from "../../config/site";
             <li>Large-file and offline-friendly queues</li>
             <li>No ads</li>
           </ul>
+          <div class="pro-guarantee-badge">
+            <span aria-hidden="true">🛡</span>
+            <div>
+              <strong>7-day money-back guarantee</strong>
+              <p>Not for you? Email us within 7 days for a full refund — no questions asked.</p>
+            </div>
+          </div>
+        </div>
+        <div class="pro-buy-right">
           <form id="checkout-form" class="pricing-form">
             <label for="checkout-email">Email address</label>
             <input id="checkout-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" />
             <button type="submit" class="button button-pro" data-checkout-submit>
-              <span data-label>Buy Pro — ${siteConfig.proPriceUsd}</span>
+              <span data-label>Get Pro — ${siteConfig.proPriceUsd} once</span>
               <span data-spinner hidden aria-hidden="true">…</span>
             </button>
             <p class="form-error" data-checkout-error role="alert" hidden></p>
+            <p class="pro-buy-secure">Secure checkout via Dodo Payments. Your license key is emailed instantly and activates automatically.</p>
           </form>
-        </article>
+        </div>
+      </div>
+    </section>
 
-        <article id="activate" class="pricing-card">
-          <h2>Have a license key?</h2>
+    <!-- TRUST / TRANSPARENCY -->
+    <section class="pro-trust section-shell">
+      <div class="section-heading">
+        <span class="kicker">Why trust this</span>
+        <h2>No testimonials to take our word for — verify it yourself.</h2>
+      </div>
+      <div class="pro-trust-grid">
+        <article>
+          <h3>No subscription trap</h3>
+          <p>One payment, one license key, yours forever. Nothing renews, nothing to remember to cancel.</p>
+        </article>
+        <article>
+          <h3>Nothing to take on faith</h3>
+          <p>Open your browser's network tab while batching a folder on Pro. No request will ever contain your file's bytes — same as every free tool.</p>
+        </article>
+        <article>
+          <h3>The same architecture, not a different tier</h3>
+          <p>Pro doesn't route your files through a new, less-tested code path. It's the identical local Web Worker pipeline the free tools already use.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ALREADY OWN PRO -->
+    <section id="activate" class="pro-account section-shell">
+      <div class="section-heading">
+        <span class="kicker">Already purchased?</span>
+        <h2>Activate or recover your license</h2>
+      </div>
+      <div class="pro-account-grid">
+        <article class="pricing-card">
+          <h3>Have a license key?</h3>
           <p>Enter it below to unlock Pro on this device.</p>
           <form id="activate-form" class="pricing-form">
             <label for="activate-key">License key</label>
@@ -58,9 +246,9 @@ import { siteConfig } from "../../config/site";
             <p class="form-error" data-activate-error role="alert" hidden></p>
             <p class="form-success" data-activate-success role="status" hidden></p>
           </form>
+        </article>
 
-          <hr />
-
+        <article class="pricing-card">
           <h3>Forgot your license key?</h3>
           <p>We'll email it to the address you purchased with.</p>
           <form id="forgot-form" class="pricing-form">
@@ -74,20 +262,29 @@ import { siteConfig } from "../../config/site";
           </form>
         </article>
       </div>
+    </section>
 
-      <div class="pricing-screenshot">
-        <h2>What Pro looks like</h2>
-        <p>Real screenshot, not a mockup — the "Batch" tab that appears right on the tool pages you already use, once Pro is active.</p>
-        <figure>
-          <img
-            src="/pricing/pro-batch-screenshot.png"
-            width="1000"
-            height="440"
-            alt="STL Repair's Batch tab with Pro unlocked, showing three queued files (pro-demo-1.stl, pro-demo-2.stl, pro-demo-3.stl) with their sizes, a saved-preset dropdown, and concurrency settings"
-            loading="lazy"
-          />
-          <figcaption>Pro's Batch tab on STL Repair — queue a folder's worth of files, reuse a saved preset, and pick how many run at once.</figcaption>
-        </figure>
+    <!-- FAQ -->
+    <section id="faq" class="faq-section-tool pro-faq section-shell">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list-tool">
+        {
+          faqs.map((faq) => (
+            <details>
+              <summary>{faq.question}</summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="pro-final-cta section-shell">
+      <div class="pro-final-cta-inner">
+        <h2>Ready to stop doing this one file at a time?</h2>
+        <p>${siteConfig.proPriceUsd} once. 7-day money-back guarantee. Still never uploads a single file.</p>
+        <a href="#buy" class="button button-pro">Get Pro — ${siteConfig.proPriceUsd} once <span>→</span></a>
       </div>
     </section>
   </main>
@@ -100,12 +297,8 @@ import { siteConfig } from "../../config/site";
 </script>
 
 <style>
-  .pricing-hero {
-    padding-top: 48px;
-    padding-bottom: 90px;
-  }
   .payment-banner {
-    margin-bottom: 28px;
+    margin: 28px auto 0;
     padding: 16px 20px;
     border-radius: 14px;
     display: grid;
@@ -119,33 +312,195 @@ import { siteConfig } from "../../config/site";
     border: 1px solid #f3b9b4;
     color: #7a2318;
   }
-  .pricing-heading {
-    max-width: 640px;
-    margin: 0 auto 48px;
+
+  /* Hero */
+  .pro-hero {
+    padding-top: 56px;
+    padding-bottom: 64px;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .pro-hero h1 {
+    margin: 14px 0 18px;
+    font-size: clamp(2.6rem, 5vw, 3.6rem);
+  }
+  .pro-hero h1 span {
+    background: linear-gradient(100deg, var(--violet) 8%, var(--pink) 55%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .pro-hero-lede {
+    color: var(--muted);
+    font-size: 1.08rem;
+    max-width: 520px;
+  }
+  .pro-hero-actions {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .pro-hero-secondary-link {
+    font-weight: 700;
+    color: var(--violet);
+  }
+  .pro-hero-trust {
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    font-size: 0.92rem;
+    color: #454254;
+  }
+  .pro-hero-trust b {
+    color: #159d7b;
+    margin-right: 6px;
+  }
+  .pro-hero-figure {
+    margin: 0;
+  }
+  .pro-hero-figure img {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 60px rgba(37, 27, 68, 0.12);
+    display: block;
+  }
+  .pro-hero-figure figcaption {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--muted);
     text-align: center;
   }
-  .pricing-heading h1 {
-    margin: 14px 0;
+
+  /* Problem */
+  .pro-problem {
+    padding-block: 54px;
+    max-width: 760px;
+    border-top: 1px solid var(--line);
   }
-  .pricing-grid {
+  .pro-problem-kicker {
+    color: var(--violet);
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin: 0 0 10px;
+  }
+  .pro-problem h2 {
+    margin: 0 0 16px;
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+  }
+  .pro-problem-body {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  /* Features */
+  .pro-features {
+    padding-block: 54px;
+    border-top: 1px solid var(--line);
+  }
+  .section-heading {
+    max-width: 640px;
+    margin-bottom: 32px;
+  }
+  .section-heading h2 {
+    margin: 10px 0 0;
+    font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+  }
+  .pro-feature-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    align-items: start;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
   }
-  .pricing-card {
-    padding: 32px;
-    border-radius: 24px;
+  .pro-feature-card {
+    padding: 24px;
+    border-radius: 18px;
     border: 1px solid var(--line);
     background: white;
-    box-shadow: 0 20px 50px rgba(37, 27, 68, 0.06);
   }
-  .pricing-card-buy {
+  .pro-feature-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+  }
+  .pro-feature-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  /* Compare table */
+  .pro-compare {
+    padding-block: 54px;
+    border-top: 1px solid var(--line);
+  }
+  .pro-compare-table-wrap {
+    overflow-x: auto;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+  }
+  .pro-compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.94rem;
+  }
+  .pro-compare-table th,
+  .pro-compare-table td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .pro-compare-table thead th {
+    background: #f7f6fc;
+    font-weight: 800;
+  }
+  .pro-compare-table thead th:nth-child(2),
+  .pro-compare-table thead th:nth-child(3),
+  .pro-compare-table td:nth-child(2),
+  .pro-compare-table td:nth-child(3) {
+    text-align: center;
+    width: 110px;
+  }
+  .pro-compare-table tbody th {
+    font-weight: 600;
+    color: #363344;
+  }
+  .pro-compare-table tbody tr:last-child th,
+  .pro-compare-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .pro-yes {
+    color: #159d7b;
+    font-weight: 800;
+  }
+  .pro-no {
+    color: #b7b3c4;
+  }
+
+  /* Buy card */
+  .pro-buy {
+    padding-block: 64px;
+    border-top: 1px solid var(--line);
+  }
+  .pro-buy-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 28px 70px rgba(37, 27, 68, 0.14);
+  }
+  .pro-buy-left {
+    padding: 40px;
     background: linear-gradient(145deg, #1a172d 10%, #2d2053 65%, #49224f);
     color: white;
-    border: none;
   }
-  .pricing-card-buy ul {
+  .pro-buy-left ul {
     margin: 20px 0 26px;
     padding: 0;
     list-style: none;
@@ -153,20 +508,94 @@ import { siteConfig } from "../../config/site";
     gap: 10px;
     color: #d8d2ea;
   }
-  .pricing-card-buy li::before {
+  .pro-buy-left li::before {
     content: "✓";
     margin-right: 8px;
     color: #77e5bf;
     font-weight: 800;
   }
-  .pricing-card h2 {
-    margin-top: 0;
+  .pro-guarantee-badge {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
   }
-  .pricing-card hr {
-    margin: 28px 0;
-    border: none;
+  .pro-guarantee-badge span {
+    font-size: 1.3rem;
+  }
+  .pro-guarantee-badge strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+  .pro-guarantee-badge p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #cfc9e0;
+  }
+  .pro-buy-right {
+    padding: 40px;
+    background: white;
+    display: flex;
+    align-items: center;
+  }
+  .pro-buy-right .pricing-form {
+    width: 100%;
+  }
+  .pro-buy-secure {
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* Trust */
+  .pro-trust {
+    padding-block: 54px;
     border-top: 1px solid var(--line);
   }
+  .pro-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .pro-trust-grid article {
+    padding: 22px;
+  }
+  .pro-trust-grid h3 {
+    margin: 0 0 8px;
+    font-size: 1.02rem;
+    color: var(--violet-dark);
+  }
+  .pro-trust-grid p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  /* Account (activate/forgot) */
+  .pro-account {
+    padding-block: 54px;
+    border-top: 1px solid var(--line);
+  }
+  .pro-account-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .pricing-card {
+    padding: 28px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: white;
+  }
+  .pricing-card h3 {
+    margin: 0 0 6px;
+  }
+
+  /* Shared form styling */
   .pricing-form {
     display: grid;
     gap: 8px;
@@ -196,37 +625,48 @@ import { siteConfig } from "../../config/site";
     font-size: 0.85rem;
     margin: 0;
   }
-  @media (max-width: 860px) {
-    .pricing-grid {
+
+  /* FAQ */
+  .pro-faq {
+    padding-block: 54px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Final CTA */
+  .pro-final-cta {
+    padding-block: 64px 90px;
+  }
+  .pro-final-cta-inner {
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .pro-final-cta-inner h2 {
+    margin: 0 0 10px;
+    font-size: clamp(1.8rem, 3.6vw, 2.4rem);
+  }
+  .pro-final-cta-inner p {
+    color: var(--muted);
+    margin: 0 0 24px;
+  }
+
+  @media (max-width: 900px) {
+    .pro-hero {
+      grid-template-columns: 1fr;
+    }
+    .pro-feature-grid,
+    .pro-trust-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .pro-buy-card {
       grid-template-columns: 1fr;
     }
   }
-  .pricing-screenshot {
-    margin-top: 64px;
-    max-width: 760px;
-  }
-  .pricing-screenshot h2 {
-    margin: 0 0 10px;
-    font-size: clamp(1.5rem, 3vw, 1.9rem);
-  }
-  .pricing-screenshot > p {
-    color: var(--muted);
-    margin: 0 0 20px;
-  }
-  .pricing-screenshot figure {
-    margin: 0;
-  }
-  .pricing-screenshot img {
-    width: 100%;
-    height: auto;
-    border-radius: 16px;
-    border: 1px solid var(--line);
-    box-shadow: 0 20px 50px rgba(37, 27, 68, 0.08);
-    display: block;
-  }
-  .pricing-screenshot figcaption {
-    margin-top: 10px;
-    font-size: 0.85rem;
-    color: var(--muted);
+  @media (max-width: 640px) {
+    .pro-feature-grid,
+    .pro-trust-grid,
+    .pro-account-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

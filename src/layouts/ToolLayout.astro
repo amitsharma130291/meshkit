@@ -76,7 +76,21 @@ const { title, description, path, h1, intro, noindex, breadcrumbs, faqs, webAppl
     <slot name="faqs" />
     <slot name="related-tools" />
     <slot />
+
+    <p class="tool-help-prompt">
+      Need a hand getting started? See the <a href="/help/">Help &amp; how-to guide</a>, or <a href="/contact/">contact us</a> directly.
+    </p>
   </main>
 
   <SiteFooter />
 </BaseLayout>
+
+<style>
+  .tool-help-prompt {
+    margin: 32px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+</style>

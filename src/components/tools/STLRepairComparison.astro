@@ -17,6 +17,7 @@ const { id = "stl-repair-comparison" } = Astro.props;
 
 <section class="repair-comparison" id={id} data-repair-comparison hidden aria-label="Before and after comparison">
   <h3>Before / after</h3>
+  <div class="table-scroll">
   <table class="comparison-table">
     <thead>
       <tr><th scope="col">Measure</th><th scope="col">Before</th><th scope="col">After</th></tr>
@@ -32,4 +33,5 @@ const { id = "stl-repair-comparison" } = Astro.props;
       <tr><th scope="row">Self-intersections</th><td data-compare-selfintersect-before></td><td data-compare-selfintersect-after></td></tr>
     </tbody>
   </table>
+  </div>
 </section>

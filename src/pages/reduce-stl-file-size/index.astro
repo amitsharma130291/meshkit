@@ -143,7 +143,7 @@ const faqs = [
 
     <h2>What automatic simplification cannot safely do</h2>
     <ul>
-      <li>It never simplifies non-manifold topology by default — you're directed to STL Repair first.</li>
+      <li>It never simplifies non-manifold topology by default — you're directed to <a href="/stl-repair/">STL Repair</a> first.</li>
       <li>It never forces an exact requested target when that would require an unsafe collapse — it reports the best safely-achieved reduction instead.</li>
       <li>It cannot guarantee printability, wall thickness, physical scale or fitness for any specific printer.</li>
       <li>It never claims a self-intersection-free result unless the verification check actually completed.</li>
@@ -171,7 +171,7 @@ const faqs = [
     </section>
   </Fragment>
 
-  <RelatedTools slot="related-tools" relatedTools={relatedTools} note="Optimizing many files? Try the Batch tab above — batch optimization is a Pro capability; Pro activation is coming in the payment phase." />
+  <RelatedTools slot="related-tools" relatedTools={relatedTools} note={`Optimizing many files? Try the Batch tab above — batch optimization is a <a href="/pricing/">Pro</a> capability.`} />
 </ToolLayout>
 
 <script>

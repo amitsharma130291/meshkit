@@ -32,3 +32,49 @@ const { id = "local-file-input", label, accept, helpText } = Astro.props;
   />
   <p class="file-picker-message" id={`${id}-message`} role="status" aria-live="polite" data-file-message></p>
 </div>
+
+<style>
+  .file-picker-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .file-picker-help {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .file-picker-input {
+    display: block;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .file-picker-input::file-selector-button,
+  .file-picker-input::-webkit-file-upload-button {
+    margin-right: 14px;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(110deg, var(--violet), #8b42ef 52%, var(--pink));
+    color: white;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 10px 24px rgba(109, 66, 245, 0.22);
+  }
+  .file-picker-input:hover::file-selector-button,
+  .file-picker-input:hover::-webkit-file-upload-button {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(109, 66, 245, 0.3);
+  }
+  .file-picker-input:focus-visible::file-selector-button,
+  .file-picker-input:focus-visible::-webkit-file-upload-button {
+    outline: 3px solid color-mix(in srgb, var(--violet) 45%, white);
+    outline-offset: 2px;
+  }
+  .file-picker-message {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+  }
+</style>
