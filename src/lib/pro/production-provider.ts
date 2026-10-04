@@ -43,8 +43,28 @@ async function verifyStoredLicense(): Promise<ReturnType<typeof createSnapshot>>
   }
 }
 
+/**
+ * A local-machine-only testing aid, nothing more. Lets you see the Pro
+ * UI without a real Dodo purchase while you don't yet have a test
+ * license key to activate. Two independent gates, both required:
+ *   1. `import.meta.env.DEV` — true only under `astro dev`. Vite/Astro
+ *      bakes this to `false` for every production build (including
+ *      Vercel's), so this branch is physically absent from anything
+ *      that ships, regardless of what env vars happen to be set there.
+ *   2. `PUBLIC_LOCAL_TEST_UNLOCK_PRO` — off unless you explicitly add
+ *      it to your own local `.env`/`.env.local` (see .env.example).
+ * Delete your local var (or just leave it unset) to go back to testing
+ * the real license-key flow at any time.
+ */
+function localTestProOverride(): ReturnType<typeof createSnapshot> | null {
+  if (!import.meta.env.DEV) return null;
+  if (import.meta.env.PUBLIC_LOCAL_TEST_UNLOCK_PRO !== "true") return null;
+  return createSnapshot("pro", ALL_PRO_CAPABILITIES, "license-key", Date.now());
+}
+
 export function createProductionEntitlementProvider(): EntitlementProviderController {
   const controller = createEntitlementProvider(FAIL_CLOSED_SNAPSHOT);
-  controller.resolveAsync(verifyStoredLicense());
+  const localOverride = localTestProOverride();
+  controller.resolveAsync(localOverride ? Promise.resolve(localOverride) : verifyStoredLicense());
   return controller;
 }
